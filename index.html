@@ -139,6 +139,112 @@
   @media (max-width:900px){
     .stats{grid-template-columns:repeat(2,1fr);}
   }
+
+  /* ===== SOP reference tab ===== */
+  .tabbar{display:flex;gap:8px;margin-top:22px;border-bottom:1px solid var(--border);}
+  .tabbtn{
+    font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;
+    padding:10px 16px;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;user-select:none;
+  }
+  .tabbtn.active{color:var(--text);border-bottom-color:var(--main);}
+  .tabpane{display:none;}
+  .tabpane.active{display:block;}
+
+  .sop-notice{
+    margin-top:20px;
+    background:linear-gradient(180deg, rgba(255,138,61,0.09), rgba(255,138,61,0.03));
+    border:1px solid rgba(255,138,61,0.28);
+    border-radius:10px;
+    padding:14px 18px;
+    font-size:13.5px;
+    line-height:1.75;
+    color:#F3D9C4;
+  }
+  .sop-notice b{color:var(--main);}
+
+  .sop-hero{
+    margin-top:24px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:28px 26px 22px;
+  }
+  .sop-hero-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+  .sop-hero-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;}
+  .sop-hero-meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted-2);}
+
+  .sop-track{position:relative;padding:6px 0 30px;}
+  .sop-track-line{
+    position:absolute;left:0;right:0;top:22px;height:4px;
+    background:linear-gradient(90deg, var(--main) 0%, var(--main) 60%, var(--done) 100%);
+    border-radius:4px;opacity:0.9;
+  }
+  .sop-track-stops{position:relative;display:flex;justify-content:space-between;}
+  .sop-stop{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .sop-stop-dot{
+    width:16px;height:16px;border-radius:50%;background:#0F1830;
+    border:3px solid var(--main);z-index:2;box-shadow:0 0 0 4px #0F1830;
+  }
+  .sop-stop:last-child .sop-stop-dot{border-color:var(--done);}
+  .sop-stop-pct{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:var(--text);margin-top:10px;}
+  .sop-stop-day{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-2);margin-top:2px;}
+  .sop-stop-label{font-size:11px;color:var(--muted);max-width:92px;margin-top:6px;line-height:1.4;}
+
+  .sop-legend{display:flex;gap:22px;flex-wrap:wrap;margin-top:26px;font-size:12.5px;color:var(--muted);}
+  .sop-legend span{display:inline-flex;align-items:center;gap:7px;}
+
+  .sop-panel{
+    margin-top:24px;background:var(--card);border:1px solid var(--border);
+    border-radius:16px;padding:24px 24px 10px;
+  }
+  .sop-panel-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:17px;display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .sop-panel-sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+
+  .sop-gantt{overflow-x:auto;}
+  .sop-gantt-inner{min-width:760px;}
+  .sop-ruler{display:grid;grid-template-columns:250px 1fr;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px;}
+  .sop-ruler-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2);}
+  .sop-ruler-days{position:relative;height:18px;}
+  .sop-tick{position:absolute;top:0;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-2);}
+
+  .sop-row{display:grid;grid-template-columns:250px 1fr;align-items:center;border-bottom:1px solid rgba(34,48,76,0.5);padding:11px 0;gap:10px;}
+  .sop-row:last-child{border-bottom:none;}
+  .sop-phase-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;margin-bottom:5px;}
+  .sop-phase-badge.milestone{background:var(--main-soft);color:var(--main);}
+  .sop-phase-badge.parallel{background:var(--parallel-soft);color:var(--parallel);}
+  .sop-phase-badge.final{background:var(--done-soft);color:var(--done);}
+  .sop-row-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
+  .sop-row-desc{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4;}
+
+  .sop-bar-track{position:relative;height:34px;}
+  .sop-bar-bg{position:absolute;top:50%;left:0;right:0;height:1px;background:#1B2743;transform:translateY(-50%);}
+  .sop-bar{
+    position:absolute;top:6px;height:22px;border-radius:6px;display:flex;align-items:center;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;padding:0 8px;
+    white-space:nowrap;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,0.2) inset;
+  }
+  .sop-bar.main{background:linear-gradient(180deg, #FFA35E, #FF8A3D);color:#2A1400;}
+  .sop-bar.parallel{background:linear-gradient(180deg, #6BD4F5, #3FC1F0);color:#04222C;}
+  .sop-bar.final{background:linear-gradient(180deg, #58E0B0, #34D399);color:#062D20;}
+
+  .sop-footer-grid{margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .sop-key-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+  .sop-key-card h3{font-family:'Space Grotesk',sans-serif;font-size:14px;margin:0 0 8px;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .sop-key-card p{font-size:12.5px;color:var(--muted);line-height:1.7;margin:0;}
+  .sop-key-card b{color:var(--main);}
+
+  .sop-final-callout{
+    margin-top:16px;background:linear-gradient(90deg, rgba(52,211,153,0.10), rgba(52,211,153,0.02));
+    border:1px solid rgba(52,211,153,0.3);border-radius:12px;padding:16px 20px;font-size:13px;color:#C7F3E1;line-height:1.8;
+  }
+  .sop-final-callout b{color:var(--done);}
+
+  @media (max-width:720px){
+    .sop-footer-grid{grid-template-columns:1fr;}
+    .sop-ruler,.sop-row{grid-template-columns:150px 1fr;}
+    .sop-row-desc{display:none;}
+  }
 </style>
 </head>
 <body>
@@ -146,6 +252,13 @@
   <div class="eyebrow">GOFO · 仓库租赁业务</div>
   <h1>新仓落地进度 Dashboard</h1>
   <p class="subtitle">来自租赁跟进表快照数据。进度条可直接拖动调整，改动会保存在本地，下次打开自动保留 —— 用于团队日常跟进，不代表与原始表格实时同步。</p>
+
+  <div class="tabbar">
+    <div class="tabbtn active" data-tab="live">🏭 仓库实时进度</div>
+    <div class="tabbtn" data-tab="sop">📋 SOP 流程参考</div>
+  </div>
+
+  <div class="tabpane active" id="tab-live">
 
   <div class="stats">
     <div class="stat" data-goto="all"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
@@ -165,6 +278,76 @@
   </div>
 
   <div class="grid" id="grid"></div>
+
+  </div><!-- /tab-live -->
+
+  <div class="tabpane" id="tab-sop">
+
+    <div class="sop-notice">
+      通常一个新仓从提需到落地是会需要至少 <b>一个月</b> 的时间，一切都是为了流程合法合规。理解业务紧急，但也希望各位稍安勿躁 🙏 感谢合作
+    </div>
+
+    <div class="sop-hero">
+      <div class="sop-hero-head">
+        <div class="sop-hero-title">🚏 全流程进度轨道（10% → 100%）</div>
+        <div class="sop-hero-meta">预计总时长 ≈ 45 天</div>
+      </div>
+      <div class="sop-track">
+        <div class="sop-track-line"></div>
+        <div class="sop-track-stops">
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">10%</div><div class="sop-stop-day">Day 0</div><div class="sop-stop-label">拿到需求</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">15%</div><div class="sop-stop-day">Day 1</div><div class="sop-stop-label">确定定位/看仓</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">20%</div><div class="sop-stop-day">Day 5</div><div class="sop-stop-label">区长选定意向</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">25%</div><div class="sop-stop-day">Day 7</div><div class="sop-stop-label">谈判/出LOI</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">30%</div><div class="sop-stop-day">Day 13.5</div><div class="sop-stop-label">签署LOI</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">50%</div><div class="sop-stop-day">Day 15</div><div class="sop-stop-label">房东出合同</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">55%</div><div class="sop-stop-day">Day 23</div><div class="sop-stop-label">条款达成一致</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">60%</div><div class="sop-stop-day">Day 30.5</div><div class="sop-stop-label">我方签字</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">90%</div><div class="sop-stop-day">Day 35.5</div><div class="sop-stop-label">COI+双签</div></div>
+          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">100%</div><div class="sop-stop-day">Day ~45</div><div class="sop-stop-label">付款完成</div></div>
+        </div>
+      </div>
+      <div class="sop-legend">
+        <span><i class="swatch" style="background:var(--main)"></i> 主线任务</span>
+        <span><i class="swatch" style="background:var(--parallel)"></i> 同步/并行任务</span>
+        <span><i class="swatch" style="background:var(--done)"></i> 收尾/完成节点</span>
+      </div>
+    </div>
+
+    <div class="sop-panel">
+      <div class="sop-panel-title">📐 逐步骤甘特图（按预计耗时天数）</div>
+      <div class="sop-panel-sub">条形长度 = 预计耗时区间中值；蓝色条为"同步进行"的并行任务，橙色为主线任务，绿色为收尾节点。</div>
+      <div class="sop-gantt">
+        <div class="sop-gantt-inner" id="sopGanttInner">
+          <div class="sop-ruler">
+            <div class="sop-ruler-label">步骤</div>
+            <div class="sop-ruler-days" id="sopRulerDays"></div>
+          </div>
+          <div id="sopRows"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sop-footer-grid">
+      <div class="sop-key-card">
+        <h3>🔑 拿钥匙三大要素</h3>
+        <p><b>双签合同</b> + <b>保险 COI</b> + <b>首付</b> 三者齐备，才能正式拿到新仓钥匙。</p>
+      </div>
+      <div class="sop-key-card">
+        <h3>📄 入驻后置办理</h3>
+        <p>新仓入驻还需要对接行政和法务，办理入驻许可 <b>CO</b>（Certificate of Occupancy）和营业许可 <b>BL</b>（Business License）。</p>
+      </div>
+      <div class="sop-key-card">
+        <h3>⏳ 关键提醒</h3>
+        <p>合同 comment/redline 与条款拉锯（约 25%→55% 阶段）通常是耗时最长的环节，建议提前预留缓冲期。</p>
+      </div>
+    </div>
+
+    <div class="sop-final-callout">
+      💰 押金/财报环节与法务审阅可 <b>同步进行</b>，不必等到上一步 100% 完成再启动，是压缩整体周期的关键杠杆。
+    </div>
+
+  </div><!-- /tab-sop -->
 </div>
 
 <script>
@@ -328,6 +511,67 @@ document.querySelectorAll('.stat[data-goto]').forEach(stat=>{
   await loadSitesData();
   await init();
 })();
+
+// ===== SOP reference tab rendering =====
+const SOP_TOTAL_DAYS = 45;
+const sopTasks = [
+  {phase:'10%', type:'milestone', name:'拿到需求，中介准备仓源', desc:'把仓库需求的条件发给中介', start:0, dur:1},
+  {phase:'15%', type:'milestone', name:'确定新仓定位 / 搜寻看仓', desc:'确定仓名（三字母代号，如MIA、CNO），本地搜寻/看仓，整理信息', start:1, dur:4},
+  {phase:'20%', type:'milestone', name:'区长选定意向', desc:'区长回复区长和租借组可接受的相关仓，1个首选，1-2个备选', start:5, dur:2},
+  {phase:'25%', type:'milestone', name:'谈判商业条款，出具 LOI', desc:'停车/租金/租期/免租月/仓库改造等，法务/租赁看看', start:7, dur:6.5},
+  {phase:'30%', type:'milestone', name:'签署 LOI', desc:'区长确定终版条款后，当地签署LOI，同步开申OA（付款前须阅读合租负责人）', start:13.5, dur:1.5},
+  {phase:'—', type:'parallel', name:'发财报，定押金', desc:'提供签署NDA人的邮箱给Lizzy（一般为房东），同步进行', start:13.5, dur:2},
+  {phase:'50%', type:'milestone', name:'房东出合同 → 法务审阅', desc:'租借组发给法务审阅', start:15, dur:4.5},
+  {phase:'—', type:'main', name:'法务 comment / redline', desc:'法务comment/redline返回给房东', start:19.5, dur:3.5},
+  {phase:'55%', type:'milestone', name:'各条款逐渐达成一致', desc:'租借组与法务推进沟通', start:23, dur:7.5},
+  {phase:'—', type:'parallel', name:'拿到房东 W9 和付款信息', desc:'Void Check或Bank Letter，SRM新增付款主体，同步进行', start:23, dur:5},
+  {phase:'60%', type:'milestone', name:'租约签字流程（我方签字）', desc:'当地需要提前准备好流程', start:30.5, dur:3},
+  {phase:'70%', type:'parallel', name:'同步保险投保账户', desc:'给出站点负责人姓名/电话/邮箱，备保险报价合同流程', start:30.5, dur:5},
+  {phase:'90%', type:'milestone', name:'拿到保险 COI，合同双签', desc:'COI和签字合同发给房东，要求回签', start:35.5, dur:1},
+  {phase:'—', type:'main', name:'双签合同', desc:'向房东要Invoice（收件人写GOFO INC.），沟通记录留档', start:36.5, dur:3},
+  {phase:'100%', type:'final', name:'付款流程', desc:'账户审核 + 付款完成', start:39.5, dur:5},
+];
+
+const sopRulerDays = document.getElementById('sopRulerDays');
+for(let d=0; d<=SOP_TOTAL_DAYS; d+=5){
+  const t = document.createElement('div');
+  t.className = 'sop-tick';
+  t.style.left = (d/SOP_TOTAL_DAYS*100) + '%';
+  t.textContent = 'D'+d;
+  sopRulerDays.appendChild(t);
+}
+
+const sopRowsEl = document.getElementById('sopRows');
+sopTasks.forEach(t=>{
+  const row = document.createElement('div');
+  row.className = 'sop-row';
+  const badgeClass = t.type === 'parallel' ? 'parallel' : (t.type === 'final' ? 'final' : 'milestone');
+  const barClass = t.type === 'parallel' ? 'parallel' : (t.type === 'final' ? 'final' : 'main');
+  row.innerHTML = `
+    <div class="row-label">
+      <span class="sop-phase-badge ${badgeClass}">${t.phase}</span>
+      <div class="sop-row-name">${t.name}</div>
+      <div class="sop-row-desc">${t.desc}</div>
+    </div>
+    <div class="sop-bar-track">
+      <div class="sop-bar-bg"></div>
+      <div class="sop-bar ${barClass}" style="left:${t.start/SOP_TOTAL_DAYS*100}%; width:${Math.max(t.dur/SOP_TOTAL_DAYS*100, 2)}%;" title="${t.name} · ${t.dur}天">
+        ${t.dur}天
+      </div>
+    </div>
+  `;
+  sopRowsEl.appendChild(row);
+});
+
+// ===== Tab switching =====
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
 </script>
 </body>
 </html>
