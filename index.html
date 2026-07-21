@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOFO 仓库租赁进度 Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --card:#131C31;
+    --border:#22304C;
+    --text:#E7ECF5;
+    --muted:#8B96AC;
+    --muted-2:#5C6784;
+    --main:#FF8A3D;
+    --main-soft:rgba(255,138,61,0.14);
+    --parallel:#3FC1F0;
+    --parallel-soft:rgba(63,193,240,0.14);
+    --done:#34D399;
+    --done-soft:rgba(52,211,153,0.14);
+    --risk:#F25C6E;
+    --risk-soft:rgba(242,92,110,0.14);
+    --block:#F2B84B;
+    --block-soft:rgba(242,184,75,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 500px at 15% -10%, rgba(255,138,61,0.08), transparent 60%),
+      radial-gradient(1000px 600px at 100% 0%, rgba(63,193,240,0.06), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 20px 64px;
+  }
+  .wrap{max-width:1280px;margin:0 auto;}
+
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:var(--parallel);margin-bottom:10px;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,3.6vw,34px);font-weight:700;margin:0 0 8px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--muted);font-size:14px;line-height:1.7;max-width:820px;}
+
+  /* stats bar */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:12px;
+    margin-top:24px;
+  }
+  .stat{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  .stat-label{font-size:11.5px;color:var(--muted);margin-bottom:6px;}
+  .stat-value{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
+  .stat.done .stat-value{color:var(--done);}
+  .stat.block .stat-value{color:var(--block);}
+  .stat.risk .stat-value{color:var(--risk);}
+  .stat.avg .stat-value{color:var(--main);}
+
+  /* filters */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 18px;}
+  .chip{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;font-weight:600;
+    padding:7px 13px;border-radius:999px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--muted);
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--muted-2);color:var(--text);}
+  .chip.active{background:var(--main);border-color:var(--main);color:#2A1400;}
+
+  /* grid */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+    gap:14px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .card.hidden{display:none;}
+
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .code{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;}
+  .address{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .area{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2);margin-top:2px;}
+
+  .status-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;font-weight:700;
+    padding:3px 9px;border-radius:6px;
+    white-space:nowrap;
+  }
+  .status-done{background:var(--done-soft);color:var(--done);}
+  .status-progress{background:var(--parallel-soft);color:var(--parallel);}
+  .status-block{background:var(--block-soft);color:var(--block);}
+  .status-search{background:rgba(139,150,172,0.14);color:var(--muted);}
+
+  .desc{font-size:12px;color:var(--muted);line-height:1.65;}
+
+  .progress-row{display:flex;align-items:center;gap:10px;}
+  .progress-track{flex:1;height:8px;border-radius:5px;background:#0F1729;overflow:hidden;border:1px solid var(--border);}
+  .progress-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--main),var(--done));}
+  .progress-pct{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;width:38px;text-align:right;}
+  .slider{width:100%;accent-color:var(--main);margin-top:2px;}
+
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+  .tag{font-size:11px;padding:3px 8px;border-radius:6px;}
+  .tag.blocker{background:var(--block-soft);color:var(--block);}
+  .tag.risk{background:var(--risk-soft);color:var(--risk);}
+  .tag.eta{background:rgba(63,193,240,0.1);color:var(--parallel);}
+
+  .owners{font-size:11.5px;color:var(--parallel);line-height:1.6;}
+  .meta-row{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted-2);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+
+  .save-hint{font-size:10px;color:var(--muted-2);text-align:right;}
+
+  @media (max-width:900px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">GOFO · 仓库租赁业务</div>
+  <h1>新仓落地进度 Dashboard</h1>
+  <p class="subtitle">来自租赁跟进表快照数据。进度条可直接拖动调整，改动会保存在本地，下次打开自动保留 —— 用于团队日常跟进，不代表与原始表格实时同步。</p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
+    <div class="stat done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
+    <div class="stat block"><div class="stat-label">有卡点</div><div class="stat-value" id="statBlock">0</div></div>
+    <div class="stat risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
+    <div class="stat avg"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
+  </div>
+
+  <div class="filters" id="filters">
+    <div class="chip active" data-f="all">全部</div>
+    <div class="chip" data-f="done">已完成</div>
+    <div class="chip" data-f="progress">进行中</div>
+    <div class="chip" data-f="block">有卡点</div>
+    <div class="chip" data-f="search">寻仓/看仓中</div>
+    <div class="chip" data-f="risk">有风险点</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const SITES = [
+  {code:'TUC', status:'block', address:'', area:'', desc:'TUC 当地DSP正在联系一个warehouse，正在打电话给当地中介还没接。原有中介Melissa不回消息。租赁组已经催了，还没结果。', pct:1, blocker:'中介', risk:'', eta:'', owners:['@Jessica Han'], updated:'7/13/2026'},
+  {code:'LAS', status:'progress', address:'4751 Vandenberg Dr, North Las Vegas, NV 89081', area:'20000+', desc:'7/13下午 房东已发送收款信息，租赁组在跟房东结算财务同步信息。保险租赁组正在对接给房东。', pct:90, blocker:'', risk:'LAS VEGAS到处都是二级军事基地', eta:'2周内可以搬仓', owners:['@Alan Zhan','@Jessica Han'], updated:'7/13/2026'},
+  {code:'PHX', status:'block', address:'2323 S 48th Avenue, Phoenix, AZ 85035', area:'120000+', desc:'首选仓LOI 7/13告知中介出Clean LOI我方准备签字【备选仓7/10看仓完毕，价格1.37，在询问中介压价空间等回复中】', pct:25, blocker:'中介', risk:'军事基地风险可能无法避免', eta:'', owners:['@Jessica Han'], updated:'7/13/2026'},
+  {code:'HNL', status:'progress', address:'502 Waiakamilo Road', area:'5000-8000', desc:'房东已回复并将合同发给法务终审，法务已通过，现可签字。', pct:null, blocker:'', risk:'', eta:'签完了', owners:['@孙芃 (Peng Sun)','@尤梦楠 Yuko (Mengnan You)'], updated:'7/10/2026'},
+  {code:'BKD', status:'search', address:'', area:'10000', desc:'重新找仓库中。', pct:1, blocker:'', risk:'', eta:'', owners:['@Tyler Pan'], updated:'7/10/2026'},
+  {code:'LAX01', status:'block', address:'6303 Corsair St, Commerce, CA 90040', area:'54264', desc:'6303 已经搬入，但目前大房东还未对二房东转租行为作出回应。@Lois Qiao 在负责和二房东的沟通。', pct:null, blocker:'房东', risk:'', eta:'', owners:['@Lois Qiao'], updated:'7/10/2026'},
+  {code:'LAX02（尔湾）', status:'progress', address:'7412 Anaconda Ave., Garden Grove, CA 92841', area:'32,000', desc:'房东已回复合同修改意见（7412 Anaconda Ave. Lease Comments.pdf），并要求GOFO提供Corporate Resolution确认两名授权签字人。Alan已转发法务团队处理，Michael重新调整后再次发送修改版文件。', pct:null, blocker:'', risk:'', eta:'', owners:['@Vicky Weng'], updated:'6/25/2026'},
+  {code:'LAX03（工业市）', status:'progress', address:'17055 Gale Ave, City of Industry, CA 91745', area:'62,000', desc:'合同有处租金条款错误（应为$1.45含运营费），已提请房东修正。其他不变，法务审核中，目标7/1入住。', pct:null, blocker:'', risk:'', eta:'目标7/1入住', owners:['@Vicky Weng'], updated:'6/30/2026'},
+  {code:'SFV01', status:'search', address:'还在寻找仓源中', area:'6000-10000', desc:'进行中。', pct:null, blocker:'', risk:'', eta:'', owners:['@缪逸舟 Kartal (Yizhou Miao)','@翁语晨 Vicky (Yuchen Weng)'], updated:''},
+  {code:'GEG', status:'done', address:'411 N Dyer Rd, Spokane Valley, WA 99212', area:'6000-10000', desc:'已完成。', pct:100, blocker:'', risk:'', eta:'6/30已经可以拿钥匙了', owners:['@齐瀚飞 (Hanfei Qi)','@张思泽 Vincent (Enze Zhang)'], updated:''},
+  {code:'BOI', status:'progress', address:'921 W Amity Rd, Boise, ID 83705-Suite 921', area:'6000-10000', desc:'法务审核推进中（redline已多轮往返，最新6-26版）。房东律师要求与GOFO法务团队开会（电话/Zoom均可），需协调时间。另涉及保险条款协商（雨伞险额度、DSP保险）及租约Section 13、22条款待谈。', pct:null, blocker:'', risk:'爱达荷禁止军事基地周边外国公司有业务活动', eta:'一个月', owners:['@Jasmine Dong','@孙芃 (Peng Sun)'], updated:'6/30/2026'},
+  {code:'SLC', status:'search', address:'按照hub规模在看新仓库', area:'40000+', desc:'预约看仓中。', pct:null, blocker:'', risk:'犹他州禁止军事基地周边外国公司有业务活动', eta:'', owners:['@Jasmine Dong','@孙芃 (Peng Sun)'], updated:''},
+  {code:'PDX', status:'progress', address:'14145 NE Airport Way', area:'39375', desc:'法务已回传最新redline（v.06292026），但还有两点待修正：①Renewal Option仍写3个月，应改为3年；②Parking Clause未赋予GOFO自行monitor专属车位的权利，存在运营风险。已同步法务处理，其余条款无大问题。', pct:null, blocker:'', risk:'', eta:'', owners:['@翁语晨 Vicky (Yuchen Weng)'], updated:'6/29/2026'},
+  {code:'SMF', status:'done', address:'3900 Florin Perkins Rd, Sacramento, CA 95826', area:'20000', desc:'付款审核通过，和房东约时间去拿钥匙。', pct:100, blocker:'', risk:'', eta:'8/1/2026', owners:['@Cassie Lu'], updated:'7/10/2026'},
+  {code:'SFO02', status:'progress', address:'1001 Canal Blvd, Unit C, Richmond, CA 94804', area:'25000', desc:'更改第二版LOI之后传回房东。', pct:30, blocker:'', risk:'', eta:'9/1/2026', owners:['@Cassie Lu'], updated:'7/15/2026'},
+  {code:'RNO', status:'progress', address:'300 Morrill Ave, Reno, Nevada 89512', area:'8200', desc:'更改第二版LOI之后传回房东。', pct:30, blocker:'', risk:'', eta:'8/1/2026', owners:['@Cassie Lu'], updated:'7/15/2026'},
+  {code:'MFR', status:'search', address:'4621 Grumman Dr', area:'4000', desc:'还在看意向仓。', pct:5, blocker:'', risk:'', eta:'9/1/2026', owners:['@Cassie Lu'], updated:'7/16/2026'},
+];
+
+const statusMeta = {
+  done:{label:'已完成', cls:'status-done'},
+  progress:{label:'进行中', cls:'status-progress'},
+  block:{label:'有卡点', cls:'status-block'},
+  search:{label:'寻仓/看仓中', cls:'status-search'},
+};
+
+const state = {}; // runtime overrides: code -> {pct}
+
+async function loadOverride(code){
+  try{
+    const raw = localStorage.getItem('site:'+code);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ /* no stored value or storage unavailable */ }
+  return null;
+}
+
+async function saveOverride(code, data){
+  try{
+    localStorage.setItem('site:'+code, JSON.stringify(data));
+  }catch(e){ /* storage unavailable, keep in-memory only */ }
+}
+
+function renderStats(){
+  const total = SITES.length;
+  const done = SITES.filter(s=>s.status==='done').length;
+  const block = SITES.filter(s=>s.status==='block' || s.blocker).length;
+  const risk = SITES.filter(s=>s.risk).length;
+  const withPct = SITES.filter(s=>{
+    const p = state[s.code]?.pct ?? s.pct;
+    return p !== null && p !== undefined;
+  });
+  const avg = withPct.length
+    ? Math.round(withPct.reduce((a,s)=>a+(state[s.code]?.pct ?? s.pct),0)/withPct.length)
+    : 0;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statBlock').textContent = block;
+  document.getElementById('statRisk').textContent = risk;
+  document.getElementById('statAvg').textContent = avg + '%';
+}
+
+function cardTemplate(site){
+  const meta = statusMeta[site.status];
+  const pct = state[site.code]?.pct ?? site.pct;
+
+  const progressHtml = (pct !== null && pct !== undefined) ? `
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="progress-pct">${pct}%</div>
+    </div>
+    <input type="range" class="slider" min="0" max="100" value="${pct}" data-code="${site.code}">
+  ` : `<div class="desc" style="color:var(--muted-2);font-family:'JetBrains Mono',monospace;font-size:11px;">未记录百分比 · 参考状态标签</div>`;
+
+  const tags = [];
+  if(site.blocker) tags.push(`<span class="tag blocker">🔒 卡点：${site.blocker}</span>`);
+  if(site.risk) tags.push(`<span class="tag risk">⚠️ ${site.risk}</span>`);
+  if(site.eta) tags.push(`<span class="tag eta">🕐 ${site.eta}</span>`);
+
+  return `
+    <div class="card" data-status="${site.status}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}">
+      <div class="card-top">
+        <div>
+          <div class="code">${site.code}</div>
+          ${site.address ? `<div class="address">${site.address}</div>` : ''}
+          ${site.area ? `<div class="area">计划面积 ${site.area}</div>` : ''}
+        </div>
+        <span class="status-badge ${meta.cls}">${meta.label}</span>
+      </div>
+      <div class="desc">${site.desc}</div>
+      ${progressHtml}
+      ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
+      <div class="owners">跟进人：${site.owners.join(' · ')}</div>
+      <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">拖动进度条可保存</span></div>
+    </div>
+  `;
+}
+
+async function init(){
+  for(const site of SITES){
+    const override = await loadOverride(site.code);
+    if(override) state[site.code] = override;
+  }
+  render();
+}
+
+function render(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = SITES.map(cardTemplate).join('');
+  renderStats();
+
+  grid.querySelectorAll('.slider').forEach(input=>{
+    input.addEventListener('input', async (e)=>{
+      const code = e.target.dataset.code;
+      const val = parseInt(e.target.value, 10);
+      state[code] = {...(state[code]||{}), pct: val};
+      const card = e.target.closest('.card');
+      card.querySelector('.progress-fill').style.width = val + '%';
+      card.querySelector('.progress-pct').textContent = val + '%';
+      renderStats();
+      await saveOverride(code, state[code]);
+    });
+  });
+
+  applyFilter(document.querySelector('.chip.active').dataset.f);
+}
+
+function applyFilter(f){
+  document.querySelectorAll('.card').forEach(card=>{
+    const status = card.dataset.status;
+    const hasBlocker = card.dataset.blocker === '1';
+    const hasRisk = card.dataset.risk === '1';
+    let show = true;
+    if(f==='done') show = status==='done';
+    else if(f==='progress') show = status==='progress';
+    else if(f==='block') show = hasBlocker;
+    else if(f==='search') show = status==='search';
+    else if(f==='risk') show = hasRisk;
+    card.classList.toggle('hidden', !show);
+  });
+}
+
+document.getElementById('filters').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  applyFilter(chip.dataset.f);
+});
+
+init();
+</script>
+</body>
+</html>
