@@ -55,7 +55,10 @@
     border:1px solid var(--border);
     border-radius:12px;
     padding:14px 16px;
+    cursor:pointer;
+    transition:border-color .15s ease, transform .15s ease;
   }
+  .stat:hover{border-color:var(--muted-2);transform:translateY(-1px);}
   .stat-label{font-size:11.5px;color:var(--muted);margin-bottom:6px;}
   .stat-value{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
   .stat.done .stat-value{color:var(--done);}
@@ -145,11 +148,11 @@
   <p class="subtitle">来自租赁跟进表快照数据。进度条可直接拖动调整，改动会保存在本地，下次打开自动保留 —— 用于团队日常跟进，不代表与原始表格实时同步。</p>
 
   <div class="stats">
-    <div class="stat"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
-    <div class="stat done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
-    <div class="stat block"><div class="stat-label">有卡点</div><div class="stat-value" id="statBlock">0</div></div>
-    <div class="stat risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
-    <div class="stat avg"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
+    <div class="stat" data-goto="all"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
+    <div class="stat done" data-goto="done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
+    <div class="stat block" data-goto="block"><div class="stat-label">有卡点</div><div class="stat-value" id="statBlock">0</div></div>
+    <div class="stat risk" data-goto="risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
+    <div class="stat avg" data-goto="all"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
   </div>
 
   <div class="filters" id="filters">
@@ -314,6 +317,19 @@ document.getElementById('filters').addEventListener('click', (e)=>{
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   chip.classList.add('active');
   applyFilter(chip.dataset.f);
+});
+
+document.querySelectorAll('.stat[data-goto]').forEach(stat=>{
+  stat.addEventListener('click', ()=>{
+    const f = stat.dataset.goto;
+    const chip = document.querySelector(`.chip[data-f="${f}"]`);
+    if(chip){
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      applyFilter(f);
+    }
+    document.getElementById('grid').scrollIntoView({behavior:'smooth', block:'start'});
+  });
 });
 
 init();
