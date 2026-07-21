@@ -1,0 +1,262 @@
+[
+  {
+    "code": "TUC",
+    "status": "block",
+    "address": "",
+    "area": "",
+    "desc": "TUC 当地DSP正在联系一个warehouse，正在打电话当地中介还没接。原有中介Melissa不回消息。租赁组说已经催了，还没结果。",
+    "pct": 1,
+    "blocker": "中介",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Jessica Han"
+    ],
+    "updated": "7/13/2026"
+  },
+  {
+    "code": "LAS",
+    "status": "block",
+    "address": "4751 Vandenberg Dr, North Las Vegas, NV 89081",
+    "area": "20000+",
+    "desc": "7/13下午 房东已发送收款信息，租赁组在跟国内结算和财务同步信息。保险租赁组正在对接给房东。",
+    "pct": 90,
+    "blocker": "@Alan Zhan",
+    "risk": "LAS VEGAS到处都是二级军事基地",
+    "eta": "2周内可以搬仓",
+    "owners": [
+      "@Jessica Han"
+    ],
+    "updated": "7/13/2026"
+  },
+  {
+    "code": "PHX",
+    "status": "block",
+    "address": "2323 S 48th Avenue，Phoenix, AZ 85035",
+    "area": "120000+",
+    "desc": "首选仓LOI  7/13告知中介出Clean LOI我方准备签字【备选仓7/10看仓完毕，价格1.37，在询问中介压价空间等回复中】",
+    "pct": 25,
+    "blocker": "中介",
+    "risk": "军事基地风险可能无法避免",
+    "eta": "",
+    "owners": [
+      "@Jessica Han"
+    ],
+    "updated": "7/13/2026"
+  },
+  {
+    "code": "HNL",
+    "status": "block",
+    "address": "502 Waiakamilo Road, Honolulu,",
+    "area": "5000-8000",
+    "desc": "房东已回复并将合同发给法务终审，法务已通过，现可签字",
+    "pct": null,
+    "blocker": "签完了",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@孙芃（Peng Sun）",
+      "@尤梦楠Yuko（Mengnan You）"
+    ],
+    "updated": "7/10/2026"
+  },
+  {
+    "code": "BKD",
+    "status": "search",
+    "address": "",
+    "area": 10000,
+    "desc": "重新找仓库中",
+    "pct": 1,
+    "blocker": "",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Tyler Pan"
+    ],
+    "updated": "7/10/2026"
+  },
+  {
+    "code": "LAX01 完成中",
+    "status": "block",
+    "address": "6303 Corsair St, Commerce, CA 90040",
+    "area": 54264,
+    "desc": "6303 已经搬入，但目前大房东还未对二房东转租行为作出回应。@Lois Qiao在负责和二房东的沟通。",
+    "pct": null,
+    "blocker": "房东",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Lois Qiao"
+    ],
+    "updated": "7/10/2026"
+  },
+  {
+    "code": "LAX02（尔湾）",
+    "status": "progress",
+    "address": "7412 Anaconda Ave., Garden Grove, CA 92841",
+    "area": 32000,
+    "desc": "房东已回复合同修改意见（7412 Anaconda Ave. Lease Comments.pdf），并要求GOFO提供Corporate Resolution确认两名授权签字人。Alan已转发法务团队处理，Michael重新调整后再次发送修改版文件。",
+    "pct": null,
+    "blocker": "",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Vicky Weng"
+    ],
+    "updated": "6/25/2026"
+  },
+  {
+    "code": "LAX03（工业市）",
+    "status": "progress",
+    "address": "17055 Gale Ave, City of Industry, CA 91745",
+    "area": 62000,
+    "desc": "合同有处租金条款错误（应为$1.45含运营费），已提请房东修正。其他不变，法务审核中，目标7/1入住。",
+    "pct": null,
+    "blocker": "",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Vicky Weng"
+    ],
+    "updated": "6/30/2026"
+  },
+  {
+    "code": "SFV01",
+    "status": "progress",
+    "address": "还在寻找仓源中",
+    "area": "6000-10000",
+    "desc": "进行中",
+    "pct": null,
+    "blocker": "",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@缪逸舟 Kartal（Yizhou Miao）",
+      "@翁语晨 Vicky （Yuchen Weng）"
+    ],
+    "updated": ""
+  },
+  {
+    "code": "GEG 已完成",
+    "status": "progress",
+    "address": "411 N Dyer Rd, Spokane Valley, WA 99212",
+    "area": "6000-10000",
+    "desc": "已完成",
+    "pct": null,
+    "blocker": "",
+    "risk": "",
+    "eta": "6/30已经可以拿钥匙了",
+    "owners": [
+      "@齐瀚飞（Hanfei Qi）",
+      "@张恩泽Vincent（Enze Zhang）"
+    ],
+    "updated": ""
+  },
+  {
+    "code": "BOI",
+    "status": "progress",
+    "address": "921 W Amity Rd, Boise, ID 83705-Suite 921",
+    "area": "6000-10000",
+    "desc": "法务审核推进中（redline已多轮往返，最新6-26版本）。房东律师要求与GOFO法务团队开会（电话/Zoom均可），需协调时间。另涉及保险条款协商（雨伞险额度、DSP保险）及租约Section 13、22条款待谈，ramp拟装1号位。",
+    "pct": null,
+    "blocker": "",
+    "risk": "爱达荷禁止军事基地周边外国公司有业务活动",
+    "eta": "一个月",
+    "owners": [
+      "@Jasmine Dong（Jasmine Dong）",
+      "@孙芃（Peng Sun）"
+    ],
+    "updated": "6/30/2026"
+  },
+  {
+    "code": "SLC",
+    "status": "search",
+    "address": "按照hub规模在看新仓库 还在寻找仓源中",
+    "area": "40000+",
+    "desc": "预约看仓中",
+    "pct": null,
+    "blocker": "",
+    "risk": "犹他州禁止军事基地周边外国公司有业务活动",
+    "eta": "",
+    "owners": [
+      "@Jasmine Dong（Jasmine Dong）",
+      "@孙芃（Peng Sun）"
+    ],
+    "updated": ""
+  },
+  {
+    "code": "PDX",
+    "status": "progress",
+    "address": "14145 NE Airport Way",
+    "area": 39375,
+    "desc": "法务已回传最新redline（v.06292026），但还有两点待修正：①Renewal Option仍写3个月，应改为3年；②Parking Clause未赋予GOFO自行monitor专属车位的权利，存在运营风险。已同步法务处理中，其余条款无大问题。",
+    "pct": null,
+    "blocker": "",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@翁语晨 Vicky （Yuchen Weng）"
+    ],
+    "updated": "6/29/2026"
+  },
+  {
+    "code": "SMF",
+    "status": "done",
+    "address": "3900 Florin Perkins Rd, Sacramento, CA 95826",
+    "area": 20000,
+    "desc": "付款审核通过，和房东约时间去拿钥匙",
+    "pct": 100,
+    "blocker": "",
+    "risk": "",
+    "eta": "8/1/2026",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/10/2026"
+  },
+  {
+    "code": "SFO02",
+    "status": "progress",
+    "address": "1001 Canal Blvd, Unit C, Richmond, CA 94804",
+    "area": 25000,
+    "desc": "更改第二版LOI之后传回房东",
+    "pct": 30,
+    "blocker": "",
+    "risk": "",
+    "eta": "9/1/2026",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/15/2026"
+  },
+  {
+    "code": "RNO",
+    "status": "progress",
+    "address": "300 Morrill Ave Reno, Nevada 89512",
+    "area": 8200,
+    "desc": "更改第二版LOI之后传回房东",
+    "pct": 30,
+    "blocker": "",
+    "risk": "",
+    "eta": "8/1/2026",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/15/2026"
+  },
+  {
+    "code": "MFR",
+    "status": "search",
+    "address": "4621 Grumman Dr",
+    "area": 4000,
+    "desc": "还在看意向仓",
+    "pct": 5,
+    "blocker": "",
+    "risk": "",
+    "eta": "9/1/2026",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/16/2026"
+  }
+]
