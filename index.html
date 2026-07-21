@@ -282,71 +282,7 @@
   </div><!-- /tab-live -->
 
   <div class="tabpane" id="tab-sop">
-
-    <div class="sop-notice">
-      通常一个新仓从提需到落地是会需要至少 <b>一个月</b> 的时间，一切都是为了流程合法合规。理解业务紧急，但也希望各位稍安勿躁 🙏 感谢合作
-    </div>
-
-    <div class="sop-hero">
-      <div class="sop-hero-head">
-        <div class="sop-hero-title">🚏 全流程进度轨道（10% → 100%）</div>
-        <div class="sop-hero-meta">预计总时长 ≈ 45 天</div>
-      </div>
-      <div class="sop-track">
-        <div class="sop-track-line"></div>
-        <div class="sop-track-stops">
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">10%</div><div class="sop-stop-day">Day 0</div><div class="sop-stop-label">拿到需求</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">15%</div><div class="sop-stop-day">Day 1</div><div class="sop-stop-label">确定定位/看仓</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">20%</div><div class="sop-stop-day">Day 5</div><div class="sop-stop-label">区长选定意向</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">25%</div><div class="sop-stop-day">Day 7</div><div class="sop-stop-label">谈判/出LOI</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">30%</div><div class="sop-stop-day">Day 13.5</div><div class="sop-stop-label">签署LOI</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">50%</div><div class="sop-stop-day">Day 15</div><div class="sop-stop-label">房东出合同</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">55%</div><div class="sop-stop-day">Day 23</div><div class="sop-stop-label">条款达成一致</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">60%</div><div class="sop-stop-day">Day 30.5</div><div class="sop-stop-label">我方签字</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">90%</div><div class="sop-stop-day">Day 35.5</div><div class="sop-stop-label">COI+双签</div></div>
-          <div class="sop-stop"><div class="sop-stop-dot"></div><div class="sop-stop-pct">100%</div><div class="sop-stop-day">Day ~45</div><div class="sop-stop-label">付款完成</div></div>
-        </div>
-      </div>
-      <div class="sop-legend">
-        <span><i class="swatch" style="background:var(--main)"></i> 主线任务</span>
-        <span><i class="swatch" style="background:var(--parallel)"></i> 同步/并行任务</span>
-        <span><i class="swatch" style="background:var(--done)"></i> 收尾/完成节点</span>
-      </div>
-    </div>
-
-    <div class="sop-panel">
-      <div class="sop-panel-title">📐 逐步骤甘特图（按预计耗时天数）</div>
-      <div class="sop-panel-sub">条形长度 = 预计耗时区间中值；蓝色条为"同步进行"的并行任务，橙色为主线任务，绿色为收尾节点。</div>
-      <div class="sop-gantt">
-        <div class="sop-gantt-inner" id="sopGanttInner">
-          <div class="sop-ruler">
-            <div class="sop-ruler-label">步骤</div>
-            <div class="sop-ruler-days" id="sopRulerDays"></div>
-          </div>
-          <div id="sopRows"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="sop-footer-grid">
-      <div class="sop-key-card">
-        <h3>🔑 拿钥匙三大要素</h3>
-        <p><b>双签合同</b> + <b>保险 COI</b> + <b>首付</b> 三者齐备，才能正式拿到新仓钥匙。</p>
-      </div>
-      <div class="sop-key-card">
-        <h3>📄 入驻后置办理</h3>
-        <p>新仓入驻还需要对接行政和法务，办理入驻许可 <b>CO</b>（Certificate of Occupancy）和营业许可 <b>BL</b>（Business License）。</p>
-      </div>
-      <div class="sop-key-card">
-        <h3>⏳ 关键提醒</h3>
-        <p>合同 comment/redline 与条款拉锯（约 25%→55% 阶段）通常是耗时最长的环节，建议提前预留缓冲期。</p>
-      </div>
-    </div>
-
-    <div class="sop-final-callout">
-      💰 押金/财报环节与法务审阅可 <b>同步进行</b>，不必等到上一步 100% 完成再启动，是压缩整体周期的关键杠杆。
-    </div>
-
+    <iframe src="sop.html" style="width:100%;height:1400px;border:none;border-radius:16px;background:#fff;" title="SOP 流程参考"></iframe>
   </div><!-- /tab-sop -->
 </div>
 
@@ -511,57 +447,6 @@ document.querySelectorAll('.stat[data-goto]').forEach(stat=>{
   await loadSitesData();
   await init();
 })();
-
-// ===== SOP reference tab rendering =====
-const SOP_TOTAL_DAYS = 45;
-const sopTasks = [
-  {phase:'10%', type:'milestone', name:'拿到需求，中介准备仓源', desc:'把仓库需求的条件发给中介', start:0, dur:1},
-  {phase:'15%', type:'milestone', name:'确定新仓定位 / 搜寻看仓', desc:'确定仓名（三字母代号，如MIA、CNO），本地搜寻/看仓，整理信息', start:1, dur:4},
-  {phase:'20%', type:'milestone', name:'区长选定意向', desc:'区长回复区长和租借组可接受的相关仓，1个首选，1-2个备选', start:5, dur:2},
-  {phase:'25%', type:'milestone', name:'谈判商业条款，出具 LOI', desc:'停车/租金/租期/免租月/仓库改造等，法务/租赁看看', start:7, dur:6.5},
-  {phase:'30%', type:'milestone', name:'签署 LOI', desc:'区长确定终版条款后，当地签署LOI，同步开申OA（付款前须阅读合租负责人）', start:13.5, dur:1.5},
-  {phase:'—', type:'parallel', name:'发财报，定押金', desc:'提供签署NDA人的邮箱给Lizzy（一般为房东），同步进行', start:13.5, dur:2},
-  {phase:'50%', type:'milestone', name:'房东出合同 → 法务审阅', desc:'租借组发给法务审阅', start:15, dur:4.5},
-  {phase:'—', type:'main', name:'法务 comment / redline', desc:'法务comment/redline返回给房东', start:19.5, dur:3.5},
-  {phase:'55%', type:'milestone', name:'各条款逐渐达成一致', desc:'租借组与法务推进沟通', start:23, dur:7.5},
-  {phase:'—', type:'parallel', name:'拿到房东 W9 和付款信息', desc:'Void Check或Bank Letter，SRM新增付款主体，同步进行', start:23, dur:5},
-  {phase:'60%', type:'milestone', name:'租约签字流程（我方签字）', desc:'当地需要提前准备好流程', start:30.5, dur:3},
-  {phase:'70%', type:'parallel', name:'同步保险投保账户', desc:'给出站点负责人姓名/电话/邮箱，备保险报价合同流程', start:30.5, dur:5},
-  {phase:'90%', type:'milestone', name:'拿到保险 COI，合同双签', desc:'COI和签字合同发给房东，要求回签', start:35.5, dur:1},
-  {phase:'—', type:'main', name:'双签合同', desc:'向房东要Invoice（收件人写GOFO INC.），沟通记录留档', start:36.5, dur:3},
-  {phase:'100%', type:'final', name:'付款流程', desc:'账户审核 + 付款完成', start:39.5, dur:5},
-];
-
-const sopRulerDays = document.getElementById('sopRulerDays');
-for(let d=0; d<=SOP_TOTAL_DAYS; d+=5){
-  const t = document.createElement('div');
-  t.className = 'sop-tick';
-  t.style.left = (d/SOP_TOTAL_DAYS*100) + '%';
-  t.textContent = 'D'+d;
-  sopRulerDays.appendChild(t);
-}
-
-const sopRowsEl = document.getElementById('sopRows');
-sopTasks.forEach(t=>{
-  const row = document.createElement('div');
-  row.className = 'sop-row';
-  const badgeClass = t.type === 'parallel' ? 'parallel' : (t.type === 'final' ? 'final' : 'milestone');
-  const barClass = t.type === 'parallel' ? 'parallel' : (t.type === 'final' ? 'final' : 'main');
-  row.innerHTML = `
-    <div class="row-label">
-      <span class="sop-phase-badge ${badgeClass}">${t.phase}</span>
-      <div class="sop-row-name">${t.name}</div>
-      <div class="sop-row-desc">${t.desc}</div>
-    </div>
-    <div class="sop-bar-track">
-      <div class="sop-bar-bg"></div>
-      <div class="sop-bar ${barClass}" style="left:${t.start/SOP_TOTAL_DAYS*100}%; width:${Math.max(t.dur/SOP_TOTAL_DAYS*100, 2)}%;" title="${t.name} · ${t.dur}天">
-        ${t.dur}天
-      </div>
-    </div>
-  `;
-  sopRowsEl.appendChild(row);
-});
 
 // ===== Tab switching =====
 document.querySelectorAll('.tabbtn').forEach(btn=>{
