@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仓库租赁 SOP 进度追踪</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#3B6FD9; --blue-soft:#EAF0FC;
+    --yellow:#E0A200; --yellow-soft:#FFF7E0;
+    --red:#E5484D; --red-soft:#FDECEC;
+    --green:#57B85B; --green-soft:#E9F9EF;
+    --gray:#8A93A6; --gray-soft:#F1F3F7;
+    --ink:#1C2333; --line:#E3E7EF; --bg:#F4F6FA; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;padding:0 0 48px;}
+  .topbar{background:#111726;color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;}
+  .topbar h1{font-size:19px;margin:0;font-weight:700;}
+  .topbar .icon{position:absolute;left:24px;font-size:20px;}
+  .wrap{max-width:1440px;margin:0 auto;padding:20px;}
+
+  .top-grid{display:grid;grid-template-columns:repeat(5,1fr) 230px;gap:12px;margin-bottom:18px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;}
+  .kpi .num{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;}
+  .kpi .lbl{font-size:12.5px;color:#5B6474;margin-top:4px;}
+  .kpi .sub{font-size:10px;color:#9AA2B1;margin-top:2px;letter-spacing:.02em;}
+  .kpi.total .num{color:var(--blue);}
+  .kpi.done .num{color:var(--yellow);}
+  .kpi.progress .num{color:var(--red);}
+  .kpi.pending .num{color:var(--green);}
+  .kpi.rate .num{color:var(--red);}
+
+  .cal-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .cal-title{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--blue);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:10.5px;text-align:center;}
+  .cal-grid .dow{color:#9AA2B1;font-weight:600;padding-bottom:2px;}
+  .cal-grid .day{padding:3px 0;border-radius:5px;color:#4A5164;}
+  .cal-grid .day.today{background:var(--blue);color:#fff;font-weight:700;}
+  .cal-grid .day.empty{visibility:hidden;}
+
+  .viz-row{display:grid;grid-template-columns:1.1fr 1fr 240px;gap:12px;margin-bottom:20px;}
+  .viz-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;}
+  .viz-title{font-size:12.5px;color:#5B6474;margin-bottom:10px;font-weight:600;}
+
+  /* S-curve milestone chart */
+  .scurve{position:relative;height:110px;padding:0 10px;}
+  .scurve svg{width:100%;height:80px;}
+  .scurve-labels{display:flex;justify-content:space-between;margin-top:6px;font-size:10.5px;color:#5B6474;text-align:center;}
+  .scurve-labels div{flex:1;}
+  .scurve-labels b{display:block;color:var(--blue);font-size:12px;}
+
+  /* count bar chart */
+  .countbars{display:flex;align-items:flex-end;justify-content:space-around;height:90px;gap:10px;}
+  .countbar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;height:100%;}
+  .countbar-col .val{font-size:11px;font-weight:700;margin-bottom:4px;}
+  .countbar-col .bar{width:26px;border-radius:4px 4px 0 0;}
+  .countbar-col .lbl{font-size:10px;color:#8A93A6;margin-top:6px;}
+
+  .donut-wrap{display:flex;align-items:center;justify-content:center;gap:16px;}
+  .donut-num{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--red);}
+  .donut-lbl{font-size:11px;color:#8A93A6;text-align:center;margin-top:4px;}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;}
+  .panel-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .panel-sub{font-size:12px;color:#8A93A6;margin-bottom:14px;}
+
+  .gantt-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+  table.gantt{border-collapse:collapse;font-size:12px;min-width:100%;}
+  table.gantt th, table.gantt td{border:1px solid var(--line);padding:0;white-space:nowrap;}
+  .fixed-col{position:sticky;left:0;background:var(--card);z-index:2;}
+  .fixed-col.h{background:#F0F3FA;z-index:3;font-weight:700;}
+  th.dayhead{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:10px;color:#5B6474;width:26px;min-width:26px;text-align:center;padding:6px 0;background:#DCE6F7;}
+  td.cell-no{padding:8px 6px;text-align:center;min-width:34px;font-weight:700;color:#5B6474;}
+  td.cell-label{padding:8px 10px;font-weight:600;text-align:left;min-width:190px;}
+  td.cell-cat{padding:8px 10px;text-align:left;min-width:110px;color:#5B6474;}
+  td.cell-owner{padding:8px 10px;text-align:left;min-width:130px;color:#5B6474;}
+  td.cell-status{padding:8px 8px;text-align:center;min-width:70px;}
+  td.cell-date{padding:8px 8px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;min-width:76px;color:#5B6474;}
+  td.cell-days{padding:8px 8px;text-align:center;font-family:'JetBrains Mono',monospace;min-width:44px;}
+  tr.overdue td.cell-label{color:var(--red);}
+  .row-tag{font-size:10px;color:#9AA2B1;padding-left:10px;}
+
+  .daycell{position:relative;height:26px;}
+  .bar-fill{position:absolute;top:4px;bottom:4px;left:1px;right:1px;border-radius:3px;}
+  .bar-fill.plan{background:linear-gradient(180deg,#8FB0EE,var(--blue));}
+  .bar-fill.actual-ok{background:linear-gradient(180deg,#F0C43D,var(--yellow));}
+  .bar-fill.actual-late{background:linear-gradient(180deg,#F0898D,var(--red));}
+
+  input.actual-date{font-family:'JetBrains Mono',monospace;font-size:10.5px;border:1px solid var(--line);border-radius:5px;padding:2px 4px;width:100px;}
+  .status-badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:5px;}
+  .status-badge.done{background:var(--yellow-soft);color:#A87200;}
+  .status-badge.progress{background:var(--red-soft);color:var(--red);}
+  .status-badge.pending{background:var(--green-soft);color:#2E8A3F;}
+  .status-badge.overdue{background:var(--red-soft);color:var(--red);}
+
+  .legend-note{font-size:11.5px;color:#8A93A6;margin-top:10px;display:flex;gap:18px;flex-wrap:wrap;}
+  .legend-note span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:14px;height:10px;border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="icon">💻</span>
+  <h1>成本费用专项分析进度表 · 仓库租赁 SOP</h1>
+</div>
+
+<div class="wrap">
+
+  <div class="top-grid">
+    <div class="kpi total"><div class="num" id="kpiTotal">0</div><div class="lbl">总项目</div><div class="sub">master plan</div></div>
+    <div class="kpi done"><div class="num" id="kpiDone">0</div><div class="lbl">完成项目</div><div class="sub">Completed quantity</div></div>
+    <div class="kpi progress"><div class="num" id="kpiProgress">0</div><div class="lbl">进行中</div><div class="sub">have in hand</div></div>
+    <div class="kpi pending"><div class="num" id="kpiPending">0</div><div class="lbl">未开始</div><div class="sub">Not Started</div></div>
+    <div class="kpi rate"><div class="num" id="kpiRate">0%</div><div class="lbl">完成率</div><div class="sub">Completion rate</div></div>
+    <div class="cal-card">
+      <div class="cal-title" id="calTitle">2026年7月</div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
+  <div class="viz-row">
+    <div class="viz-card">
+      <div class="viz-title">各阶段累计项目数</div>
+      <div class="scurve"><svg id="scurveSvg" viewBox="0 0 400 80" preserveAspectRatio="none"></svg></div>
+      <div class="scurve-labels" id="scurveLabels"></div>
+    </div>
+    <div class="viz-card">
+      <div class="viz-title">项目状态分布</div>
+      <div class="countbars" id="countBars"></div>
+    </div>
+    <div class="viz-card">
+      <div class="viz-title">完成率</div>
+      <div class="donut-wrap">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle cx="45" cy="45" r="36" fill="none" stroke="#EEF1F6" stroke-width="10"/>
+          <circle id="donutArc" cx="45" cy="45" r="36" fill="none" stroke="var(--blue)" stroke-width="10" stroke-linecap="round" transform="rotate(-90 45 45)"/>
+        </svg>
+        <div style="text-align:center;">
+          <div class="donut-num" id="donutNum">0%</div>
+          <div class="donut-lbl">完成率</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">🗓️ 逐日甘特图（计划 vs 实际）</div>
+    <div class="panel-sub">假设项目起始日为 2026-07-21；蓝色竖线为"今天"。超过计划完成日期仍未标记完成的环节会自动标红提示介入。在"实际完成日期"里填入日期即可标记完成。</div>
+
+    <div class="gantt-scroll">
+      <table class="gantt" id="ganttTable"></table>
+    </div>
+
+    <div class="legend-note">
+      <span><i class="swatch" style="background:var(--blue)"></i>计划周期</span>
+      <span><i class="swatch" style="background:var(--yellow)"></i>实际完成（按期）</span>
+      <span><i class="swatch" style="background:var(--red)"></i>实际完成（超期）/ 需要介入</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PROJECT_START = new Date(2026, 6, 21); // 2026-07-21
+const STORAGE_KEY = 'sop_gantt_actual_v2';
+
+const TASKS = [
+  {no:1,  name:'拿到需求，中介准备仓源',              cat:'意向筛选', owner:'中介 / 租赁组',       start:0,  dur:1},
+  {no:2,  name:'确定新仓定位 / 搜寻看仓',              cat:'意向筛选', owner:'租赁组',              start:1,  dur:4},
+  {no:3,  name:'区长选定意向',                        cat:'意向筛选', owner:'区长',                start:5,  dur:2},
+  {no:4,  name:'谈判商业条款，出具 LOI',               cat:'商务谈判', owner:'中介 / 法务 / 租赁组', start:7,  dur:7},
+  {no:5,  name:'签署 LOI',                            cat:'商务谈判', owner:'区长 / 租赁组',        start:14, dur:2},
+  {no:6,  name:'发财报，定押金（同步进行）',           cat:'商务谈判', owner:'租赁组',              start:14, dur:2},
+  {no:7,  name:'房东出合同 → 法务审阅',                cat:'合同审阅', owner:'法务',                start:16, dur:5},
+  {no:8,  name:'法务 comment / redline',              cat:'合同审阅', owner:'法务',                start:21, dur:4},
+  {no:9,  name:'各条款逐渐达成一致',                  cat:'合同审阅', owner:'租赁组 / 法务',        start:25, dur:8},
+  {no:10, name:'拿到房东 W9 和付款信息（同步进行）',    cat:'合同审阅', owner:'租赁组 / SRM',        start:25, dur:5},
+  {no:11, name:'租约签字流程（我方签字）',             cat:'签约收尾', owner:'区长',                start:33, dur:3},
+  {no:12, name:'同步保险投保账户（同步进行）',         cat:'签约收尾', owner:'保险组',              start:33, dur:5},
+  {no:13, name:'拿到保险 COI，合同双签',               cat:'签约收尾', owner:'租赁组',              start:38, dur:1},
+  {no:14, name:'双签合同',                            cat:'签约收尾', owner:'租赁组',              start:39, dur:3},
+  {no:15, name:'付款流程（账户审核 + 付款完成）',       cat:'签约收尾', owner:'财务组',              start:42, dur:5},
+];
+
+const CATS = ['意向筛选','商务谈判','合同审阅','签约收尾'];
+
+const TOTAL_DAYS = Math.max(...TASKS.map(t => t.start + t.dur)) + 1;
+
+function addDays(base, n){ const d = new Date(base); d.setDate(d.getDate() + n); return d; }
+function fmtShort(d){ return `${d.getMonth()+1}/${d.getDate()}`; }
+function fmtISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function todayOffset(){
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.round((t - PROJECT_START) / 86400000);
+}
+
+function loadOverrides(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function saveOverrides(data){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+}
+
+let overrides = loadOverrides();
+
+function taskState(t){
+  const planStart = addDays(PROJECT_START, t.start);
+  const planEnd = addDays(PROJECT_START, t.start + t.dur - 1);
+  const actualStr = overrides[t.no] || null;
+  const todayOff = todayOffset();
+  const planEndOffset = t.start + t.dur - 1;
+
+  let status;
+  if(actualStr){
+    status = 'done';
+  } else if(todayOff > planEndOffset){
+    status = 'overdue';
+  } else if(todayOff >= t.start){
+    status = 'progress';
+  } else {
+    status = 'pending';
+  }
+  return {planStart, planEnd, actualStr, status};
+}
+
+function renderKPIs(){
+  let done=0, progress=0, pending=0;
+  TASKS.forEach(t=>{
+    const s = taskState(t).status;
+    if(s==='done') done++;
+    else if(s==='progress' || s==='overdue') progress++;
+    else pending++;
+  });
+  const total = TASKS.length;
+  const rate = Math.round((done/total)*100);
+
+  document.getElementById('kpiTotal').textContent = total;
+  document.getElementById('kpiDone').textContent = done;
+  document.getElementById('kpiProgress').textContent = progress;
+  document.getElementById('kpiPending').textContent = pending;
+  document.getElementById('kpiRate').textContent = rate + '%';
+  document.getElementById('donutNum').textContent = rate + '%';
+
+  const circumference = 2 * Math.PI * 36;
+  const arc = document.getElementById('donutArc');
+  arc.setAttribute('stroke-dasharray', `${circumference}`);
+  arc.setAttribute('stroke-dashoffset', `${circumference * (1 - rate/100)}`);
+
+  // count bar chart
+  const countBars = document.getElementById('countBars');
+  countBars.innerHTML = '';
+  const bars = [
+    {label:'总项目', val: total, color:'var(--blue)'},
+    {label:'完成项目', val: done, color:'var(--yellow)'},
+    {label:'进行中', val: progress, color:'var(--red)'},
+    {label:'未开始', val: pending, color:'var(--green)'},
+  ];
+  const maxVal = Math.max(...bars.map(b=>b.val), 1);
+  bars.forEach(b=>{
+    const col = document.createElement('div');
+    col.className = 'countbar-col';
+    const h = Math.max((b.val/maxVal)*70, b.val>0 ? 6 : 2);
+    col.innerHTML = `<div class="val">${b.val}项</div><div class="bar" style="height:${h}px;background:${b.color};"></div><div class="lbl">${b.label}</div>`;
+    countBars.appendChild(col);
+  });
+
+  // s-curve
+  let cum = 0;
+  const points = CATS.map(cat=>{
+    cum += TASKS.filter(t=>t.cat===cat).length;
+    return cum;
+  });
+  const maxCum = points[points.length-1];
+  const svg = document.getElementById('scurveSvg');
+  const n = points.length;
+  const stepX = 400/(n+1);
+  const coords = points.map((p,i)=>{
+    const x = stepX*(i+1);
+    const y = 75 - (p/maxCum)*65;
+    return [x,y];
+  });
+  const pathD = 'M ' + coords.map(c=>c.join(',')).join(' L ');
+  svg.innerHTML = `
+    <path d="${pathD}" fill="none" stroke="var(--blue)" stroke-width="2.5"/>
+    ${coords.map((c,i)=>`<circle cx="${c[0]}" cy="${c[1]}" r="4" fill="var(--blue)"/><text x="${c[0]}" y="${c[1]-10}" font-size="10" text-anchor="middle" fill="#5B6474">${points[i]}项</text>`).join('')}
+  `;
+  const scurveLabels = document.getElementById('scurveLabels');
+  scurveLabels.innerHTML = CATS.map(c=>`<div>${c}</div>`).join('');
+}
+
+function renderCalendar(){
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  document.getElementById('calTitle').textContent = `${year}年${month+1}月`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['日','一','二','三','四','五','六'].forEach(d=>{
+    const el = document.createElement('div');
+    el.className = 'dow'; el.textContent = d;
+    grid.appendChild(el);
+  });
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  for(let i=0;i<firstDay;i++){
+    const el = document.createElement('div');
+    el.className = 'day empty';
+    grid.appendChild(el);
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const el = document.createElement('div');
+    el.className = 'day' + (d===now.getDate() ? ' today' : '');
+    el.textContent = d;
+    grid.appendChild(el);
+  }
+}
+
+function renderGantt(){
+  const table = document.getElementById('ganttTable');
+  const todayOff = todayOffset();
+
+  const colWidths = [34,190,100,130,70,76,76,100,44];
+  const lefts = [];
+  let acc = 0;
+  colWidths.forEach(w=>{ lefts.push(acc); acc += w; });
+
+  let html = '<thead><tr>';
+  html += `<th class="fixed-col h" style="left:${lefts[0]}px;min-width:${colWidths[0]}px;">NO</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[1]}px;min-width:${colWidths[1]}px;text-align:left;padding:8px 10px;">项目</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[2]}px;min-width:${colWidths[2]}px;">类别</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[3]}px;min-width:${colWidths[3]}px;text-align:left;padding:8px 10px;">相关部门</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[4]}px;min-width:${colWidths[4]}px;">是否完成</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[5]}px;min-width:${colWidths[5]}px;">开始时间</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[6]}px;min-width:${colWidths[6]}px;">结束时间</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[7]}px;min-width:${colWidths[7]}px;">实际完成日期</th>`;
+  html += `<th class="fixed-col h" style="left:${lefts[8]}px;min-width:${colWidths[8]}px;">天数</th>`;
+  for(let d=0; d<TOTAL_DAYS; d++){
+    const date = addDays(PROJECT_START, d);
+    html += `<th class="dayhead">${fmtShort(date)}</th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  TASKS.forEach(t=>{
+    const st = taskState(t);
+    const statusLabel = {done:'完成', progress:'进行中', pending:'未开始', overdue:'超期'}[st.status];
+    const statusClass = st.status;
+
+    // plan row
+    html += `<tr class="${st.status==='overdue' ? 'overdue' : ''}">`;
+    html += `<td class="fixed-col cell-no" style="left:${lefts[0]}px;">${t.no}</td>`;
+    html += `<td class="fixed-col cell-label" style="left:${lefts[1]}px;">${t.name}<div class="row-tag">计划时间</div></td>`;
+    html += `<td class="fixed-col cell-cat" style="left:${lefts[2]}px;">${t.cat}</td>`;
+    html += `<td class="fixed-col cell-owner" style="left:${lefts[3]}px;">${t.owner}</td>`;
+    html += `<td class="fixed-col cell-status" style="left:${lefts[4]}px;"><span class="status-badge ${statusClass}">${statusLabel}</span></td>`;
+    html += `<td class="fixed-col cell-date" style="left:${lefts[5]}px;">${fmtISO(st.planStart)}</td>`;
+    html += `<td class="fixed-col cell-date" style="left:${lefts[6]}px;">${fmtISO(st.planEnd)}</td>`;
+    html += `<td class="fixed-col cell-status" style="left:${lefts[7]}px;"><input type="date" class="actual-date" data-no="${t.no}" value="${st.actualStr || ''}"></td>`;
+    html += `<td class="fixed-col cell-days" style="left:${lefts[8]}px;">${t.dur}</td>`;
+    for(let d=0; d<TOTAL_DAYS; d++){
+      const inPlan = d >= t.start && d < t.start + t.dur;
+      html += `<td class="daycell">${inPlan ? '<div class="bar-fill plan"></div>' : ''}</td>`;
+    }
+    html += '</tr>';
+
+    // actual row
+    html += `<tr>`;
+    html += `<td class="fixed-col cell-no" style="left:${lefts[0]}px;"></td>`;
+    html += `<td class="fixed-col cell-label" style="left:${lefts[1]}px;"><div class="row-tag">实际完成</div></td>`;
+    html += `<td class="fixed-col" style="left:${lefts[2]}px;"></td>`;
+    html += `<td class="fixed-col" style="left:${lefts[3]}px;"></td>`;
+    html += `<td class="fixed-col" style="left:${lefts[4]}px;"></td>`;
+    html += `<td class="fixed-col" style="left:${lefts[5]}px;">${st.actualStr ? '' : '-'}</td>`;
+    html += `<td class="fixed-col" style="left:${lefts[6]}px;"></td>`;
+    html += `<td class="fixed-col" style="left:${lefts[7]}px;"></td>`;
+    html += `<td class="fixed-col" style="left:${lefts[8]}px;"></td>`;
+    if(st.actualStr){
+      const actualDate = new Date(st.actualStr + 'T00:00:00');
+      const actualOffset = Math.round((actualDate - PROJECT_START)/86400000);
+      const late = actualOffset > (t.start + t.dur - 1);
+      for(let d=0; d<TOTAL_DAYS; d++){
+        const inActual = d >= t.start && d <= actualOffset;
+        html += `<td class="daycell">${inActual ? `<div class="bar-fill ${late?'actual-late':'actual-ok'}"></div>` : ''}</td>`;
+      }
+    } else {
+      for(let d=0; d<TOTAL_DAYS; d++){
+        html += `<td class="daycell"></td>`;
+      }
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  const scrollWrap = table.parentElement;
+  scrollWrap.style.position = 'relative';
+  const oldLine = scrollWrap.querySelector('.today-line');
+  if(oldLine) oldLine.remove();
+  if(todayOff >= 0 && todayOff < TOTAL_DAYS){
+    const fixedColsWidth = acc;
+    const dayWidth = 26;
+    const lineOffset = fixedColsWidth + todayOff*dayWidth + dayWidth/2;
+    const line = document.createElement('div');
+    line.style.position = 'absolute';
+    line.style.top = '0';
+    line.style.bottom = '0';
+    line.style.left = lineOffset + 'px';
+    line.style.width = '2px';
+    line.style.background = 'var(--blue)';
+    line.style.zIndex = '4';
+    line.style.pointerEvents = 'none';
+    scrollWrap.appendChild(line);
+  }
+
+  table.querySelectorAll('.actual-date').forEach(inp=>{
+    inp.addEventListener('change', (e)=>{
+      const no = e.target.dataset.no;
+      const val = e.target.value;
+      if(val){ overrides[no] = val; } else { delete overrides[no]; }
+      saveOverrides(overrides);
+      renderAll();
+    });
+  });
+}
+
+function renderAll(){
+  renderKPIs();
+  renderCalendar();
+  renderGantt();
+}
+
+renderAll();
+</script>
+</body>
+</html>
