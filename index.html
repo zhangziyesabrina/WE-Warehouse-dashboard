@@ -526,7 +526,7 @@ async function saveOverride(code, data){
   }catch(e){ /* storage unavailable, keep in-memory only */ }
 }
 
-const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse'];
+const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse', '看仓库', '准备去看仓', '选仓库'];
 
 function isSearchStage(site){
   const text = [site.desc, site.address, site.eta].filter(Boolean).join(' ');
