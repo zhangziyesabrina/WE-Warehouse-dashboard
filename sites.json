@@ -7,12 +7,14 @@
     "desc": "TUC目前仓库有两家中介，Cushman 这一家（Melissa）我们选了一个仓库，中介正在约本周看仓库，另外一家中介（Brian）我们正在选仓库list准备去看仓",
     "pct": 1,
     "blocker": "中介Melissa回消息非常慢",
+    "start": "7/14/2026",
+    "eta": "8/31/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Jessica Han"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": ""
   },
   {
     "code": "LAS",
@@ -22,13 +24,15 @@
     "desc": "目前已经打款， 周五拿钥匙",
     "pct": 90,
     "blocker": "",
+    "start": "4/1/2026",
+    "eta": "7/24/2026",
     "risk": "LAS VEGAS到处都是二级军事基地",
-    "eta": "",
     "owners": [
       "@Jessica Han",
       "@Alan Zhan"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": ""
   },
   {
     "code": "PHX",
@@ -38,12 +42,14 @@
     "desc": "首选仓LOI已经发回给房东，等待房东发初版合同【备选仓7/10看仓完毕，价格1.37，在询问中介压价空间等回复中】",
     "pct": 25,
     "blocker": "中介 Michael",
+    "start": "4/1/2026",
+    "eta": "9/1/2026",
     "risk": "军事基地风险可能无法避免",
-    "eta": "",
     "owners": [
       "@Jessica Han"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": "Hub"
   },
   {
     "code": "HNL",
@@ -53,13 +59,15 @@
     "desc": "已完成签字，在等待房东的正确付款信息",
     "pct": null,
     "blocker": "房东",
+    "start": "",
+    "eta": "9/1/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@孙芃（Peng Sun）",
       "@尤梦楠Yuko（Mengnan You）"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": ""
   },
   {
     "code": "BKD",
@@ -69,12 +77,14 @@
     "desc": "重新找仓库中",
     "pct": 1,
     "blocker": "经纪人",
-    "risk": "",
+    "start": "",
     "eta": "",
+    "risk": "",
     "owners": [
       "@Tyler Pan"
     ],
-    "updated": "7/10/2026"
+    "updated": "7/10/2026",
+    "siteType": ""
   },
   {
     "code": "LAX03",
@@ -84,12 +94,14 @@
     "desc": "房东已回复合同修改意见（7412 Anaconda Ave. Lease Comments.pdf），并要求GOFO提供Corporate Resolution确认两名授权签字人。Alan已转发法务团队处理，Michael重新调整后再次发送修改版文件。",
     "pct": null,
     "blocker": "",
-    "risk": "",
+    "start": "",
     "eta": "",
+    "risk": "",
     "owners": [
       "@Vicky Weng"
     ],
-    "updated": "6/25/2026"
+    "updated": "6/25/2026",
+    "siteType": ""
   },
   {
     "code": "LAX02",
@@ -99,12 +111,14 @@
     "desc": "6303 已经搬入，但目前大房东还未对二房东转租行为作出回应。@Lois Qiao在负责和二房东的沟通。",
     "pct": null,
     "blocker": "房东",
-    "risk": "",
+    "start": "",
     "eta": "",
+    "risk": "",
     "owners": [
       "@Lois Qiao"
     ],
-    "updated": "7/10/2026"
+    "updated": "7/10/2026",
+    "siteType": ""
   },
   {
     "code": "LAX01",
@@ -114,12 +128,14 @@
     "desc": "合同有处租金条款错误（应为$1.45含运营费），已提请房东修正。其他不变，法务审核中，目标7/1入住。",
     "pct": null,
     "blocker": "",
-    "risk": "",
+    "start": "",
     "eta": "",
+    "risk": "",
     "owners": [
       "@Vicky Weng"
     ],
-    "updated": "6/30/2026"
+    "updated": "6/30/2026",
+    "siteType": ""
   },
   {
     "code": "SFV01",
@@ -129,13 +145,15 @@
     "desc": "进行中",
     "pct": null,
     "blocker": "",
-    "risk": "",
+    "start": "",
     "eta": "",
+    "risk": "",
     "owners": [
       "@缪逸舟 Kartal（Yizhou Miao）",
       "@翁语晨 Vicky （Yuchen Weng）"
     ],
-    "updated": ""
+    "updated": "",
+    "siteType": ""
   },
   {
     "code": "GEG 已完成",
@@ -145,13 +163,15 @@
     "desc": "已完成",
     "pct": null,
     "blocker": "",
+    "start": "",
+    "eta": "6/30已经可以拿钥匙了",
     "risk": "",
-    "eta": "",
     "owners": [
       "@齐瀚飞（Hanfei Qi）",
       "@张恩泽Vincent（Enze Zhang）"
     ],
-    "updated": ""
+    "updated": "",
+    "siteType": ""
   },
   {
     "code": "BOI",
@@ -161,13 +181,15 @@
     "desc": "等待付款",
     "pct": 90,
     "blocker": "审核付款账号",
+    "start": "4/1/2026",
+    "eta": "7/27/2026",
     "risk": "爱达荷禁止军事基地周边外国公司有业务活动",
-    "eta": "",
     "owners": [
       "@Vincent Zhang",
       "@Gina Gai"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": "自营站点"
   },
   {
     "code": "SLC",
@@ -177,12 +199,14 @@
     "desc": "预约看仓中",
     "pct": null,
     "blocker": "",
-    "risk": "犹他州禁止军事基地周边外国公司有业务活动",
+    "start": "",
     "eta": "",
+    "risk": "犹他州禁止军事基地周边外国公司有业务活动",
     "owners": [
       "@Jasmine Dong（Jasmine Dong）"
     ],
-    "updated": ""
+    "updated": "",
+    "siteType": "Hub"
   },
   {
     "code": "PDX",
@@ -192,13 +216,15 @@
     "desc": "我方签字已完成，等待房东签字回传",
     "pct": 80,
     "blocker": "房东签字",
+    "start": "4/1/2026",
+    "eta": "8/3/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Vincent Zhang",
       "@Gina Gai"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": "自营站点"
   },
   {
     "code": "SMF",
@@ -208,12 +234,14 @@
     "desc": "付款审核通过，和房东约时间去拿钥匙",
     "pct": 100,
     "blocker": "/",
+    "start": "5/20/2026",
+    "eta": "8/1/2026预计8/2 搬仓",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Cassie Lu"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": ""
   },
   {
     "code": "SFO02",
@@ -223,12 +251,14 @@
     "desc": "更改第二版LOI之后传回房东",
     "pct": 30,
     "blocker": "中介Melissa回消息非常慢",
+    "start": "5/20/2026",
+    "eta": "9/1/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Cassie Lu"
     ],
-    "updated": "7/15/2026"
+    "updated": "7/15/2026",
+    "siteType": ""
   },
   {
     "code": "RNO",
@@ -238,12 +268,14 @@
     "desc": "更改第二版LOI之后传回房东",
     "pct": 30,
     "blocker": "中介Melissa回消息非常慢",
+    "start": "5/20/2026",
+    "eta": "8/1/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Cassie Lu"
     ],
-    "updated": "7/15/2026"
+    "updated": "7/15/2026",
+    "siteType": ""
   },
   {
     "code": "MFR",
@@ -253,12 +285,14 @@
     "desc": "还在看意向仓",
     "pct": 5,
     "blocker": "@Ben Zhao",
+    "start": "7/10/2026",
+    "eta": "9/1/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Cassie Lu"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": ""
   },
   {
     "code": "PAE",
@@ -268,11 +302,13 @@
     "desc": "还在看意向仓，受面积/停车位/价格限制，可选仓库并不多；\n且卫星仓所在位置很难再降低派费。",
     "pct": 5,
     "blocker": "经纪人@Brian Yuan",
+    "start": "6/18/2026",
+    "eta": "9/2/2026",
     "risk": "",
-    "eta": "",
     "owners": [
       "@Vincent Zhang"
     ],
-    "updated": "7/21/2026"
+    "updated": "7/21/2026",
+    "siteType": ""
   }
 ]
