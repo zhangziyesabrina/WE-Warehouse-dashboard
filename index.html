@@ -225,6 +225,66 @@
   table.site-table td.t-code{font-weight:700;}
   table.site-table td.t-stuck-high{color:var(--risk);font-weight:700;}
 
+  /* ===== Report view ===== */
+  .report-summary{
+    margin-top:24px;background:linear-gradient(135deg, rgba(255,138,61,0.12), rgba(63,193,240,0.06));
+    border:1px solid rgba(255,138,61,0.3);border-radius:14px;padding:20px 22px;
+    font-size:15px;line-height:1.8;color:var(--text);
+  }
+  .report-summary b{color:var(--main);}
+
+  .report-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
+  .report-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .rk-num{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;}
+  .rk-lbl{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .report-kpi.done .rk-num{color:var(--done);}
+  .report-kpi.block .rk-num{color:var(--block);}
+  .report-kpi.risk .rk-num{color:var(--risk);}
+  .report-kpi.overdue .rk-num{color:var(--risk);}
+
+  .report-section-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;}
+
+  .report-priority-card, .report-table-card{
+    margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+  }
+  .report-priority-row{
+    display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(34,48,76,0.5);font-size:13px;
+  }
+  .report-priority-row:last-child{border-bottom:none;}
+  .rp-rank{
+    width:22px;height:22px;border-radius:50%;background:var(--main-soft);color:var(--main);
+    display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
+    font-size:11px;font-weight:700;flex-shrink:0;
+  }
+  .rp-code{font-weight:700;min-width:56px;}
+  .rp-reason{color:var(--muted);font-size:12px;}
+
+  .report-table-wrap{overflow-x:auto;}
+  table.report-table{border-collapse:collapse;width:100%;font-size:12.5px;}
+  table.report-table th{
+    text-align:left;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;
+  }
+  table.report-table td{padding:9px 10px;border-bottom:1px solid rgba(34,48,76,0.4);white-space:nowrap;}
+  table.report-table tr.report-row-overdue{background:rgba(242,92,110,0.06);}
+  table.report-table tr.report-row-done{opacity:0.6;}
+  .rt-code{font-weight:700;}
+  .rt-bar-wrap{display:inline-block;width:70px;height:6px;background:#1B2743;border-radius:3px;vertical-align:middle;margin-right:6px;overflow:hidden;}
+  .rt-bar-fill{height:100%;}
+  .rt-pct{font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .rt-overdue{color:var(--risk);font-weight:700;}
+
+  .copy-report-btn{
+    margin-top:20px;background:var(--main);color:#2A1400;border:none;border-radius:8px;
+    padding:12px 22px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13.5px;
+    cursor:pointer;
+  }
+  .copy-report-btn:hover{opacity:0.9;}
+
+  @media (max-width:900px){
+    .report-kpi-row{grid-template-columns:repeat(2,1fr);}
+  }
+
   /* SOP train modal */
   .modal-backdrop{
     display:none;position:fixed;inset:0;background:rgba(5,9,18,0.72);
@@ -393,6 +453,7 @@
 
   <div class="tabbar">
     <div class="tabbtn active" data-tab="live">🏭 仓库实时进度</div>
+    <div class="tabbtn" data-tab="report">📊 周报视图</div>
     <div class="tabbtn" data-tab="sop">📋 SOP 流程参考</div>
   </div>
 
@@ -483,6 +544,26 @@
   </div>
 
   </div><!-- /tab-live -->
+
+  <div class="tabpane" id="tab-report">
+    <div class="report-summary" id="reportSummary"></div>
+
+    <div class="report-kpi-row" id="reportKpiRow"></div>
+
+    <div class="report-priority-card">
+      <div class="report-section-title">🔥 本周优先处理清单</div>
+      <div id="reportPriority"></div>
+    </div>
+
+    <div class="report-table-card">
+      <div class="report-section-title">📋 全部站点明细（按优先级自动排序）</div>
+      <div class="report-table-wrap">
+        <table class="report-table" id="reportTable"></table>
+      </div>
+    </div>
+
+    <button id="copyReportBtn" class="copy-report-btn">📋 复制为文字（发给老板）</button>
+  </div><!-- /tab-report -->
 
   <div class="tabpane" id="tab-sop">
     <iframe src="sop.html" style="width:100%;height:1400px;border:none;border-radius:16px;background:transparent;" title="SOP 流程参考"></iframe>
@@ -1135,6 +1216,124 @@ document.querySelectorAll('.tabbtn').forEach(btn=>{
     document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'report') renderReportTab();
+  });
+});
+
+// ===== Report tab =====
+function getScoredSites(limit){
+  const scored = SITES.map(s=>({site:s, score:attentionScore(s)}))
+    .filter(x=>x.score > 0)
+    .sort((a,b)=>b.score-a.score);
+  return limit ? scored.slice(0, limit) : scored;
+}
+
+function reasonsFor(site){
+  const reasons = [];
+  if(site.blocker) reasons.push(`卡点：${site.blocker}`);
+  if(site.risk) reasons.push(`风险：${site.risk}`);
+  const remain = daysUntil(site.eta);
+  if(remain !== null && remain < 0 && getDisplayStatus(site) !== 'done') reasons.push(`超期${Math.abs(remain)}天`);
+  return reasons;
+}
+
+function generateReportSummaryText(){
+  const total = SITES.length;
+  const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
+  const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
+  const risk = SITES.filter(s=>s.risk).length;
+  const overdue = SITES.filter(s=>{const r=daysUntil(s.eta); return r!==null && r<0 && getDisplayStatus(s)!=='done';}).length;
+  const hubIssues = SITES.filter(s=>isHub(s) && (s.blocker||s.risk)).length;
+
+  let text = `本周共跟进 <b>${total}</b> 个站点：<b>${done}</b> 个已完成，<b>${block}</b> 个有卡点待处理，<b>${risk}</b> 个存在风险点`;
+  if(overdue > 0) text += `，其中 <b style="color:var(--risk)">${overdue}</b> 个已超过预计完成日期需要重点关注`;
+  if(hubIssues > 0) text += `（Hub 站点中有 ${hubIssues} 个存在问题）`;
+  text += '。';
+  return text;
+}
+
+function renderReportTab(){
+  document.getElementById('reportSummary').innerHTML = generateReportSummaryText();
+
+  const total = SITES.length;
+  const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
+  const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
+  const risk = SITES.filter(s=>s.risk).length;
+  const overdue = SITES.filter(s=>{const r=daysUntil(s.eta); return r!==null && r<0 && getDisplayStatus(s)!=='done';}).length;
+
+  document.getElementById('reportKpiRow').innerHTML = `
+    <div class="report-kpi"><div class="rk-num">${total}</div><div class="rk-lbl">跟进站点总数</div></div>
+    <div class="report-kpi done"><div class="rk-num">${done}</div><div class="rk-lbl">已完成</div></div>
+    <div class="report-kpi block"><div class="rk-num">${block}</div><div class="rk-lbl">有卡点</div></div>
+    <div class="report-kpi risk"><div class="rk-num">${risk}</div><div class="rk-lbl">有风险点</div></div>
+    <div class="report-kpi overdue"><div class="rk-num">${overdue}</div><div class="rk-lbl">已超期</div></div>
+  `;
+
+  const scored = getScoredSites(8);
+  document.getElementById('reportPriority').innerHTML = scored.length
+    ? scored.map(({site}, i)=>{
+        const reasons = reasonsFor(site);
+        return `<div class="report-priority-row"><span class="rp-rank">${i+1}</span><span class="rp-code">${site.code}</span><span class="rp-reason">${reasons.join(' · ') || '需关注'}</span></div>`;
+      }).join('')
+    : '<div class="report-priority-row">暂无需要优先处理的站点 👍</div>';
+
+  const rows = SITES.map(s=>({site:s, score: attentionScore(s)})).sort((a,b)=>b.score-a.score);
+  let tableHtml = `<thead><tr>
+    <th>站点</th><th>类型</th><th>状态</th><th>进度</th><th>开始</th><th>预计完成</th><th>剩余/超期</th><th>卡点</th><th>跟进人</th>
+  </tr></thead><tbody>`;
+  rows.forEach(({site})=>{
+    const status = getDisplayStatus(site);
+    const meta = statusMeta[status];
+    const pct = getSitePct(site);
+    const remain = daysUntil(site.eta);
+    const overdueFlag = remain !== null && remain < 0 && status !== 'done';
+    const rowClass = overdueFlag ? 'report-row-overdue' : (status==='done' ? 'report-row-done' : '');
+    const barColor = status==='done' ? 'var(--done)' : status==='block' ? 'var(--block)' : 'var(--main)';
+    tableHtml += `<tr class="${rowClass}">
+      <td class="rt-code">${site.code}${isHub(site) ? ' 🏢' : ''}</td>
+      <td>${isHub(site) ? 'Hub' : '站点'}</td>
+      <td><span class="status-badge ${meta.cls}">${meta.label}</span></td>
+      <td><span class="rt-bar-wrap"><span class="rt-bar-fill" style="width:${pct}%;background:${barColor};display:block;"></span></span><span class="rt-pct">${pct}%</span></td>
+      <td>${site.start || '—'}</td>
+      <td>${site.eta || '—'}</td>
+      <td class="${overdueFlag ? 'rt-overdue' : ''}">${remain===null ? '—' : (remain<0 ? `超期${Math.abs(remain)}天` : `${remain}天`)}</td>
+      <td>${site.blocker || '—'}</td>
+      <td>${site.owners.join(' · ') || '—'}</td>
+    </tr>`;
+  });
+  tableHtml += '</tbody>';
+  document.getElementById('reportTable').innerHTML = tableHtml;
+}
+
+document.getElementById('copyReportBtn').addEventListener('click', ()=>{
+  const lines = [];
+  lines.push(`【GOFO 仓库租赁进度周报】${new Date().toLocaleDateString('zh-CN')}`);
+  lines.push('');
+  lines.push(document.getElementById('reportSummary').textContent);
+  lines.push('');
+  lines.push('🔥 优先处理清单：');
+  getScoredSites(8).forEach(({site}, i)=>{
+    const reasons = reasonsFor(site);
+    lines.push(`${i+1}. ${site.code} - ${reasons.join('，') || '需关注'}`);
+  });
+  lines.push('');
+  lines.push('📋 全部站点明细：');
+  SITES.forEach(s=>{
+    const pct = getSitePct(s);
+    const status = statusMeta[getDisplayStatus(s)].label;
+    const remain = daysUntil(s.eta);
+    const remainText = remain===null ? '' : (remain<0 ? `，超期${Math.abs(remain)}天` : `，预计还剩${remain}天`);
+    lines.push(`${s.code}：${pct}% - ${status}${s.blocker ? '，卡点：'+s.blocker : ''}${remainText}`);
+  });
+
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copyReportBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ 已复制到剪贴板';
+    setTimeout(()=>{ btn.textContent = orig; }, 2000);
+  }).catch(()=>{
+    alert('复制失败，请手动选择文字复制');
   });
 });
 </script>
