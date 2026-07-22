@@ -44,11 +44,11 @@
   .subtitle{color:var(--muted);font-size:14px;line-height:1.7;max-width:820px;}
 
   /* stats bar */
+  .stats-row{display:grid;grid-template-columns:1fr 230px;gap:12px;margin-top:24px;}
   .stats{
     display:grid;
     grid-template-columns:repeat(5,1fr);
     gap:12px;
-    margin-top:24px;
   }
   .stat{
     background:var(--card);
@@ -65,6 +65,17 @@
   .stat.block .stat-value{color:var(--block);}
   .stat.risk .stat-value{color:var(--risk);}
   .stat.avg .stat-value{color:var(--main);}
+
+  .cal-card{
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;
+  }
+  .cal-title{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;margin-bottom:8px;color:var(--parallel);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:10.5px;text-align:center;}
+  .cal-grid .dow{color:var(--muted-2);font-weight:600;padding-bottom:2px;}
+  .cal-grid .day{padding:3px 0;border-radius:5px;color:var(--muted);}
+  .cal-grid .day.today{background:var(--main);color:#2A1400;font-weight:700;}
+  .cal-grid .day.empty{visibility:hidden;}
 
   /* dropdown filter bar */
   .dropdown-bar{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
@@ -155,6 +166,7 @@
 
   @media (max-width:900px){
     .stats{grid-template-columns:repeat(2,1fr);}
+    .stats-row{grid-template-columns:1fr;}
   }
 
   /* ===== SOP reference tab ===== */
@@ -288,12 +300,18 @@
     </label>
   </div>
 
-  <div class="stats">
-    <div class="stat" data-goto="all"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
-    <div class="stat done" data-goto="done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
-    <div class="stat block" data-goto="block"><div class="stat-label">有卡点</div><div class="stat-value" id="statBlock">0</div></div>
-    <div class="stat risk" data-goto="risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
-    <div class="stat avg" data-goto="all"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
+  <div class="stats-row">
+    <div class="stats">
+      <div class="stat" data-goto="all"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
+      <div class="stat done" data-goto="done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
+      <div class="stat block" data-goto="block"><div class="stat-label">有卡点</div><div class="stat-value" id="statBlock">0</div></div>
+      <div class="stat risk" data-goto="risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
+      <div class="stat avg" data-goto="all"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
+    </div>
+    <div class="cal-card">
+      <div class="cal-title" id="calTitle">2026年7月</div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
   </div>
 
   <div class="filters" id="filters">
@@ -407,11 +425,32 @@ function cardTemplate(site){
   `;
 }
 
+function renderCalendar(){
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  document.getElementById('calTitle').textContent = `${year}年${month+1}月`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['日','一','二','三','四','五','六'].forEach(d=>{
+    const el = document.createElement('div'); el.className = 'dow'; el.textContent = d; grid.appendChild(el);
+  });
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  for(let i=0;i<firstDay;i++){ const el = document.createElement('div'); el.className = 'day empty'; grid.appendChild(el); }
+  for(let d=1; d<=daysInMonth; d++){
+    const el = document.createElement('div');
+    el.className = 'day' + (d===now.getDate() ? ' today' : '');
+    el.textContent = d;
+    grid.appendChild(el);
+  }
+}
+
 async function init(){
   for(const site of SITES){
     const override = await loadOverride(site.code);
     if(override) state[site.code] = override;
   }
+  renderCalendar();
   render();
 }
 
