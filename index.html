@@ -674,7 +674,7 @@ function populateSiteSelect(){
   SITES.forEach(site=>{
     const opt = document.createElement('option');
     opt.value = site.code;
-    opt.textContent = (HUB_CODES.includes(site.code) ? '🏢 ' : '📦 ') + site.code;
+    opt.textContent = HUB_CODES.includes(site.code) ? `🏢 ${site.code} (Hub)` : `📦 ${site.code}`;
     select.appendChild(opt);
   });
   if([...select.options].some(o=>o.value===currentVal)){
