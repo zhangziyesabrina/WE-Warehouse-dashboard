@@ -171,6 +171,24 @@
     .stats-row{grid-template-columns:1fr;}
   }
 
+  .card.card-urgent{border-color:var(--risk);box-shadow:0 0 0 1px var(--risk);}
+
+  .urgent-toggle{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
+    padding:3px 8px;border-radius:6px;border:1px solid var(--border);
+    background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;
+  }
+  .urgent-toggle:hover{border-color:var(--risk);color:var(--risk);}
+  .urgent-toggle.active{background:var(--risk-soft);border-color:var(--risk);color:var(--risk);}
+
+  .next-action-row{margin-top:2px;}
+  .note-input{
+    width:100%;background:#0F1830;border:1px solid var(--border);border-radius:6px;
+    padding:7px 10px;font-size:11.5px;color:var(--text);font-family:'Inter',sans-serif;
+  }
+  .note-input::placeholder{color:var(--muted-2);}
+  .note-input:focus{outline:none;border-color:var(--parallel);}
+
   /* insight card */
   .insight-card{
     margin-top:24px;background:linear-gradient(180deg, rgba(63,193,240,0.08), rgba(63,193,240,0.02));
@@ -224,6 +242,27 @@
   table.site-table tbody tr:hover{background:rgba(255,255,255,0.03);}
   table.site-table td.t-code{font-weight:700;}
   table.site-table td.t-stuck-high{color:var(--risk);font-weight:700;}
+
+  .tab-count{
+    font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+    background:var(--risk-soft);color:var(--risk);padding:1px 6px;border-radius:8px;margin-left:2px;
+  }
+  .todo-intro{margin-top:22px;font-size:12.5px;color:var(--muted);}
+  .todo-empty{margin-top:20px;color:var(--muted);font-size:13px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;}
+  .todo-card{
+    margin-top:14px;background:var(--card);border:1px solid var(--risk);border-radius:12px;
+    padding:16px 18px;cursor:pointer;
+  }
+  .todo-card-top{display:flex;align-items:center;justify-content:space-between;}
+  .todo-code{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;}
+  .todo-status{font-size:10.5px;}
+  .todo-note{font-size:13px;color:var(--text);margin-top:8px;line-height:1.6;}
+  .todo-note-empty{font-size:12px;color:var(--muted-2);margin-top:8px;font-style:italic;}
+  .todo-unflag{
+    font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+    background:transparent;border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;margin-top:10px;
+  }
+  .todo-unflag:hover{color:var(--risk);border-color:var(--risk);}
 
   /* ===== Report view (clean executive summary) ===== */
   .report-date{
@@ -458,6 +497,7 @@
 
   <div class="tabbar">
     <div class="tabbtn active" data-tab="live">🏭 仓库实时进度</div>
+    <div class="tabbtn" data-tab="todo">✅ 待办 <span id="todoCount" class="tab-count"></span></div>
     <div class="tabbtn" data-tab="report">📊 周报视图</div>
     <div class="tabbtn" data-tab="sop">📋 SOP 流程参考</div>
   </div>
@@ -549,6 +589,11 @@
   </div>
 
   </div><!-- /tab-live -->
+
+  <div class="tabpane" id="tab-todo">
+    <div class="todo-intro">标记为"待办"的站点会出现在这里，点站点名可以直接跳到详情。</div>
+    <div id="todoList"></div>
+  </div><!-- /tab-todo -->
 
   <div class="tabpane" id="tab-report">
     <div class="report-date" id="reportDate"></div>
@@ -676,19 +721,28 @@ function cardTemplate(site){
     }
   }
 
+  const isUrgent = !!state[site.code]?.urgent;
+  const note = state[site.code]?.note || '';
+
   return `
-    <div class="card" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
+    <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
       <div class="card-top">
         <div>
           <div class="code">${site.code}${isHub(site) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
           ${site.address ? `<div class="address">${site.address}</div>` : ''}
           ${site.area ? `<div class="area">计划面积 ${site.area}</div>` : ''}
         </div>
-        <span class="status-badge ${meta.cls}">${meta.label}</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="status-badge ${meta.cls}">${meta.label}</span>
+          <button class="urgent-toggle ${isUrgent ? 'active' : ''}" data-code="${site.code}">🚩 ${isUrgent ? '待办中' : '标记待办'}</button>
+        </div>
       </div>
       <div class="desc">${site.desc}</div>
       ${progressHtml}
       ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
+      <div class="next-action-row">
+        <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步 / 当前负责人（比如：在Alan手上审核LOI）" value="${note.replace(/"/g,'&quot;')}">
+      </div>
       <div class="owners">跟进人：${site.owners.join(' · ')}</div>
       <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
     </div>
@@ -733,6 +787,7 @@ function render(){
   renderMiniViz();
   renderAttention();
   renderTable();
+  renderTodoTab();
 
   grid.querySelectorAll('.slider').forEach(input=>{
     input.addEventListener('input', async (e)=>{
@@ -746,6 +801,27 @@ function render(){
       await saveOverride(code, state[code]);
     });
     input.addEventListener('click', (e)=> e.stopPropagation());
+  });
+
+  grid.querySelectorAll('.urgent-toggle').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const code = btn.dataset.code;
+      const isNowUrgent = !(state[code]?.urgent);
+      state[code] = {...(state[code]||{}), urgent: isNowUrgent};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
+  grid.querySelectorAll('.note-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), note: e.target.value};
+      await saveOverride(code, state[code]);
+      renderAttention();
+    });
   });
 
   grid.querySelectorAll('.card').forEach(card=>{
@@ -769,6 +845,7 @@ function getStuckDays(site){
 
 function attentionScore(site){
   let score = 0;
+  if(state[site.code]?.urgent) score += 10;
   if(site.blocker) score += 3;
   if(site.risk) score += 2;
   const stuck = getStuckDays(site);
@@ -861,12 +938,9 @@ function renderAttention(){
     return;
   }
   list.innerHTML = scored.map(({site})=>{
-    const stuck = getStuckDays(site);
-    const reasons = [];
-    if(site.blocker) reasons.push(`卡点：${site.blocker}`);
-    if(site.risk) reasons.push('有风险点');
-    if(stuck !== null && stuck >= 7) reasons.push(`${stuck}天未更新`);
-    return `<li data-code="${site.code}"><b>${site.code}</b> <span class="reason">· ${reasons.join(' · ') || '关注中'}</span></li>`;
+    const isUrgent = !!state[site.code]?.urgent;
+    const reasons = reasonsFor(site);
+    return `<li data-code="${site.code}">${isUrgent ? '🚩 ' : ''}<b>${site.code}</b> <span class="reason">· ${reasons.join(' · ') || '关注中'}</span></li>`;
   }).join('');
 
   list.querySelectorAll('li[data-code]').forEach(li=>{
@@ -1214,6 +1288,53 @@ document.querySelectorAll('.stat[data-goto]').forEach(stat=>{
   await init();
 })();
 
+// ===== To-do tab =====
+function renderTodoTab(){
+  const urgentSites = SITES.filter(s => state[s.code]?.urgent);
+  document.getElementById('todoCount').textContent = urgentSites.length ? `(${urgentSites.length})` : '';
+
+  const list = document.getElementById('todoList');
+  if(!urgentSites.length){
+    list.innerHTML = '<div class="todo-empty">还没有标记待办的站点 —— 在"仓库实时进度"里点站点卡片上的"🚩 标记待办"按钮即可加进来</div>';
+    return;
+  }
+
+  list.innerHTML = urgentSites.map(site=>{
+    const status = getDisplayStatus(site);
+    const meta = statusMeta[status];
+    const note = state[site.code]?.note || '';
+    return `
+      <div class="todo-card" data-code="${site.code}">
+        <div class="todo-card-top">
+          <span class="todo-code">🚩 ${site.code}${isHub(site) ? ' 🏢' : ''}</span>
+          <span class="status-badge ${meta.cls} todo-status">${meta.label}</span>
+        </div>
+        ${note ? `<div class="todo-note">📝 ${note}</div>` : '<div class="todo-note-empty">还没填下一步备注</div>'}
+        <button class="todo-unflag" data-code="${site.code}">移出待办</button>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.todo-card').forEach(card=>{
+    card.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('todo-unflag')) return;
+      const site = SITES.find(s=>s.code===card.dataset.code);
+      if(site) openTrainModal(site);
+    });
+  });
+
+  list.querySelectorAll('.todo-unflag').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const code = btn.dataset.code;
+      state[code] = {...(state[code]||{}), urgent: false};
+      await saveOverride(code, state[code]);
+      renderTodoTab();
+      render();
+    });
+  });
+}
+
 // ===== Tab switching =====
 document.querySelectorAll('.tabbtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -1222,6 +1343,7 @@ document.querySelectorAll('.tabbtn').forEach(btn=>{
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     if(btn.dataset.tab === 'report') renderReportTab();
+    if(btn.dataset.tab === 'todo') renderTodoTab();
   });
 });
 
@@ -1235,6 +1357,8 @@ function getScoredSites(limit){
 
 function reasonsFor(site){
   const reasons = [];
+  const note = state[site.code]?.note;
+  if(note) reasons.push(`📝 ${note}`);
   if(site.blocker) reasons.push(`卡点：${site.blocker}`);
   if(site.risk) reasons.push(`风险：${site.risk}`);
   const remain = daysUntil(site.eta);
@@ -1309,7 +1433,7 @@ function renderReportTab(){
   document.getElementById('reportPriority').innerHTML = scored.length
     ? scored.map(({site}, i)=>{
         const reasons = reasonsFor(site);
-        return `<div class="report-priority-row"><span class="rp-rank">${i+1}</span><span class="rp-code">${site.code}</span><span class="rp-reason">${reasons.join(' · ') || '需关注'}</span></div>`;
+        return `<div class="report-priority-row"><span class="rp-rank">${i+1}</span><span class="rp-code">${state[site.code]?.urgent ? '🚩 ' : ''}${site.code}</span><span class="rp-reason">${reasons.join(' · ') || '需关注'}</span></div>`;
       }).join('')
     : '<div class="rp-empty">暂无需要优先处理的站点 👍</div>';
 }
