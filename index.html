@@ -544,7 +544,7 @@ function getDisplayStatus(site){
 function renderStats(){
   const total = SITES.length;
   const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
-  const block = SITES.filter(s=>s.status==='block' || s.blocker).length;
+  const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
   const risk = SITES.filter(s=>s.risk).length;
   const withPct = SITES.filter(s=>{
     const p = state[s.code]?.pct ?? s.pct;
@@ -737,10 +737,10 @@ function renderInsights(){
 }
 
 function renderMiniViz(){
-  const done = SITES.filter(s=>s.status==='done').length;
-  const progress = SITES.filter(s=>s.status==='progress').length;
-  const block = SITES.filter(s=>s.status==='block').length;
-  const search = SITES.filter(s=>s.status==='search').length;
+  const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
+  const progress = SITES.filter(s=>getDisplayStatus(s)==='progress').length;
+  const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
+  const search = SITES.filter(s=>getDisplayStatus(s)==='search').length;
   const total = SITES.length;
   const rate = total ? Math.round((done/total)*100) : 0;
 
