@@ -50,16 +50,16 @@
     "status": "block",
     "address": "502 Waiakamilo Road, Honolulu,",
     "area": "5000-8000",
-    "desc": "房东已回复并将合同发给法务终审，法务已通过，现可签字",
+    "desc": "已完成签字，在等待房东的正确付款信息",
     "pct": null,
-    "blocker": "签完了",
+    "blocker": "房东",
     "risk": "",
     "eta": "",
     "owners": [
       "@孙芃（Peng Sun）",
       "@尤梦楠Yuko（Mengnan You）"
     ],
-    "updated": "7/10/2026"
+    "updated": "7/21/2026"
   },
   {
     "code": "BKD",
@@ -77,22 +77,7 @@
     "updated": "7/10/2026"
   },
   {
-    "code": "LAX01 完成中",
-    "status": "block",
-    "address": "6303 Corsair St, Commerce, CA 90040",
-    "area": 54264,
-    "desc": "6303 已经搬入，但目前大房东还未对二房东转租行为作出回应。@Lois Qiao在负责和二房东的沟通。",
-    "pct": null,
-    "blocker": "房东",
-    "risk": "",
-    "eta": "",
-    "owners": [
-      "@Lois Qiao"
-    ],
-    "updated": "7/10/2026"
-  },
-  {
-    "code": "LAX02（尔湾）",
+    "code": "LAX03",
     "status": "progress",
     "address": "7412 Anaconda Ave., Garden Grove, CA 92841",
     "area": 32000,
@@ -107,7 +92,22 @@
     "updated": "6/25/2026"
   },
   {
-    "code": "LAX03（工业市）",
+    "code": "LAX02",
+    "status": "block",
+    "address": "6303 Corsair St, Commerce, CA 90040",
+    "area": 54264,
+    "desc": "6303 已经搬入，但目前大房东还未对二房东转租行为作出回应。@Lois Qiao在负责和二房东的沟通。",
+    "pct": null,
+    "blocker": "房东",
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Lois Qiao"
+    ],
+    "updated": "7/10/2026"
+  },
+  {
+    "code": "LAX01",
     "status": "progress",
     "address": "17055 Gale Ave, City of Industry, CA 91745",
     "area": 62000,
@@ -180,8 +180,7 @@
     "risk": "犹他州禁止军事基地周边外国公司有业务活动",
     "eta": "",
     "owners": [
-      "@Jasmine Dong（Jasmine Dong）",
-      "@孙芃（Peng Sun）"
+      "@Jasmine Dong（Jasmine Dong）"
     ],
     "updated": ""
   },
