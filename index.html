@@ -265,8 +265,9 @@
   .todo-unflag:hover{color:var(--risk);border-color:var(--risk);}
 
   /* ===== Report view (clean executive summary) ===== */
+  .report-header-row{margin-top:24px;}
   .report-date{
-    margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted-2);
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted-2);
   }
   .report-summary{
     margin-top:8px;font-size:20px;font-weight:600;line-height:1.6;color:var(--text);
@@ -287,9 +288,19 @@
 
   .report-section-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px;}
 
-  .report-funnel-card{
-    margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 22px 18px;
+  .report-section{
+    margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 22px 20px;
   }
+  .report-section-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;
+    padding-bottom:12px;border-bottom:1px solid var(--border);
+  }
+
+  .report-insight-list{margin:0;padding-left:20px;font-size:13.5px;color:var(--text);line-height:2;}
+  .report-insight-list li{margin-bottom:2px;}
+  .report-insight-list b{color:var(--main);}
+  .report-insight-empty{color:var(--muted);font-size:13px;}
+
   .funnel-bar{
     display:flex;height:40px;border-radius:8px;overflow:hidden;
   }
@@ -302,9 +313,14 @@
   .funnel-legend-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);}
   .funnel-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
 
-  .report-priority-card{
-    margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;
-  }
+  .hub-mini-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .hub-mini-card{background:#0F1830;border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+  .hub-mini-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .hub-mini-code{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;}
+  .hub-mini-detail{font-size:12px;color:var(--muted);line-height:1.6;}
+  .hub-mini-empty{color:var(--muted);font-size:13px;}
+  @media (max-width:900px){ .hub-mini-row{grid-template-columns:1fr;} }
+
   .report-priority-row{
     display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(34,48,76,0.5);
   }
@@ -324,6 +340,11 @@
     cursor:pointer;
   }
   .copy-report-btn:hover{opacity:0.9;}
+
+  .report-footer{
+    margin-top:18px;padding-top:14px;border-top:1px dashed var(--border);
+    font-size:11px;color:var(--muted-2);line-height:1.7;
+  }
 
   @media (max-width:900px){
     .report-hero-row{grid-template-columns:repeat(2,1fr);}
@@ -596,23 +617,37 @@
   </div><!-- /tab-todo -->
 
   <div class="tabpane" id="tab-report">
-    <div class="report-date" id="reportDate"></div>
+    <div class="report-header-row">
+      <div class="report-date" id="reportDate"></div>
+    </div>
     <div class="report-summary" id="reportSummary"></div>
 
     <div class="report-hero-row" id="reportHeroRow"></div>
 
-    <div class="report-funnel-card">
-      <div class="report-section-title">整体进度分布</div>
+    <div class="report-section">
+      <div class="report-section-num">一、本周关键洞察</div>
+      <ul class="report-insight-list" id="reportInsightList"></ul>
+    </div>
+
+    <div class="report-section">
+      <div class="report-section-num">二、整体进度分布</div>
       <div class="funnel-bar" id="funnelBar"></div>
       <div class="funnel-legend" id="funnelLegend"></div>
     </div>
 
-    <div class="report-priority-card">
-      <div class="report-section-title">🔥 需要关注（<span id="attnCount">0</span>）</div>
+    <div class="report-section" id="hubSection">
+      <div class="report-section-num">三、Hub 专项</div>
+      <div id="hubMini"></div>
+    </div>
+
+    <div class="report-section">
+      <div class="report-section-num">四、需要关注（<span id="attnCount">0</span>）</div>
       <div id="reportPriority"></div>
     </div>
 
     <button id="copyReportBtn" class="copy-report-btn">📋 复制为文字（发给老板）</button>
+
+    <div class="report-footer" id="reportFooter"></div>
   </div><!-- /tab-report -->
 
   <div class="tabpane" id="tab-sop">
@@ -859,8 +894,7 @@ function attentionScore(site){
   return score;
 }
 
-function renderInsights(){
-  const list = document.getElementById('insightList');
+function generateInsights(){
   const insights = [];
 
   const stuckBlockers = SITES.filter(s => s.blocker && (getStuckDays(s) ?? 0) >= 7);
@@ -891,6 +925,13 @@ function renderInsights(){
     const top = withStuck[0];
     insights.push(`🕐 停留时间最长：<b>${top.s.code}</b>，已 <b>${top.d}</b> 天未更新`);
   }
+
+  return insights;
+}
+
+function renderInsights(){
+  const list = document.getElementById('insightList');
+  const insights = generateInsights();
 
   if(!insights.length){
     list.innerHTML = '<li class="ok-note">目前没有明显的异常情况 👍</li>';
@@ -1428,6 +1469,28 @@ function renderReportTab(){
     `<div class="funnel-legend-item"><span class="funnel-dot" style="background:${b.color};"></span>${b.label}（${counts[b.key]}）</div>`
   ).join('');
 
+  const insights = generateInsights();
+  document.getElementById('reportInsightList').innerHTML = insights.length
+    ? insights.map(i=>`<li>${i}</li>`).join('')
+    : '<li class="report-insight-empty">目前没有明显的异常情况 👍</li>';
+
+  const hubSites = SITES.filter(s => isHub(s));
+  document.getElementById('hubMini').innerHTML = hubSites.length
+    ? `<div class="hub-mini-row">${hubSites.map(site=>{
+        const status = getDisplayStatus(site);
+        const meta = statusMeta[status];
+        const parts = [];
+        if(site.blocker) parts.push(`卡点：${site.blocker}`);
+        if(site.risk) parts.push(`风险：${site.risk}`);
+        const remain = daysUntil(site.eta);
+        if(remain !== null) parts.push(remain < 0 ? `超期${Math.abs(remain)}天` : `预计还剩${remain}天`);
+        return `<div class="hub-mini-card">
+          <div class="hub-mini-top"><span class="hub-mini-code">🏢 ${site.code}</span><span class="status-badge ${meta.cls}">${meta.label}</span></div>
+          <div class="hub-mini-detail">${parts.join(' · ') || '暂无特殊情况'}</div>
+        </div>`;
+      }).join('')}</div>`
+    : '<div class="hub-mini-empty">暂无标记为 Hub 的站点</div>';
+
   const scored = getScoredSites(8);
   document.getElementById('attnCount').textContent = scored.length;
   document.getElementById('reportPriority').innerHTML = scored.length
@@ -1436,6 +1499,9 @@ function renderReportTab(){
         return `<div class="report-priority-row"><span class="rp-rank">${i+1}</span><span class="rp-code">${state[site.code]?.urgent ? '🚩 ' : ''}${site.code}</span><span class="rp-reason">${reasons.join(' · ') || '需关注'}</span></div>`;
       }).join('')
     : '<div class="rp-empty">暂无需要优先处理的站点 👍</div>';
+
+  document.getElementById('reportFooter').innerHTML =
+    `数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 }
 
 document.getElementById('copyReportBtn').addEventListener('click', ()=>{
@@ -1445,13 +1511,35 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   lines.push('');
   lines.push(document.getElementById('reportSummary').textContent);
   lines.push('');
-  lines.push('整体进度分布：');
+  lines.push('一、本周关键洞察：');
+  const insights = generateInsights();
+  if(insights.length){
+    insights.forEach(i => lines.push('  ' + i.replace(/<\/?b[^>]*>/g,'').replace(/<[^>]+>/g,'')));
+  } else {
+    lines.push('  目前没有明显的异常情况');
+  }
+  lines.push('');
+  lines.push('二、整体进度分布：');
   STAGE_BUCKETS.forEach(b=>{
     const n = SITES.filter(s=>stageBucketFor(s).key===b.key).length;
     if(n>0) lines.push(`  ${b.label}：${n}个`);
   });
   lines.push('');
-  lines.push('🔥 需要关注：');
+  lines.push('三、Hub 专项：');
+  const hubSites = SITES.filter(s=>isHub(s));
+  if(hubSites.length){
+    hubSites.forEach(site=>{
+      const status = statusMeta[getDisplayStatus(site)].label;
+      const parts = [];
+      if(site.blocker) parts.push(`卡点：${site.blocker}`);
+      if(site.risk) parts.push(`风险：${site.risk}`);
+      lines.push(`  ${site.code} - ${status}${parts.length ? '，' + parts.join('，') : ''}`);
+    });
+  } else {
+    lines.push('  暂无标记为 Hub 的站点');
+  }
+  lines.push('');
+  lines.push('四、需要关注：');
   const scored = getScoredSites(8);
   if(scored.length){
     scored.forEach(({site}, i)=>{
@@ -1461,6 +1549,8 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   } else {
     lines.push('暂无需要优先处理的站点');
   }
+  lines.push('');
+  lines.push(`数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`);
 
   const text = lines.join('\n');
   navigator.clipboard.writeText(text).then(()=>{
