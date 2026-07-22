@@ -7,10 +7,12 @@
     "desc": "TUC目前仓库有两家中介，Cushman 这一家（Melissa）我们选了一个仓库，中介正在约本周看仓库，另外一家中介（Brian）我们正在选仓库list准备去看仓",
     "pct": 1,
     "blocker": "中介Melissa回消息非常慢",
-    "risk": 46265,
-    "eta": "7/14/2026",
-    "owners": [],
-    "updated": "@Jessica Han"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Jessica Han"
+    ],
+    "updated": "7/21/2026"
   },
   {
     "code": "LAS",
@@ -20,12 +22,12 @@
     "desc": "7/13下午 房东已发送收款信息，租赁组在跟国内结算和财务同步信息。保险租赁组正在对接给房东。7月24号拿钥匙。（中介为Brian）",
     "pct": 90,
     "blocker": "@Alan Zhan",
-    "risk": 46227,
-    "eta": "4/1/2026",
+    "risk": "LAS VEGAS到处都是二级军事基地",
+    "eta": "",
     "owners": [
-      "LAS VEGAS到处都是二级军事基地"
+      "@Jessica Han"
     ],
-    "updated": "@Jessica Han"
+    "updated": "7/21/2026"
   },
   {
     "code": "PHX",
@@ -35,12 +37,12 @@
     "desc": "首选仓LOI已经发回给房东，等待房东发初版合同【备选仓7/10看仓完毕，价格1.37，在询问中介压价空间等回复中】",
     "pct": 25,
     "blocker": "中介 Michael",
-    "risk": 46266,
-    "eta": "4/1/2026",
+    "risk": "军事基地风险可能无法避免",
+    "eta": "",
     "owners": [
-      "军事基地风险可能无法避免"
+      "@Jessica Han"
     ],
-    "updated": "@Jessica Han"
+    "updated": "7/21/2026"
   },
   {
     "code": "HNL",
@@ -52,8 +54,11 @@
     "blocker": "签完了",
     "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@孙芃（Peng Sun）@尤梦楠Yuko（Mengnan You）"
+    "owners": [
+      "@孙芃（Peng Sun）",
+      "@尤梦楠Yuko（Mengnan You）"
+    ],
+    "updated": "7/10/2026"
   },
   {
     "code": "BKD",
@@ -65,8 +70,10 @@
     "blocker": "经纪人",
     "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@Tyler Pan"
+    "owners": [
+      "@Tyler Pan"
+    ],
+    "updated": "7/10/2026"
   },
   {
     "code": "LAX01 完成中",
@@ -78,8 +85,10 @@
     "blocker": "房东",
     "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@Lois Qiao"
+    "owners": [
+      "@Lois Qiao"
+    ],
+    "updated": "7/10/2026"
   },
   {
     "code": "LAX02（尔湾）",
@@ -91,8 +100,10 @@
     "blocker": "",
     "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@Vicky Weng"
+    "owners": [
+      "@Vicky Weng"
+    ],
+    "updated": "6/25/2026"
   },
   {
     "code": "LAX03（工业市）",
@@ -104,8 +115,10 @@
     "blocker": "",
     "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@Vicky Weng"
+    "owners": [
+      "@Vicky Weng"
+    ],
+    "updated": "6/30/2026"
   },
   {
     "code": "SFV01",
@@ -117,8 +130,11 @@
     "blocker": "",
     "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@缪逸舟 Kartal（Yizhou Miao）@翁语晨 Vicky （Yuchen Weng）"
+    "owners": [
+      "@缪逸舟 Kartal（Yizhou Miao）",
+      "@翁语晨 Vicky （Yuchen Weng）"
+    ],
+    "updated": ""
   },
   {
     "code": "GEG 已完成",
@@ -128,10 +144,13 @@
     "desc": "已完成",
     "pct": null,
     "blocker": "",
-    "risk": "6/30已经可以拿钥匙了",
+    "risk": "",
     "eta": "",
-    "owners": [],
-    "updated": "@齐瀚飞（Hanfei Qi）@张恩泽Vincent（Enze Zhang）"
+    "owners": [
+      "@齐瀚飞（Hanfei Qi）",
+      "@张恩泽Vincent（Enze Zhang）"
+    ],
+    "updated": ""
   },
   {
     "code": "BOI",
@@ -141,12 +160,13 @@
     "desc": "等待付款",
     "pct": 90,
     "blocker": "审核付款账号",
-    "risk": 46230,
-    "eta": "4/1/2026",
+    "risk": "爱达荷禁止军事基地周边外国公司有业务活动",
+    "eta": "",
     "owners": [
-      "爱达荷禁止军事基地周边外国公司有业务活动"
+      "@Vincent Zhang",
+      "@Gina Gai"
     ],
-    "updated": "@Vincent Zhang@Gina Gai"
+    "updated": "7/21/2026"
   },
   {
     "code": "SLC",
@@ -156,12 +176,13 @@
     "desc": "预约看仓中",
     "pct": null,
     "blocker": "",
-    "risk": "",
+    "risk": "犹他州禁止军事基地周边外国公司有业务活动",
     "eta": "",
     "owners": [
-      "犹他州禁止军事基地周边外国公司有业务活动"
+      "@Jasmine Dong（Jasmine Dong）",
+      "@孙芃（Peng Sun）"
     ],
-    "updated": "@Jasmine Dong（Jasmine Dong）@孙芃（Peng Sun）"
+    "updated": ""
   },
   {
     "code": "PDX",
@@ -171,10 +192,13 @@
     "desc": "我方签字已完成，等待房东签字回传",
     "pct": 80,
     "blocker": "房东签字",
-    "risk": 46237,
-    "eta": "4/1/2026",
-    "owners": [],
-    "updated": "@Vincent Zhang@Gina Gai"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Vincent Zhang",
+      "@Gina Gai"
+    ],
+    "updated": "7/21/2026"
   },
   {
     "code": "SMF",
@@ -184,10 +208,12 @@
     "desc": "付款审核通过，和房东约时间去拿钥匙",
     "pct": 100,
     "blocker": "/",
-    "risk": "8/1/2026预计本周末拿钥匙",
-    "eta": "5/20/2026",
-    "owners": [],
-    "updated": "@Cassie Lu"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/21/2026"
   },
   {
     "code": "SFO02",
@@ -197,10 +223,12 @@
     "desc": "更改第二版LOI之后传回房东",
     "pct": 30,
     "blocker": "中介Melissa回消息非常慢",
-    "risk": 46266,
-    "eta": "5/20/2026",
-    "owners": [],
-    "updated": "@Cassie Lu"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/15/2026"
   },
   {
     "code": "RNO",
@@ -210,10 +238,12 @@
     "desc": "更改第二版LOI之后传回房东",
     "pct": 30,
     "blocker": "中介Melissa回消息非常慢",
-    "risk": 46235,
-    "eta": "5/20/2026",
-    "owners": [],
-    "updated": "@Cassie Lu"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/15/2026"
   },
   {
     "code": "MFR",
@@ -223,10 +253,12 @@
     "desc": "还在看意向仓",
     "pct": 5,
     "blocker": "@Ben Zhao",
-    "risk": 46266,
-    "eta": "7/10/2026",
-    "owners": [],
-    "updated": "@Cassie Lu"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Cassie Lu"
+    ],
+    "updated": "7/21/2026"
   },
   {
     "code": "PAE",
@@ -236,9 +268,11 @@
     "desc": "还在看意向仓，受面积/停车位/价格限制，可选仓库并不多；\n且卫星仓所在位置很难再降低派费。",
     "pct": 5,
     "blocker": "经纪人@Brian Yuan",
-    "risk": 46267,
-    "eta": "6/18/2026",
-    "owners": [],
-    "updated": "@Vincent Zhang"
+    "risk": "",
+    "eta": "",
+    "owners": [
+      "@Vincent Zhang"
+    ],
+    "updated": "7/21/2026"
   }
 ]
