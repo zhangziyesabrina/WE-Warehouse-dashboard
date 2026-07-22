@@ -672,7 +672,7 @@ function attentionScore(site){
     if(stuck >= 7) score += 3;
     else if(stuck >= 3) score += 1;
   }
-  if(site.status === 'block') score += 1;
+  if(getDisplayStatus(site) === 'block') score += 1;
   return score;
 }
 
