@@ -169,6 +169,60 @@
     .stats-row{grid-template-columns:1fr;}
   }
 
+  /* insight card */
+  .insight-card{
+    margin-top:24px;background:linear-gradient(180deg, rgba(63,193,240,0.08), rgba(63,193,240,0.02));
+    border:1px solid rgba(63,193,240,0.25);border-radius:12px;padding:16px 18px;
+  }
+  .insight-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;margin-bottom:8px;color:var(--parallel);}
+  .insight-list{margin:0;padding-left:20px;font-size:12.5px;color:var(--text);line-height:1.9;}
+  .insight-list li{margin-bottom:2px;}
+  .insight-list .ok-note{color:var(--muted);}
+
+  /* mini viz row */
+  .viz-mini-row{display:grid;grid-template-columns:1fr 200px 1.4fr;gap:12px;margin-top:16px;}
+  .viz-mini-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+  .viz-mini-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .mini-bars{display:flex;align-items:flex-end;gap:10px;height:70px;}
+  .mini-bar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;height:100%;}
+  .mini-bar-col .v{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;margin-bottom:4px;}
+  .mini-bar-col .b{width:18px;border-radius:3px 3px 0 0;}
+  .mini-bar-col .l{font-size:9px;color:var(--muted);margin-top:5px;}
+  .mini-donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+  .mini-donut-num{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin-top:-46px;color:var(--done);}
+
+  .attention-card{grid-column:span 1;}
+  .attention-list{margin:0;padding-left:18px;font-size:12px;line-height:1.9;color:var(--text);}
+  .attention-list li{cursor:pointer;}
+  .attention-list li:hover{color:var(--main);}
+  .attention-list .reason{color:var(--muted);font-size:10.5px;}
+
+  @media (max-width:900px){
+    .viz-mini-row{grid-template-columns:1fr;}
+  }
+
+  /* view toggle + table */
+  .view-toggle{display:flex;gap:8px;margin:14px 0 -6px;}
+  .view-btn{
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;
+    padding:6px 12px;border-radius:6px;border:1px solid var(--border);
+    color:var(--muted);cursor:pointer;background:var(--card);
+  }
+  .view-btn.active{background:var(--main);border-color:var(--main);color:#2A1400;}
+
+  .table-wrap{margin-top:18px;overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+  table.site-table{border-collapse:collapse;width:100%;font-size:12px;}
+  table.site-table th, table.site-table td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;white-space:nowrap;}
+  table.site-table th{
+    background:#0F1830;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;
+    cursor:pointer;user-select:none;position:sticky;top:0;
+  }
+  table.site-table th:hover{color:var(--text);}
+  table.site-table tbody tr{cursor:pointer;}
+  table.site-table tbody tr:hover{background:rgba(255,255,255,0.03);}
+  table.site-table td.t-code{font-weight:700;}
+  table.site-table td.t-stuck-high{color:var(--risk);font-weight:700;}
+
   /* SOP train modal */
   .modal-backdrop{
     display:none;position:fixed;inset:0;background:rgba(5,9,18,0.72);
@@ -342,6 +396,11 @@
 
   <div class="tabpane active" id="tab-live">
 
+  <div class="insight-card" id="insightCard">
+    <div class="insight-title">📌 本周需要关注</div>
+    <ul class="insight-list" id="insightList"></ul>
+  </div>
+
   <div class="dropdown-bar">
     <label class="dropdown-wrap">
       <span class="dropdown-label">站点类型</span>
@@ -373,6 +432,27 @@
     </div>
   </div>
 
+  <div class="viz-mini-row">
+    <div class="viz-mini-card">
+      <div class="viz-mini-title">状态分布</div>
+      <div class="mini-bars" id="miniBars"></div>
+    </div>
+    <div class="viz-mini-card">
+      <div class="viz-mini-title">完成率</div>
+      <div class="mini-donut-wrap">
+        <svg width="72" height="72" viewBox="0 0 90 90">
+          <circle cx="45" cy="45" r="36" fill="none" stroke="var(--border)" stroke-width="9"/>
+          <circle id="miniDonutArc" cx="45" cy="45" r="36" fill="none" stroke="var(--done)" stroke-width="9" stroke-linecap="round" transform="rotate(-90 45 45)"/>
+        </svg>
+        <div class="mini-donut-num" id="miniDonutNum">0%</div>
+      </div>
+    </div>
+    <div class="viz-mini-card attention-card">
+      <div class="viz-mini-title">🔥 优先处理排名</div>
+      <ol class="attention-list" id="attentionList"></ol>
+    </div>
+  </div>
+
   <div class="filters" id="filters">
     <div class="chip active" data-f="all">全部</div>
     <div class="chip" data-f="done">已完成</div>
@@ -382,7 +462,16 @@
     <div class="chip" data-f="risk">有风险点</div>
   </div>
 
+  <div class="view-toggle">
+    <div class="view-btn active" data-view="card">🗂 卡片视图</div>
+    <div class="view-btn" data-view="table">📋 表格视图</div>
+  </div>
+
   <div class="grid" id="grid"></div>
+
+  <div class="table-wrap" id="tableWrap" style="display:none;">
+    <table class="site-table" id="siteTable"></table>
+  </div>
 
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
@@ -525,6 +614,10 @@ function render(){
   grid.innerHTML = SITES.map(cardTemplate).join('');
   renderStats();
   populateSiteSelect();
+  renderInsights();
+  renderMiniViz();
+  renderAttention();
+  renderTable();
 
   grid.querySelectorAll('.slider').forEach(input=>{
     input.addEventListener('input', async (e)=>{
@@ -550,6 +643,205 @@ function render(){
 
   applyFilters();
 }
+
+function getSitePct(site){
+  return state[site.code]?.pct ?? site.pct;
+}
+
+function getStuckDays(site){
+  return daysSince(site.updated);
+}
+
+function attentionScore(site){
+  let score = 0;
+  if(site.blocker) score += 3;
+  if(site.risk) score += 2;
+  const stuck = getStuckDays(site);
+  if(stuck !== null){
+    if(stuck >= 7) score += 3;
+    else if(stuck >= 3) score += 1;
+  }
+  if(site.status === 'block') score += 1;
+  return score;
+}
+
+function renderInsights(){
+  const list = document.getElementById('insightList');
+  const insights = [];
+
+  const stuckBlockers = SITES.filter(s => s.blocker && (getStuckDays(s) ?? 0) >= 7);
+  if(stuckBlockers.length){
+    insights.push(`🔒 <b>${stuckBlockers.length}</b> 个站点有卡点且超过 7 天未更新：${stuckBlockers.map(s=>s.code).join('、')}`);
+  }
+
+  const riskSites = SITES.filter(s => s.risk);
+  if(riskSites.length){
+    insights.push(`⚠️ <b>${riskSites.length}</b> 个站点存在风险点：${riskSites.map(s=>s.code).join('、')}`);
+  }
+
+  const hubIssues = SITES.filter(s => HUB_CODES.includes(s.code) && (s.blocker || s.risk));
+  if(hubIssues.length){
+    insights.push(`🏢 Hub 站点中有 <b>${hubIssues.length}</b> 个存在卡点或风险点，建议优先处理：${hubIssues.map(s=>s.code).join('、')}`);
+  }
+
+  const withStuck = SITES.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d !== null).sort((a,b)=>b.d-a.d);
+  if(withStuck.length){
+    const top = withStuck[0];
+    insights.push(`🕐 停留时间最长：<b>${top.s.code}</b>，已 <b>${top.d}</b> 天未更新`);
+  }
+
+  if(!insights.length){
+    list.innerHTML = '<li class="ok-note">目前没有明显的异常情况 👍</li>';
+  } else {
+    list.innerHTML = insights.map(i=>`<li>${i}</li>`).join('');
+  }
+}
+
+function renderMiniViz(){
+  const done = SITES.filter(s=>s.status==='done').length;
+  const progress = SITES.filter(s=>s.status==='progress').length;
+  const block = SITES.filter(s=>s.status==='block').length;
+  const search = SITES.filter(s=>s.status==='search').length;
+  const total = SITES.length;
+  const rate = total ? Math.round((done/total)*100) : 0;
+
+  const bars = [
+    {label:'完成', val:done, color:'var(--done)'},
+    {label:'进行中', val:progress, color:'var(--parallel)'},
+    {label:'卡点', val:block, color:'var(--block)'},
+    {label:'寻仓', val:search, color:'var(--muted)'},
+  ];
+  const maxVal = Math.max(...bars.map(b=>b.val), 1);
+  document.getElementById('miniBars').innerHTML = bars.map(b=>{
+    const h = Math.max((b.val/maxVal)*56, b.val>0?6:2);
+    return `<div class="mini-bar-col"><div class="v">${b.val}</div><div class="b" style="height:${h}px;background:${b.color};"></div><div class="l">${b.label}</div></div>`;
+  }).join('');
+
+  document.getElementById('miniDonutNum').textContent = rate + '%';
+  const circumference = 2 * Math.PI * 36;
+  const arc = document.getElementById('miniDonutArc');
+  arc.setAttribute('stroke-dasharray', `${circumference}`);
+  arc.setAttribute('stroke-dashoffset', `${circumference * (1 - rate/100)}`);
+}
+
+function renderAttention(){
+  const scored = SITES.map(s=>({site:s, score:attentionScore(s)}))
+    .filter(x=>x.score > 0)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,5);
+
+  const list = document.getElementById('attentionList');
+  if(!scored.length){
+    list.innerHTML = '<li class="reason">暂无需要优先处理的站点</li>';
+    return;
+  }
+  list.innerHTML = scored.map(({site})=>{
+    const stuck = getStuckDays(site);
+    const reasons = [];
+    if(site.blocker) reasons.push(`卡点：${site.blocker}`);
+    if(site.risk) reasons.push('有风险点');
+    if(stuck !== null && stuck >= 7) reasons.push(`${stuck}天未更新`);
+    return `<li data-code="${site.code}"><b>${site.code}</b> <span class="reason">· ${reasons.join(' · ') || '关注中'}</span></li>`;
+  }).join('');
+
+  list.querySelectorAll('li[data-code]').forEach(li=>{
+    li.addEventListener('click', ()=>{
+      const site = SITES.find(s=>s.code===li.dataset.code);
+      if(site) openTrainModal(site);
+    });
+  });
+}
+
+let tableSort = {key:'attention', dir:'desc'};
+
+function renderTable(){
+  const table = document.getElementById('siteTable');
+  const cols = [
+    {key:'code', label:'站点'},
+    {key:'type', label:'类型'},
+    {key:'status', label:'状态'},
+    {key:'pct', label:'进度%'},
+    {key:'blocker', label:'卡点'},
+    {key:'risk', label:'风险点'},
+    {key:'owners', label:'跟进人'},
+    {key:'stuck', label:'停留天数'},
+  ];
+
+  const rows = SITES.map(s=>{
+    const pct = getSitePct(s);
+    const stuck = getStuckDays(s);
+    return {
+      code: s.code,
+      type: HUB_CODES.includes(s.code) ? 'Hub' : '站点',
+      status: statusMeta[s.status]?.label || s.status,
+      pct: pct ?? -1,
+      pctDisplay: pct !== null && pct !== undefined ? pct+'%' : '—',
+      blocker: s.blocker || '—',
+      risk: s.risk ? '⚠️' : '—',
+      owners: s.owners.join(' · ') || '—',
+      stuck: stuck ?? -1,
+      stuckDisplay: stuck !== null ? stuck+'天' : '—',
+      _score: attentionScore(s),
+    };
+  });
+
+  const sortKey = tableSort.key === 'attention' ? '_score' : tableSort.key;
+  rows.sort((a,b)=>{
+    const av = a[sortKey], bv = b[sortKey];
+    const cmp = (typeof av === 'string') ? av.localeCompare(bv) : (av - bv);
+    return tableSort.dir === 'asc' ? cmp : -cmp;
+  });
+
+  let html = '<thead><tr>';
+  cols.forEach(c=>{
+    html += `<th data-key="${c.key}">${c.label}${tableSort.key===c.key ? (tableSort.dir==='asc'?' ▲':' ▼') : ''}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const stuckClass = (r.stuck >= 7) ? 't-stuck-high' : '';
+    html += `<tr data-code="${r.code}">
+      <td class="t-code">${r.code}</td>
+      <td>${r.type}</td>
+      <td>${r.status}</td>
+      <td>${r.pctDisplay}</td>
+      <td>${r.blocker}</td>
+      <td>${r.risk}</td>
+      <td>${r.owners}</td>
+      <td class="${stuckClass}">${r.stuckDisplay}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  table.querySelectorAll('th').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.key;
+      if(tableSort.key === key){
+        tableSort.dir = tableSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        tableSort = {key, dir:'desc'};
+      }
+      renderTable();
+    });
+  });
+
+  table.querySelectorAll('tbody tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const site = SITES.find(s=>s.code===tr.dataset.code);
+      if(site) openTrainModal(site);
+    });
+  });
+}
+
+document.querySelectorAll('.view-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const view = btn.dataset.view;
+    document.getElementById('grid').style.display = view === 'card' ? '' : 'none';
+    document.getElementById('tableWrap').style.display = view === 'table' ? '' : 'none';
+  });
+});
 
 // ===== SOP train modal =====
 const SOP_MILESTONES = [
