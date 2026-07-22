@@ -348,7 +348,7 @@
       <select id="typeSelect" class="dropdown-select">
         <option value="all">全部站点</option>
         <option value="hub">🏢 Hub</option>
-        <option value="site">📦 普通站点仓库</option>
+        <option value="site">📦 站点仓库</option>
       </select>
     </label>
     <label class="dropdown-wrap">
@@ -670,7 +670,7 @@ document.getElementById('modalBackdrop').addEventListener('click', (e)=>{
 function populateSiteSelect(){
   const select = document.getElementById('siteSelect');
   const currentVal = select.value;
-  select.innerHTML = '<option value="all">全部（' + SITES.length + '）</option>';
+  select.innerHTML = '<option value="all">全部站点（' + SITES.length + '）</option>';
   SITES.forEach(site=>{
     const opt = document.createElement('option');
     opt.value = site.code;
@@ -680,6 +680,17 @@ function populateSiteSelect(){
   if([...select.options].some(o=>o.value===currentVal)){
     select.value = currentVal;
   }
+
+  const hubCount = SITES.filter(s=>HUB_CODES.includes(s.code)).length;
+  const siteCount = SITES.length - hubCount;
+  const typeSelect = document.getElementById('typeSelect');
+  const typeCurrentVal = typeSelect.value;
+  typeSelect.innerHTML = `
+    <option value="all">全部站点（${SITES.length}）</option>
+    <option value="hub">🏢 Hub（${hubCount}）</option>
+    <option value="site">📦 站点仓库（${siteCount}）</option>
+  `;
+  typeSelect.value = typeCurrentVal || 'all';
 }
 
 function applyFilters(){
