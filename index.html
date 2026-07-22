@@ -526,9 +526,17 @@ async function saveOverride(code, data){
   }catch(e){ /* storage unavailable, keep in-memory only */ }
 }
 
+const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse'];
+
+function isSearchStage(site){
+  const text = [site.desc, site.address, site.eta].filter(Boolean).join(' ');
+  return SEARCH_KEYWORDS.some(k => text.includes(k));
+}
+
 function getDisplayStatus(site){
   const {value: pct} = estimateSopPct(site);
   if(pct === 100) return 'done';
+  if(isSearchStage(site)) return 'search';
   if(site.blocker) return 'block';
   return site.status;
 }
