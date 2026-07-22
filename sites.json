@@ -16,16 +16,17 @@
   },
   {
     "code": "LAS",
-    "status": "block",
+    "status": "progress",
     "address": "4751 Vandenberg Dr, North Las Vegas, NV 89081",
     "area": "20000+",
-    "desc": "7/13下午 房东已发送收款信息，租赁组在跟国内结算和财务同步信息。保险租赁组正在对接给房东。7月24号拿钥匙。（中介为Brian）",
+    "desc": "目前已经打款， 周五拿钥匙",
     "pct": 90,
-    "blocker": "@Alan Zhan",
+    "blocker": "",
     "risk": "LAS VEGAS到处都是二级军事基地",
     "eta": "",
     "owners": [
-      "@Jessica Han"
+      "@Jessica Han",
+      "@Alan Zhan"
     ],
     "updated": "7/21/2026"
   },
