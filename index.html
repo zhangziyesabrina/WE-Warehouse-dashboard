@@ -169,6 +169,59 @@
     .stats-row{grid-template-columns:1fr;}
   }
 
+  /* SOP train modal */
+  .modal-backdrop{
+    display:none;position:fixed;inset:0;background:rgba(5,9,18,0.72);
+    z-index:50;align-items:center;justify-content:center;padding:20px;
+    backdrop-filter:blur(2px);
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    max-width:720px;width:100%;max-height:86vh;overflow-y:auto;
+    padding:26px;position:relative;
+  }
+  .modal-close{
+    position:absolute;top:16px;right:18px;cursor:pointer;color:var(--muted);
+    font-size:16px;width:28px;height:28px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--border);
+  }
+  .modal-close:hover{color:var(--text);border-color:var(--muted-2);}
+
+  .modal-head .code{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;}
+  .modal-head .address{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .train-panel{
+    margin-top:22px;background:#0F1830;border:1px solid var(--border);
+    border-radius:12px;padding:24px 20px 18px;
+  }
+  .train-panel-title{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:20px;}
+
+  .train-track{position:relative;padding:26px 4px 30px;}
+  .train-line{position:absolute;left:0;right:0;top:38px;height:3px;background:#1B2743;border-radius:3px;}
+  .train-line-fill{position:absolute;left:0;top:38px;height:3px;background:linear-gradient(90deg,var(--main),var(--parallel));border-radius:3px;}
+  .train-stops{position:relative;display:flex;justify-content:space-between;}
+  .train-stop{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .train-stop-dot{width:10px;height:10px;border-radius:50%;background:#0F1830;border:2px solid var(--border);margin-top:34px;z-index:1;}
+  .train-stop-dot.passed{border-color:var(--main);background:var(--main);}
+  .train-stop-pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted-2);margin-top:8px;}
+  .train-stop-label{font-size:9.5px;color:var(--muted);max-width:70px;margin-top:3px;line-height:1.3;}
+
+  .train-icon{
+    position:absolute;top:14px;transform:translateX(-50%);
+    font-size:26px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+  }
+
+  .train-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+  .train-status-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .train-status-card .lbl{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);margin-bottom:6px;}
+  .train-status-card .val{font-size:15px;font-weight:700;}
+  .train-status-card.stuck .val{color:var(--risk);}
+  .train-status-card.ok .val{color:var(--done);}
+
+  .train-note{font-size:11px;color:var(--muted-2);margin-top:14px;line-height:1.6;}
+
   /* ===== SOP reference tab ===== */
   .tabbar{display:flex;gap:8px;margin-top:22px;border-bottom:1px solid var(--border);}
   .tabbtn{
@@ -325,6 +378,13 @@
 
   <div class="grid" id="grid"></div>
 
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-close" id="modalClose">✕</div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
   </div><!-- /tab-live -->
 
   <div class="tabpane" id="tab-sop">
@@ -407,7 +467,7 @@ function cardTemplate(site){
   if(site.eta) tags.push(`<span class="tag eta">🕐 ${site.eta}</span>`);
 
   return `
-    <div class="card" data-status="${site.status}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${HUB_CODES.includes(site.code) ? 'hub' : 'site'}">
+    <div class="card" data-code="${site.code}" data-status="${site.status}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${HUB_CODES.includes(site.code) ? 'hub' : 'site'}">
       <div class="card-top">
         <div>
           <div class="code">${site.code}${HUB_CODES.includes(site.code) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
@@ -420,7 +480,7 @@ function cardTemplate(site){
       ${progressHtml}
       ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
       <div class="owners">跟进人：${site.owners.join(' · ')}</div>
-      <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">拖动进度条可保存</span></div>
+      <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
     </div>
   `;
 }
@@ -470,10 +530,135 @@ function render(){
       renderStats();
       await saveOverride(code, state[code]);
     });
+    input.addEventListener('click', (e)=> e.stopPropagation());
+  });
+
+  grid.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const code = card.dataset.code;
+      const site = SITES.find(s=>s.code===code);
+      if(site) openTrainModal(site);
+    });
   });
 
   applyFilters();
 }
+
+// ===== SOP train modal =====
+const SOP_MILESTONES = [
+  {pct:10, name:'拿到需求，中介准备仓源'},
+  {pct:15, name:'确定新仓定位 / 搜寻看仓'},
+  {pct:20, name:'区长选定意向'},
+  {pct:25, name:'谈判商业条款，出具 LOI'},
+  {pct:30, name:'签署 LOI'},
+  {pct:50, name:'房东出合同 → 法务审阅'},
+  {pct:55, name:'各条款逐渐达成一致'},
+  {pct:60, name:'租约签字流程（我方签字）'},
+  {pct:90, name:'拿到保险 COI，合同双签'},
+  {pct:100, name:'付款流程（完成）'},
+];
+
+function estimateSopPct(site){
+  const pct = state[site.code]?.pct ?? site.pct;
+  if(pct !== null && pct !== undefined) return {value: pct, estimated: false};
+  const fallback = {done:100, search:12, block:28, progress:45}[site.status] ?? 20;
+  return {value: fallback, estimated: true};
+}
+
+function currentSopStep(pctValue){
+  let matched = SOP_MILESTONES[0];
+  for(const m of SOP_MILESTONES){
+    if(pctValue >= m.pct) matched = m;
+  }
+  return matched;
+}
+
+function parseUsDate(str){
+  if(!str) return null;
+  const parts = str.split('/');
+  if(parts.length !== 3) return null;
+  const [m,d,y] = parts.map(n=>parseInt(n,10));
+  if(!m || !d || !y) return null;
+  return new Date(y, m-1, d);
+}
+
+function daysSince(dateStr){
+  const d = parseUsDate(dateStr);
+  if(!d) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return Math.max(0, Math.round((now - d) / 86400000));
+}
+
+function openTrainModal(site){
+  const {value: pctValue, estimated} = estimateSopPct(site);
+  const step = currentSopStep(pctValue);
+  const stuckDays = daysSince(site.updated);
+
+  const stopsHtml = SOP_MILESTONES.map(m => `
+    <div class="train-stop">
+      <div class="train-stop-dot ${pctValue >= m.pct ? 'passed' : ''}"></div>
+      <div class="train-stop-pct">${m.pct}%</div>
+      <div class="train-stop-label">${m.name}</div>
+    </div>
+  `).join('');
+
+  const fillPct = Math.min(Math.max(pctValue,0),100);
+
+  const stuckCardClass = stuckDays !== null && stuckDays >= 7 ? 'stuck' : 'ok';
+  const stuckText = stuckDays === null ? '暂无更新记录' : `${stuckDays} 天未更新`;
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-head">
+      <div class="code">${site.code}${HUB_CODES.includes(site.code) ? ' 🏢' : ''}</div>
+      ${site.address ? `<div class="address">${site.address}</div>` : ''}
+    </div>
+
+    <div class="train-panel">
+      <div class="train-panel-title">🚂 对照 SOP 标准流程 · 当前位置</div>
+      <div class="train-track">
+        <div class="train-line"></div>
+        <div class="train-line-fill" style="width:${fillPct}%;"></div>
+        <div class="train-icon" style="left:${fillPct}%;">🚂</div>
+        <div class="train-stops">${stopsHtml}</div>
+      </div>
+      ${estimated ? '<div class="train-note">⚠️ 该站点没有记录具体进度百分比，此处位置是根据当前状态估算的参考位置，不是精确值。</div>' : ''}
+    </div>
+
+    <div class="train-status-grid">
+      <div class="train-status-card">
+        <div class="lbl">当前对应 SOP 环节</div>
+        <div class="val">${step.name}</div>
+      </div>
+      <div class="train-status-card ${stuckCardClass}">
+        <div class="lbl">距上次更新</div>
+        <div class="val">${stuckText}</div>
+      </div>
+      <div class="train-status-card ${site.blocker ? 'stuck' : 'ok'}">
+        <div class="lbl">卡在谁 / 什么这里</div>
+        <div class="val">${site.blocker || '暂无明确卡点'}</div>
+      </div>
+      <div class="train-status-card">
+        <div class="lbl">跟进人</div>
+        <div class="val" style="font-size:12.5px;">${site.owners.join(' · ') || '未指定'}</div>
+      </div>
+    </div>
+
+    ${site.risk ? `<div class="train-note">⚠️ 风险点：${site.risk}</div>` : ''}
+    <div class="train-note">"距上次更新"是按最后一次记录更新的日期计算，不代表停留在同一步骤的时间——如果更新是加速推进也会一起被算进去，仅供参考。</div>
+  `;
+
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+document.getElementById('modalClose').addEventListener('click', ()=>{
+  document.getElementById('modalBackdrop').classList.remove('open');
+});
+document.getElementById('modalBackdrop').addEventListener('click', (e)=>{
+  if(e.target.id === 'modalBackdrop'){
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+});
 
 function applyFilters(){
   const f = document.querySelector('.chip.active').dataset.f;
