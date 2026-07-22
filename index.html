@@ -351,6 +351,12 @@
         <option value="site">📦 普通站点仓库</option>
       </select>
     </label>
+    <label class="dropdown-wrap">
+      <span class="dropdown-label">站点</span>
+      <select id="siteSelect" class="dropdown-select">
+        <option value="all">全部（17）</option>
+      </select>
+    </label>
   </div>
 
   <div class="stats-row">
@@ -518,6 +524,7 @@ function render(){
   const grid = document.getElementById('grid');
   grid.innerHTML = SITES.map(cardTemplate).join('');
   renderStats();
+  populateSiteSelect();
 
   grid.querySelectorAll('.slider').forEach(input=>{
     input.addEventListener('input', async (e)=>{
@@ -660,14 +667,31 @@ document.getElementById('modalBackdrop').addEventListener('click', (e)=>{
   }
 });
 
+function populateSiteSelect(){
+  const select = document.getElementById('siteSelect');
+  const currentVal = select.value;
+  select.innerHTML = '<option value="all">全部（' + SITES.length + '）</option>';
+  SITES.forEach(site=>{
+    const opt = document.createElement('option');
+    opt.value = site.code;
+    opt.textContent = (HUB_CODES.includes(site.code) ? '🏢 ' : '📦 ') + site.code;
+    select.appendChild(opt);
+  });
+  if([...select.options].some(o=>o.value===currentVal)){
+    select.value = currentVal;
+  }
+}
+
 function applyFilters(){
   const f = document.querySelector('.chip.active').dataset.f;
   const typeVal = document.getElementById('typeSelect').value;
+  const siteVal = document.getElementById('siteSelect').value;
   document.querySelectorAll('.card').forEach(card=>{
     const status = card.dataset.status;
     const hasBlocker = card.dataset.blocker === '1';
     const hasRisk = card.dataset.risk === '1';
     const type = card.dataset.type;
+    const code = card.dataset.code;
 
     let showStatus = true;
     if(f==='done') showStatus = status==='done';
@@ -677,8 +701,9 @@ function applyFilters(){
     else if(f==='risk') showStatus = hasRisk;
 
     const showType = (typeVal === 'all') || (type === typeVal);
+    const showSite = (siteVal === 'all') || (code === siteVal);
 
-    card.classList.toggle('hidden', !(showStatus && showType));
+    card.classList.toggle('hidden', !(showStatus && showType && showSite));
   });
 }
 
@@ -691,6 +716,7 @@ document.getElementById('filters').addEventListener('click', (e)=>{
 });
 
 document.getElementById('typeSelect').addEventListener('change', applyFilters);
+document.getElementById('siteSelect').addEventListener('change', applyFilters);
 
 document.querySelectorAll('.stat[data-goto]').forEach(stat=>{
   stat.addEventListener('click', ()=>{
