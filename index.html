@@ -526,9 +526,16 @@ async function saveOverride(code, data){
   }catch(e){ /* storage unavailable, keep in-memory only */ }
 }
 
+function getDisplayStatus(site){
+  const {value: pct} = estimateSopPct(site);
+  if(pct === 100) return 'done';
+  if(site.blocker) return 'block';
+  return site.status;
+}
+
 function renderStats(){
   const total = SITES.length;
-  const done = SITES.filter(s=>s.status==='done').length;
+  const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
   const block = SITES.filter(s=>s.status==='block' || s.blocker).length;
   const risk = SITES.filter(s=>s.risk).length;
   const withPct = SITES.filter(s=>{
@@ -547,7 +554,8 @@ function renderStats(){
 }
 
 function cardTemplate(site){
-  const meta = statusMeta[site.status];
+  const displayStatus = getDisplayStatus(site);
+  const meta = statusMeta[displayStatus];
   const {value: pct, estimated} = estimateSopPct(site);
 
   const progressHtml = `
@@ -565,7 +573,7 @@ function cardTemplate(site){
   if(site.eta) tags.push(`<span class="tag eta">🕐 ${site.eta}</span>`);
 
   return `
-    <div class="card" data-code="${site.code}" data-status="${site.status}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${HUB_CODES.includes(site.code) ? 'hub' : 'site'}">
+    <div class="card" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${HUB_CODES.includes(site.code) ? 'hub' : 'site'}">
       <div class="card-top">
         <div>
           <div class="code">${site.code}${HUB_CODES.includes(site.code) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
@@ -776,7 +784,7 @@ function renderTable(){
     return {
       code: s.code,
       type: HUB_CODES.includes(s.code) ? 'Hub' : '站点',
-      status: statusMeta[s.status]?.label || s.status,
+      status: statusMeta[getDisplayStatus(s)]?.label || s.status,
       pct: pct ?? -1,
       pctDisplay: pct !== null && pct !== undefined ? pct+'%' : '—',
       blocker: s.blocker || '—',
