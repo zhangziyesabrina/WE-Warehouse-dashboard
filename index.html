@@ -578,13 +578,23 @@ function cardTemplate(site){
   const tags = [];
   if(site.blocker) tags.push(`<span class="tag blocker">🔒 卡点：${site.blocker}</span>`);
   if(site.risk) tags.push(`<span class="tag risk">⚠️ ${site.risk}</span>`);
-  if(site.eta) tags.push(`<span class="tag eta">🕐 ${site.eta}</span>`);
+  if(site.start) tags.push(`<span class="tag eta">📅 开始：${site.start}</span>`);
+  if(site.eta){
+    const remain = daysUntil(site.eta);
+    if(remain !== null && remain < 0 && displayStatus !== 'done'){
+      tags.push(`<span class="tag risk">🔴 已超期 ${Math.abs(remain)} 天（预计 ${site.eta}）</span>`);
+    } else if(remain !== null && displayStatus !== 'done'){
+      tags.push(`<span class="tag eta">🕐 预计完成：${site.eta}（还剩${remain}天）</span>`);
+    } else {
+      tags.push(`<span class="tag eta">🕐 ${site.eta}</span>`);
+    }
+  }
 
   return `
-    <div class="card" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${HUB_CODES.includes(site.code) ? 'hub' : 'site'}">
+    <div class="card" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
       <div class="card-top">
         <div>
-          <div class="code">${site.code}${HUB_CODES.includes(site.code) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
+          <div class="code">${site.code}${isHub(site) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
           ${site.address ? `<div class="address">${site.address}</div>` : ''}
           ${site.area ? `<div class="area">计划面积 ${site.area}</div>` : ''}
         </div>
@@ -680,6 +690,8 @@ function attentionScore(site){
     if(stuck >= 7) score += 3;
     else if(stuck >= 3) score += 1;
   }
+  const remain = daysUntil(site.eta);
+  if(remain !== null && remain < 0 && getDisplayStatus(site) !== 'done') score += 4;
   if(getDisplayStatus(site) === 'block') score += 1;
   return score;
 }
@@ -698,9 +710,17 @@ function renderInsights(){
     insights.push(`⚠️ <b>${riskSites.length}</b> 个站点存在风险点：${riskSites.map(s=>s.code).join('、')}`);
   }
 
-  const hubIssues = SITES.filter(s => HUB_CODES.includes(s.code) && (s.blocker || s.risk));
+  const hubIssues = SITES.filter(s => isHub(s) && (s.blocker || s.risk));
   if(hubIssues.length){
     insights.push(`🏢 Hub 站点中有 <b>${hubIssues.length}</b> 个存在卡点或风险点，建议优先处理：${hubIssues.map(s=>s.code).join('、')}`);
+  }
+
+  const overdueEta = SITES.filter(s => {
+    const remain = daysUntil(s.eta);
+    return remain !== null && remain < 0 && getDisplayStatus(s) !== 'done';
+  });
+  if(overdueEta.length){
+    insights.push(`🔴 <b>${overdueEta.length}</b> 个站点已超过预计完成日期：${overdueEta.map(s=>s.code).join('、')}`);
   }
 
   const withStuck = SITES.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d !== null).sort((a,b)=>b.d-a.d);
@@ -783,23 +803,29 @@ function renderTable(){
     {key:'blocker', label:'卡点'},
     {key:'risk', label:'风险点'},
     {key:'owners', label:'跟进人'},
-    {key:'stuck', label:'停留天数'},
+    {key:'start', label:'开始时间'},
+    {key:'eta', label:'预计完成'},
+    {key:'remain', label:'剩余/超期天数'},
   ];
 
   const rows = SITES.map(s=>{
     const pct = getSitePct(s);
-    const stuck = getStuckDays(s);
+    const remain = daysUntil(s.eta);
+    const status = getDisplayStatus(s);
     return {
       code: s.code,
-      type: HUB_CODES.includes(s.code) ? 'Hub' : '站点',
-      status: statusMeta[getDisplayStatus(s)]?.label || s.status,
+      type: isHub(s) ? 'Hub' : '站点',
+      status: statusMeta[status]?.label || s.status,
       pct: pct ?? -1,
       pctDisplay: pct !== null && pct !== undefined ? pct+'%' : '—',
       blocker: s.blocker || '—',
       risk: s.risk ? '⚠️' : '—',
       owners: s.owners.join(' · ') || '—',
-      stuck: stuck ?? -1,
-      stuckDisplay: stuck !== null ? stuck+'天' : '—',
+      start: s.start || '—',
+      eta: s.eta || '—',
+      remain: remain ?? 9999,
+      remainDisplay: remain === null ? '—' : (remain < 0 ? `超期${Math.abs(remain)}天` : `${remain}天`),
+      remainOverdue: remain !== null && remain < 0 && status !== 'done',
       _score: attentionScore(s),
     };
   });
@@ -817,7 +843,7 @@ function renderTable(){
   });
   html += '</tr></thead><tbody>';
   rows.forEach(r=>{
-    const stuckClass = (r.stuck >= 7) ? 't-stuck-high' : '';
+    const remainClass = r.remainOverdue ? 't-stuck-high' : '';
     html += `<tr data-code="${r.code}">
       <td class="t-code">${r.code}</td>
       <td>${r.type}</td>
@@ -826,7 +852,9 @@ function renderTable(){
       <td>${r.blocker}</td>
       <td>${r.risk}</td>
       <td>${r.owners}</td>
-      <td class="${stuckClass}">${r.stuckDisplay}</td>
+      <td>${r.start}</td>
+      <td>${r.eta}</td>
+      <td class="${remainClass}">${r.remainDisplay}</td>
     </tr>`;
   });
   html += '</tbody>';
@@ -921,9 +949,9 @@ function currentSopStep(pctValue){
 
 function parseUsDate(str){
   if(!str) return null;
-  const parts = str.split('/');
-  if(parts.length !== 3) return null;
-  const [m,d,y] = parts.map(n=>parseInt(n,10));
+  const match = String(str).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(!match) return null;
+  const [, m, d, y] = match.map(Number);
   if(!m || !d || !y) return null;
   return new Date(y, m-1, d);
 }
@@ -934,6 +962,20 @@ function daysSince(dateStr){
   const now = new Date(); now.setHours(0,0,0,0);
   d.setHours(0,0,0,0);
   return Math.max(0, Math.round((now - d) / 86400000));
+}
+
+function daysUntil(dateStr){
+  const d = parseUsDate(dateStr);
+  if(!d) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return Math.round((d - now) / 86400000); // negative = overdue
+}
+
+function isHub(site){
+  if(site.siteType && site.siteType.toLowerCase().includes('hub')) return true;
+  if(isHub(site)) return true;
+  return false;
 }
 
 function openTrainModal(site){
@@ -956,7 +998,7 @@ function openTrainModal(site){
 
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-head">
-      <div class="code">${site.code}${HUB_CODES.includes(site.code) ? ' 🏢' : ''}</div>
+      <div class="code">${site.code}${isHub(site) ? ' 🏢' : ''}</div>
       ${site.address ? `<div class="address">${site.address}</div>` : ''}
     </div>
 
@@ -1013,14 +1055,14 @@ function populateSiteSelect(){
   SITES.forEach(site=>{
     const opt = document.createElement('option');
     opt.value = site.code;
-    opt.textContent = HUB_CODES.includes(site.code) ? `🏢 ${site.code} (Hub)` : `📦 ${site.code}`;
+    opt.textContent = isHub(site) ? `🏢 ${site.code} (Hub)` : `📦 ${site.code}`;
     select.appendChild(opt);
   });
   if([...select.options].some(o=>o.value===currentVal)){
     select.value = currentVal;
   }
 
-  const hubCount = SITES.filter(s=>HUB_CODES.includes(s.code)).length;
+  const hubCount = SITES.filter(s=>isHub(s)).length;
   const siteCount = SITES.length - hubCount;
   const typeSelect = document.getElementById('typeSelect');
   const typeCurrentVal = typeSelect.value;
