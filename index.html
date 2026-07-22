@@ -1169,7 +1169,7 @@ function applyFilters(){
     let showStatus = true;
     if(f==='done') showStatus = status==='done';
     else if(f==='progress') showStatus = status==='progress';
-    else if(f==='block') showStatus = hasBlocker;
+    else if(f==='block') showStatus = status==='block';
     else if(f==='search') showStatus = status==='search';
     else if(f==='risk') showStatus = hasRisk;
 
