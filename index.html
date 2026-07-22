@@ -225,64 +225,69 @@
   table.site-table td.t-code{font-weight:700;}
   table.site-table td.t-stuck-high{color:var(--risk);font-weight:700;}
 
-  /* ===== Report view ===== */
-  .report-summary{
-    margin-top:24px;background:linear-gradient(135deg, rgba(255,138,61,0.12), rgba(63,193,240,0.06));
-    border:1px solid rgba(255,138,61,0.3);border-radius:14px;padding:20px 22px;
-    font-size:15px;line-height:1.8;color:var(--text);
+  /* ===== Report view (clean executive summary) ===== */
+  .report-date{
+    margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted-2);
   }
-  .report-summary b{color:var(--main);}
+  .report-summary{
+    margin-top:8px;font-size:20px;font-weight:600;line-height:1.6;color:var(--text);
+    max-width:820px;
+  }
+  .report-summary b{color:var(--main);font-weight:700;}
 
-  .report-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;}
-  .report-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
-  .rk-num{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;}
-  .rk-lbl{font-size:11.5px;color:var(--muted);margin-top:4px;}
-  .report-kpi.done .rk-num{color:var(--done);}
-  .report-kpi.block .rk-num{color:var(--block);}
-  .report-kpi.risk .rk-num{color:var(--risk);}
-  .report-kpi.overdue .rk-num{color:var(--risk);}
+  .report-hero-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px;}
+  .report-hero{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:22px 20px;text-align:center;
+  }
+  .rh-num{font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:700;line-height:1;}
+  .rh-lbl{font-size:12.5px;color:var(--muted);margin-top:8px;letter-spacing:0.02em;}
+  .report-hero.done .rh-num{color:var(--done);}
+  .report-hero.block .rh-num{color:var(--block);}
+  .report-hero.overdue .rh-num{color:var(--risk);}
 
-  .report-section-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;}
+  .report-section-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px;}
 
-  .report-priority-card, .report-table-card{
-    margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+  .report-funnel-card{
+    margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 22px 18px;
+  }
+  .funnel-bar{
+    display:flex;height:40px;border-radius:8px;overflow:hidden;
+  }
+  .funnel-seg{
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#0B1220;
+    transition:flex-grow .3s ease;
+  }
+  .funnel-legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;}
+  .funnel-legend-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);}
+  .funnel-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+
+  .report-priority-card{
+    margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;
   }
   .report-priority-row{
-    display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(34,48,76,0.5);font-size:13px;
+    display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid rgba(34,48,76,0.5);
   }
   .report-priority-row:last-child{border-bottom:none;}
   .rp-rank{
-    width:22px;height:22px;border-radius:50%;background:var(--main-soft);color:var(--main);
+    width:26px;height:26px;border-radius:50%;background:var(--risk-soft);color:var(--risk);
     display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
-    font-size:11px;font-weight:700;flex-shrink:0;
+    font-size:12px;font-weight:700;flex-shrink:0;
   }
-  .rp-code{font-weight:700;min-width:56px;}
-  .rp-reason{color:var(--muted);font-size:12px;}
-
-  .report-table-wrap{overflow-x:auto;}
-  table.report-table{border-collapse:collapse;width:100%;font-size:12.5px;}
-  table.report-table th{
-    text-align:left;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
-    color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;
-  }
-  table.report-table td{padding:9px 10px;border-bottom:1px solid rgba(34,48,76,0.4);white-space:nowrap;}
-  table.report-table tr.report-row-overdue{background:rgba(242,92,110,0.06);}
-  table.report-table tr.report-row-done{opacity:0.6;}
-  .rt-code{font-weight:700;}
-  .rt-bar-wrap{display:inline-block;width:70px;height:6px;background:#1B2743;border-radius:3px;vertical-align:middle;margin-right:6px;overflow:hidden;}
-  .rt-bar-fill{height:100%;}
-  .rt-pct{font-family:'JetBrains Mono',monospace;font-size:11px;}
-  .rt-overdue{color:var(--risk);font-weight:700;}
+  .rp-code{font-weight:700;font-size:15px;min-width:64px;}
+  .rp-reason{color:var(--muted);font-size:13px;flex:1;}
+  .rp-empty{color:var(--muted);font-size:13px;padding:8px 0;}
 
   .copy-report-btn{
-    margin-top:20px;background:var(--main);color:#2A1400;border:none;border-radius:8px;
-    padding:12px 22px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13.5px;
+    margin-top:22px;background:var(--main);color:#2A1400;border:none;border-radius:8px;
+    padding:13px 24px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;
     cursor:pointer;
   }
   .copy-report-btn:hover{opacity:0.9;}
 
   @media (max-width:900px){
-    .report-kpi-row{grid-template-columns:repeat(2,1fr);}
+    .report-hero-row{grid-template-columns:repeat(2,1fr);}
   }
 
   /* SOP train modal */
@@ -546,20 +551,20 @@
   </div><!-- /tab-live -->
 
   <div class="tabpane" id="tab-report">
+    <div class="report-date" id="reportDate"></div>
     <div class="report-summary" id="reportSummary"></div>
 
-    <div class="report-kpi-row" id="reportKpiRow"></div>
+    <div class="report-hero-row" id="reportHeroRow"></div>
 
-    <div class="report-priority-card">
-      <div class="report-section-title">🔥 本周优先处理清单</div>
-      <div id="reportPriority"></div>
+    <div class="report-funnel-card">
+      <div class="report-section-title">整体进度分布</div>
+      <div class="funnel-bar" id="funnelBar"></div>
+      <div class="funnel-legend" id="funnelLegend"></div>
     </div>
 
-    <div class="report-table-card">
-      <div class="report-section-title">📋 全部站点明细（按优先级自动排序）</div>
-      <div class="report-table-wrap">
-        <table class="report-table" id="reportTable"></table>
-      </div>
+    <div class="report-priority-card">
+      <div class="report-section-title">🔥 需要关注（<span id="attnCount">0</span>）</div>
+      <div id="reportPriority"></div>
     </div>
 
     <button id="copyReportBtn" class="copy-report-btn">📋 复制为文字（发给老板）</button>
@@ -1241,90 +1246,97 @@ function generateReportSummaryText(){
   const total = SITES.length;
   const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
   const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
-  const risk = SITES.filter(s=>s.risk).length;
   const overdue = SITES.filter(s=>{const r=daysUntil(s.eta); return r!==null && r<0 && getDisplayStatus(s)!=='done';}).length;
-  const hubIssues = SITES.filter(s=>isHub(s) && (s.blocker||s.risk)).length;
 
-  let text = `本周共跟进 <b>${total}</b> 个站点：<b>${done}</b> 个已完成，<b>${block}</b> 个有卡点待处理，<b>${risk}</b> 个存在风险点`;
-  if(overdue > 0) text += `，其中 <b style="color:var(--risk)">${overdue}</b> 个已超过预计完成日期需要重点关注`;
-  if(hubIssues > 0) text += `（Hub 站点中有 ${hubIssues} 个存在问题）`;
-  text += '。';
+  let text = `<b>${total}</b> 个站点在跟进，<b>${done}</b> 个已完成`;
+  if(overdue > 0){
+    text += `，<b style="color:var(--risk)">${overdue}</b> 个已超期需要介入`;
+  } else if(block > 0){
+    text += `，<b>${block}</b> 个有卡点`;
+  } else {
+    text += '，整体进度正常';
+  }
   return text;
 }
 
+const STAGE_BUCKETS = [
+  {key:'search', label:'意向筛选', color:'#8B96AC', min:0, max:19},
+  {key:'nego', label:'商务谈判', color:'#3FC1F0', min:20, max:49},
+  {key:'legal', label:'合同审阅', color:'#FF8A3D', min:50, max:59},
+  {key:'sign', label:'签约收尾', color:'#F2B84B', min:60, max:99},
+  {key:'done', label:'已完成', color:'#34D399', min:100, max:100},
+];
+
+function stageBucketFor(site){
+  if(getDisplayStatus(site) === 'done') return STAGE_BUCKETS[4];
+  const pct = getSitePct(site);
+  return STAGE_BUCKETS.find(b => pct >= b.min && pct <= b.max) || STAGE_BUCKETS[0];
+}
+
 function renderReportTab(){
+  const now = new Date();
+  document.getElementById('reportDate').textContent = `截至 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
   document.getElementById('reportSummary').innerHTML = generateReportSummaryText();
 
   const total = SITES.length;
   const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
   const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
-  const risk = SITES.filter(s=>s.risk).length;
   const overdue = SITES.filter(s=>{const r=daysUntil(s.eta); return r!==null && r<0 && getDisplayStatus(s)!=='done';}).length;
 
-  document.getElementById('reportKpiRow').innerHTML = `
-    <div class="report-kpi"><div class="rk-num">${total}</div><div class="rk-lbl">跟进站点总数</div></div>
-    <div class="report-kpi done"><div class="rk-num">${done}</div><div class="rk-lbl">已完成</div></div>
-    <div class="report-kpi block"><div class="rk-num">${block}</div><div class="rk-lbl">有卡点</div></div>
-    <div class="report-kpi risk"><div class="rk-num">${risk}</div><div class="rk-lbl">有风险点</div></div>
-    <div class="report-kpi overdue"><div class="rk-num">${overdue}</div><div class="rk-lbl">已超期</div></div>
+  document.getElementById('reportHeroRow').innerHTML = `
+    <div class="report-hero"><div class="rh-num">${total}</div><div class="rh-lbl">跟进站点总数</div></div>
+    <div class="report-hero done"><div class="rh-num">${done}</div><div class="rh-lbl">已完成</div></div>
+    <div class="report-hero block"><div class="rh-num">${block}</div><div class="rh-lbl">有卡点</div></div>
+    <div class="report-hero overdue"><div class="rh-num">${overdue}</div><div class="rh-lbl">已超期</div></div>
   `;
 
+  const counts = {};
+  STAGE_BUCKETS.forEach(b => counts[b.key] = 0);
+  SITES.forEach(s => counts[stageBucketFor(s).key]++);
+
+  document.getElementById('funnelBar').innerHTML = STAGE_BUCKETS.map(b=>{
+    const n = counts[b.key];
+    if(n === 0) return '';
+    return `<div class="funnel-seg" style="flex-grow:${n};background:${b.color};" title="${b.label}：${n}个">${n}</div>`;
+  }).join('');
+
+  document.getElementById('funnelLegend').innerHTML = STAGE_BUCKETS.map(b=>
+    `<div class="funnel-legend-item"><span class="funnel-dot" style="background:${b.color};"></span>${b.label}（${counts[b.key]}）</div>`
+  ).join('');
+
   const scored = getScoredSites(8);
+  document.getElementById('attnCount').textContent = scored.length;
   document.getElementById('reportPriority').innerHTML = scored.length
     ? scored.map(({site}, i)=>{
         const reasons = reasonsFor(site);
         return `<div class="report-priority-row"><span class="rp-rank">${i+1}</span><span class="rp-code">${site.code}</span><span class="rp-reason">${reasons.join(' · ') || '需关注'}</span></div>`;
       }).join('')
-    : '<div class="report-priority-row">暂无需要优先处理的站点 👍</div>';
-
-  const rows = SITES.map(s=>({site:s, score: attentionScore(s)})).sort((a,b)=>b.score-a.score);
-  let tableHtml = `<thead><tr>
-    <th>站点</th><th>类型</th><th>状态</th><th>进度</th><th>开始</th><th>预计完成</th><th>剩余/超期</th><th>卡点</th><th>跟进人</th>
-  </tr></thead><tbody>`;
-  rows.forEach(({site})=>{
-    const status = getDisplayStatus(site);
-    const meta = statusMeta[status];
-    const pct = getSitePct(site);
-    const remain = daysUntil(site.eta);
-    const overdueFlag = remain !== null && remain < 0 && status !== 'done';
-    const rowClass = overdueFlag ? 'report-row-overdue' : (status==='done' ? 'report-row-done' : '');
-    const barColor = status==='done' ? 'var(--done)' : status==='block' ? 'var(--block)' : 'var(--main)';
-    tableHtml += `<tr class="${rowClass}">
-      <td class="rt-code">${site.code}${isHub(site) ? ' 🏢' : ''}</td>
-      <td>${isHub(site) ? 'Hub' : '站点'}</td>
-      <td><span class="status-badge ${meta.cls}">${meta.label}</span></td>
-      <td><span class="rt-bar-wrap"><span class="rt-bar-fill" style="width:${pct}%;background:${barColor};display:block;"></span></span><span class="rt-pct">${pct}%</span></td>
-      <td>${site.start || '—'}</td>
-      <td>${site.eta || '—'}</td>
-      <td class="${overdueFlag ? 'rt-overdue' : ''}">${remain===null ? '—' : (remain<0 ? `超期${Math.abs(remain)}天` : `${remain}天`)}</td>
-      <td>${site.blocker || '—'}</td>
-      <td>${site.owners.join(' · ') || '—'}</td>
-    </tr>`;
-  });
-  tableHtml += '</tbody>';
-  document.getElementById('reportTable').innerHTML = tableHtml;
+    : '<div class="rp-empty">暂无需要优先处理的站点 👍</div>';
 }
 
 document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   const lines = [];
-  lines.push(`【GOFO 仓库租赁进度周报】${new Date().toLocaleDateString('zh-CN')}`);
+  const now = new Date();
+  lines.push(`【GOFO 仓库租赁进度周报】截至 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`);
   lines.push('');
   lines.push(document.getElementById('reportSummary').textContent);
   lines.push('');
-  lines.push('🔥 优先处理清单：');
-  getScoredSites(8).forEach(({site}, i)=>{
-    const reasons = reasonsFor(site);
-    lines.push(`${i+1}. ${site.code} - ${reasons.join('，') || '需关注'}`);
+  lines.push('整体进度分布：');
+  STAGE_BUCKETS.forEach(b=>{
+    const n = SITES.filter(s=>stageBucketFor(s).key===b.key).length;
+    if(n>0) lines.push(`  ${b.label}：${n}个`);
   });
   lines.push('');
-  lines.push('📋 全部站点明细：');
-  SITES.forEach(s=>{
-    const pct = getSitePct(s);
-    const status = statusMeta[getDisplayStatus(s)].label;
-    const remain = daysUntil(s.eta);
-    const remainText = remain===null ? '' : (remain<0 ? `，超期${Math.abs(remain)}天` : `，预计还剩${remain}天`);
-    lines.push(`${s.code}：${pct}% - ${status}${s.blocker ? '，卡点：'+s.blocker : ''}${remainText}`);
-  });
+  lines.push('🔥 需要关注：');
+  const scored = getScoredSites(8);
+  if(scored.length){
+    scored.forEach(({site}, i)=>{
+      const reasons = reasonsFor(site);
+      lines.push(`${i+1}. ${site.code} - ${reasons.join('，') || '需关注'}`);
+    });
+  } else {
+    lines.push('暂无需要优先处理的站点');
+  }
 
   const text = lines.join('\n');
   navigator.clipboard.writeText(text).then(()=>{
