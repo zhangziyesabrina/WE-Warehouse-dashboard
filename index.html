@@ -310,7 +310,9 @@
   .rp-insight-list li{display:flex;gap:8px;align-items:flex-start;}
 
   .rp-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
-  .rp-kpi{background:var(--rp-card);border:1px solid var(--rp-border);border-radius:12px;padding:16px 14px;text-align:center;}
+  .rp-kpi{background:var(--rp-card);border:1px solid var(--rp-border);border-radius:12px;padding:16px 14px;text-align:center;cursor:pointer;transition:border-color .15s ease;}
+  .rp-kpi:hover{border-color:var(--rp-blue);}
+  .rp-kpi.active{border-color:var(--rp-blue);border-width:2px;background:var(--rp-blue-soft);}
   .rp-kpi-num{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--rp-text);}
   .rp-kpi-lbl{font-size:11px;color:var(--rp-muted);margin-top:4px;}
   .rp-kpi.done .rp-kpi-num{color:var(--rp-green);}
@@ -1578,6 +1580,15 @@ function populateReportFilters(){
 }
 
 let rpHealthFilter = 'all';
+let rpKpiFilter = 'all';
+
+const KPI_FILTERS = {
+  done: s => getDisplayStatus(s) === 'done',
+  highProgress: s => getSitePct(s) >= 80 && getDisplayStatus(s) !== 'done',
+  block: s => getDisplayStatus(s) === 'block',
+  risk: s => !!s.risk,
+  updatedWeek: s => { const d = getStuckDays(s); return d !== null && d <= 7; },
+};
 
 function getBaseFilteredSites(){
   const siteVal = document.getElementById('rpSiteFilter').value;
@@ -1591,14 +1602,21 @@ function getBaseFilteredSites(){
   });
 }
 
-function getFilteredSitesForReport(){
+function getHealthFilteredSites(){
   const base = getBaseFilteredSites();
   if(rpHealthFilter === 'all') return base;
   return base.filter(s => healthBucket(s) === rpHealthFilter);
 }
 
+function getFilteredSitesForReport(){
+  const healthFiltered = getHealthFilteredSites();
+  if(rpKpiFilter === 'all') return healthFiltered;
+  return healthFiltered.filter(KPI_FILTERS[rpKpiFilter]);
+}
+
 function renderReportTab(){
   populateReportFilters();
+  const healthFiltered = getHealthFilteredSites();
   const filtered = getFilteredSitesForReport();
   const now = new Date();
 
@@ -1611,22 +1629,32 @@ function renderReportTab(){
     ? items.map(it=>`<li><i data-lucide="${it.icon}" style="color:${it.color};"></i><span><b>${it.site.code}</b>：${it.text}</span></li>`).join('')
     : '<li>暂无跟进站点</li>';
 
-  // KPI row
-  const total = filtered.length;
-  const done = filtered.filter(s=>getDisplayStatus(s)==='done').length;
-  const highProgress = filtered.filter(s=>getSitePct(s)>=80 && getDisplayStatus(s)!=='done').length;
-  const block = filtered.filter(s=>getDisplayStatus(s)==='block').length;
-  const risk = filtered.filter(s=>s.risk).length;
-  const updatedThisWeek = filtered.filter(s=>{const d=getStuckDays(s); return d!==null && d<=7;}).length;
+  // KPI row（用 healthFiltered 计数，避免点了某个卡片后其他数字跟着消失）
+  const total = healthFiltered.length;
+  const done = healthFiltered.filter(KPI_FILTERS.done).length;
+  const highProgress = healthFiltered.filter(KPI_FILTERS.highProgress).length;
+  const block = healthFiltered.filter(KPI_FILTERS.block).length;
+  const risk = healthFiltered.filter(KPI_FILTERS.risk).length;
+  const updatedThisWeek = healthFiltered.filter(KPI_FILTERS.updatedWeek).length;
 
-  document.getElementById('rpKpiRow').innerHTML = `
-    <div class="rp-kpi"><div class="rp-kpi-num">${total}</div><div class="rp-kpi-lbl">跟进站点</div></div>
-    <div class="rp-kpi done"><div class="rp-kpi-num">${done}</div><div class="rp-kpi-lbl">已完成</div></div>
-    <div class="rp-kpi"><div class="rp-kpi-num">${highProgress}</div><div class="rp-kpi-lbl">进度 ≥ 80%</div></div>
-    <div class="rp-kpi block"><div class="rp-kpi-num">${block}</div><div class="rp-kpi-lbl">存在卡点</div></div>
-    <div class="rp-kpi risk"><div class="rp-kpi-num">${risk}</div><div class="rp-kpi-lbl">高风险</div></div>
-    <div class="rp-kpi"><div class="rp-kpi-num">${updatedThisWeek}</div><div class="rp-kpi-lbl">本周有更新</div></div>
-  `;
+  const kpiDefs = [
+    {key:'all', num:total, lbl:'跟进站点', cls:''},
+    {key:'done', num:done, lbl:'已完成', cls:'done'},
+    {key:'highProgress', num:highProgress, lbl:'进度 ≥ 80%', cls:''},
+    {key:'block', num:block, lbl:'存在卡点', cls:'block'},
+    {key:'risk', num:risk, lbl:'高风险', cls:'risk'},
+    {key:'updatedWeek', num:updatedThisWeek, lbl:'本周有更新', cls:''},
+  ];
+  document.getElementById('rpKpiRow').innerHTML = kpiDefs.map(k=>
+    `<div class="rp-kpi ${k.cls} ${rpKpiFilter===k.key ? 'active' : ''}" data-key="${k.key}"><div class="rp-kpi-num">${k.num}</div><div class="rp-kpi-lbl">${k.lbl}</div></div>`
+  ).join('');
+  document.querySelectorAll('.rp-kpi').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const key = el.dataset.key;
+      rpKpiFilter = (key === 'all' || rpKpiFilter === key) ? 'all' : key;
+      renderReportTab();
+    });
+  });
 
   // 一、健康度分布 + 重点关注表
   const barBase = getBaseFilteredSites();
