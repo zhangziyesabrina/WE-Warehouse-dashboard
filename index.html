@@ -1493,6 +1493,8 @@ function populateSiteSelect(){
   typeSelect.value = typeCurrentVal || 'all';
 }
 
+let liveOwnerFilter = 'all';
+
 function applyFilters(){
   const f = document.querySelector('.chip.active').dataset.f;
   const typeVal = document.getElementById('typeSelect').value;
@@ -1513,9 +1515,25 @@ function applyFilters(){
 
     const showType = (typeVal === 'all') || (type === typeVal);
     const showSite = (siteVal === 'all') || (code === siteVal);
+    const site = SITES.find(s=>s.code===code);
+    const showOwner = (liveOwnerFilter === 'all') || (site && site.owners.includes(liveOwnerFilter));
 
-    card.classList.toggle('hidden', !(showStatus && showType && showSite));
+    card.classList.toggle('hidden', !(showStatus && showType && showSite && showOwner));
   });
+}
+
+function jumpToOwnerOnLiveTab(owner){
+  liveOwnerFilter = owner;
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tabbtn[data-tab="live"]').classList.add('active');
+  document.getElementById('tab-live').classList.add('active');
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.chip[data-f="all"]').classList.add('active');
+  document.getElementById('typeSelect').value = 'all';
+  document.getElementById('siteSelect').value = 'all';
+  applyFilters();
+  try{ document.getElementById('grid').scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
 }
 
 document.getElementById('filters').addEventListener('click', (e)=>{
@@ -1927,8 +1945,16 @@ function renderReportTab(){
   if(window.lucide) lucide.createIcons();
 }
 
-['rpSiteFilter','rpOwnerFilter','rpStatusFilter'].forEach(id=>{
+['rpSiteFilter','rpStatusFilter'].forEach(id=>{
   document.getElementById(id).addEventListener('change', renderReportTab);
+});
+
+document.getElementById('rpOwnerFilter').addEventListener('change', (e)=>{
+  const val = e.target.value;
+  if(val !== 'all'){
+    jumpToOwnerOnLiveTab(val);
+    e.target.value = 'all';
+  }
 });
 
 document.getElementById('copyReportBtn').addEventListener('click', ()=>{
