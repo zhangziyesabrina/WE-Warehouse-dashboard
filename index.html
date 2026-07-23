@@ -148,6 +148,13 @@
   .status-paused{background:rgba(91,100,116,0.18);color:var(--muted-2);}
 
   .desc{font-size:12px;color:var(--muted);line-height:1.65;}
+  .desc-input{
+    width:100%;font-size:12px;color:var(--muted);line-height:1.65;font-family:'Inter',sans-serif;
+    background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 6px;margin:0 -6px;
+    resize:vertical;min-height:44px;
+  }
+  .desc-input:hover{border-color:var(--border);}
+  .desc-input:focus{outline:none;border-color:var(--parallel);color:var(--text);background:#0F1830;}
 
   .progress-row{display:flex;align-items:center;gap:10px;}
   .progress-track{flex:1;height:8px;border-radius:5px;background:#0F1729;overflow:hidden;border:1px solid var(--border);}
@@ -810,7 +817,7 @@ async function saveOverride(code, data){
 const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse', '看仓库', '准备去看仓', '选仓库'];
 
 function isSearchStage(site){
-  const text = [site.desc, site.address, site.eta].filter(Boolean).join(' ');
+  const text = [getDesc(site), site.address, site.eta].filter(Boolean).join(' ');
   return SEARCH_KEYWORDS.some(k => text.includes(k));
 }
 
@@ -900,7 +907,7 @@ function cardTemplate(site){
         <input type="text" class="blocker-edit-input" data-code="${site.code}" placeholder="点击填写卡点（比如：代收协议待财务处理）" value="${getBlocker(site).replace(/"/g,'&quot;')}">
       </div>
 
-      <div class="desc">${site.desc}</div>
+      <textarea class="desc-input" data-code="${site.code}" placeholder="进度描述">${getDesc(site)}</textarea>
       ${progressHtml}
       ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
       <div class="next-action-row">
@@ -1022,6 +1029,16 @@ function render(){
     });
   });
 
+  grid.querySelectorAll('.desc-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), descOverride: e.target.value};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
   grid.querySelectorAll('.card').forEach(card=>{
     card.addEventListener('click', ()=>{
       const code = card.dataset.code;
@@ -1041,6 +1058,12 @@ function getBlocker(site){
   const o = state[site.code];
   if(o && Object.prototype.hasOwnProperty.call(o, 'blockerOverride')) return o['blockerOverride'];
   return site['blocker'] || '';
+}
+
+function getDesc(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'descOverride')) return o['descOverride'];
+  return site['desc'] || '';
 }
 
 function getDisplayLabel(site, fallbackLabel){
@@ -1314,7 +1337,7 @@ const SOP_KEYWORDS = [
 ];
 
 function estimateSopPctFromText(site){
-  const text = [site.desc, getBlocker(site), site.eta].filter(Boolean).join(' ');
+  const text = [getDesc(site), getBlocker(site), site.eta].filter(Boolean).join(' ');
   let best = null;
   for(const item of SOP_KEYWORDS){
     for(const kw of item.kws){
@@ -1647,7 +1670,7 @@ function classifyForInsight(site){
     return {priority:3, icon:'circle-check', color:'var(--rp-green)', text:`已完成${site.eta ? `，${site.eta}` : ''}`};
   }
   if(status === 'search'){
-    return {priority:4, icon:'pause-circle', color:'var(--rp-gray)', text: site.desc ? (site.desc.length>36 ? site.desc.slice(0,36)+'…' : site.desc) : '仍在寻找仓源'};
+    return {priority:4, icon:'pause-circle', color:'var(--rp-gray)', text: getDesc(site) ? (getDesc(site).length>36 ? getDesc(site).slice(0,36)+'…' : getDesc(site)) : '仍在寻找仓源'};
   }
   return {priority:5, icon:'activity', color:'var(--rp-muted)', text:`进度 ${pct}%`};
 }
@@ -1824,7 +1847,7 @@ function renderReportTab(){
     progressList.innerHTML = recentlyUpdated.map(({s, d})=>{
       const note = state[s.code]?.note;
       const custom = state[s.code]?.customStage;
-      const changeText = note || s.desc || '无更新说明';
+      const changeText = note || getDesc(s) || '无更新说明';
       return `<div class="rp-progress-card">
         <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}</div>
         <div class="rp-progress-row"><b>本周变化：</b>${changeText}</div>
@@ -1971,7 +1994,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   lines.push('三、本周关键进展：');
   filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
     const note = state[s.code]?.note;
-    const changeText = note || s.desc || '无更新说明';
+    const changeText = note || getDesc(s) || '无更新说明';
     lines.push(`  ${s.code}（${getSitePct(s)}%）- ${changeText}${s.eta ? '，预计'+s.eta : ''}`);
   });
   lines.push('');
