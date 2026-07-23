@@ -144,6 +144,8 @@
   .status-progress{background:var(--parallel-soft);color:var(--parallel);}
   .status-block{background:var(--block-soft);color:var(--block);}
   .status-search{background:rgba(139,150,172,0.14);color:var(--muted);}
+  .status-negotiating{background:var(--main-soft);color:var(--main);}
+  .status-paused{background:rgba(91,100,116,0.18);color:var(--muted-2);}
 
   .desc{font-size:12px;color:var(--muted);line-height:1.65;}
 
@@ -378,6 +380,8 @@
   .rp-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;}
   .rp-pill.done{background:var(--rp-green-soft);color:var(--rp-green);}
   .rp-pill.block{background:var(--rp-orange-soft);color:var(--rp-orange);}
+  .rp-pill.negotiating{background:var(--rp-orange-soft);color:var(--rp-orange);}
+  .rp-pill.paused{background:var(--rp-gray-soft);color:var(--rp-muted);}
   .rp-pill.risk{background:var(--rp-red-soft);color:var(--rp-red);}
   .rp-pill.progress{background:var(--rp-blue-soft);color:var(--rp-blue);}
   .rp-pill.search{background:var(--rp-gray-soft);color:var(--rp-gray);}
@@ -841,6 +845,7 @@ function renderStats(){
 function cardTemplate(site){
   const displayStatus = getDisplayStatus(site);
   const meta = statusMeta[displayStatus];
+  const stageInfo = getStageInfo(site);
   const {value: pct, estimated} = estimateSopPct(site);
 
   const progressHtml = `
@@ -880,7 +885,7 @@ function cardTemplate(site){
           ${site.area ? `<div class="area">计划面积 ${site.area}</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <span class="status-badge ${meta.cls}">${getDisplayLabel(site, meta.label)}</span>
+          <span class="status-badge ${stageInfo.cls}">${stageInfo.label}</span>
           <input type="text" class="custom-stage-input" data-code="${site.code}" placeholder="自定义阶段（如：付款中）" value="${customStage.replace(/"/g,'&quot;')}">
           <button class="urgent-toggle ${isUrgent ? 'active' : ''}" data-code="${site.code}">🚩 ${isUrgent ? '待办中' : '标记待办'}</button>
         </div>
@@ -1041,6 +1046,24 @@ function getDisplayLabel(site, fallbackLabel){
   return (custom && custom.trim()) ? custom.trim() : fallbackLabel;
 }
 
+const STAGE_CLASS = {
+  done:'status-done', signing:'status-progress', negotiating:'status-negotiating',
+  search:'status-search', paused:'status-paused',
+};
+const STAGE_LABEL = {
+  done:'已完成', signing:'签约/付款中', negotiating:'谈判中',
+  search:'找仓中', paused:'暂停',
+};
+
+function getStageInfo(site){
+  const custom = state[site.code]?.customStage;
+  if(custom && custom.trim()){
+    return {label: custom.trim(), cls: 'status-progress'};
+  }
+  const bucket = healthBucket(site);
+  return {label: STAGE_LABEL[bucket] || bucket, cls: STAGE_CLASS[bucket] || 'status-progress'};
+}
+
 function getStuckDays(site){
   return daysSince(site.updated);
 }
@@ -1164,14 +1187,14 @@ function renderTable(){
     const pct = getSitePct(s);
     const remain = daysUntil(s.eta);
     const status = getDisplayStatus(s);
-    const meta = statusMeta[status];
+    const stageInfo = getStageInfo(s);
     const blockerVal = getBlocker(s);
     return {
       site: s,
       code: s.code,
       type: isHub(s) ? 'Hub' : '站点',
-      status: getDisplayLabel(s, meta?.label || s.status),
-      statusCls: meta?.cls || '',
+      status: stageInfo.label,
+      statusCls: stageInfo.cls,
       pct: pct ?? -1,
       blocker: blockerVal,
       risk: s.risk || '',
@@ -1199,7 +1222,8 @@ function renderTable(){
   html += '</tr></thead><tbody>';
   rows.forEach(r=>{
     const remainClass = r.remainOverdue ? 't-stuck-high' : '';
-    const barColor = r.status==='已完成' ? 'var(--done)' : r.statusCls==='status-block' ? 'var(--block)' : 'var(--main)';
+    const barColorMap = {'status-done':'var(--done)','status-progress':'var(--parallel)','status-negotiating':'var(--main)','status-search':'var(--muted)','status-paused':'var(--muted-2)'};
+    const barColor = barColorMap[r.statusCls] || 'var(--main)';
     html += `<tr data-code="${r.code}">
       <td class="t-code">${r.code}${isHub(r.site) ? ' 🏢' : ''}</td>
       <td class="t-muted">${r.type}</td>
@@ -1510,14 +1534,13 @@ function renderTodoTab(){
   }
 
   list.innerHTML = urgentSites.map(site=>{
-    const status = getDisplayStatus(site);
-    const meta = statusMeta[status];
+    const stageInfo = getStageInfo(site);
     const note = state[site.code]?.note || '';
     return `
       <div class="todo-card" data-code="${site.code}">
         <div class="todo-card-top">
           <span class="todo-code">🚩 ${site.code}${isHub(site) ? ' 🏢' : ''}</span>
-          <span class="status-badge ${meta.cls} todo-status">${getDisplayLabel(site, meta.label)}</span>
+          <span class="status-badge ${stageInfo.cls} todo-status">${stageInfo.label}</span>
         </div>
         ${note ? `<div class="todo-note">📝 ${note}</div>` : '<div class="todo-note-empty">还没填下一步备注</div>'}
         <button class="todo-unflag" data-code="${site.code}">移出待办</button>
@@ -1771,11 +1794,12 @@ function renderReportTab(){
   if(focusSites.length){
     focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>核心问题</th></tr></thead><tbody>` +
       focusSites.map(({site})=>{
-        const status = getDisplayStatus(site);
-        const meta = statusMeta[status];
-        const pillCls = status==='done'?'done':status==='block'?'block':status==='search'?'search':'progress';
+        const custom = state[site.code]?.customStage;
+        const bucket = healthBucket(site);
+        const pillCls = custom && custom.trim() ? 'progress' : (bucket === 'signing' ? 'progress' : bucket);
+        const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
         const reasons = reasonsFor(site);
-        return `<tr><td><b>${site.code}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${getDisplayLabel(site, meta.label)}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
+        return `<tr><td><b>${site.code}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点关注的站点 👍</td></tr></tbody>';
@@ -1844,15 +1868,16 @@ function renderReportTab(){
           <div class="rp-internal-site-rows">
             ${sites.map(s=>{
               const pct = getSitePct(s);
-              const status = getDisplayStatus(s);
-              const meta = statusMeta[status];
               const custom = state[s.code]?.customStage;
+              const bucket = healthBucket(s);
+              const pillCls = custom && custom.trim() ? 'progress' : (bucket === 'signing' ? 'progress' : bucket);
+              const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
               const note = state[s.code]?.note;
               return `<div class="rp-internal-site-row">
                 <span class="rp-internal-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
                 <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
                 <span class="rp-internal-pct">${pct}%</span>
-                <span class="rp-pill ${custom ? '' : (status==='done'?'done':status==='block'?'block':status==='search'?'search':'progress')}" ${custom ? 'style="background:var(--rp-blue-soft);color:var(--rp-blue);"' : ''}>${custom || meta.label}</span>
+                <span class="rp-pill ${pillCls}">${label}</span>
                 ${!sharedNote && note ? `<span class="rp-internal-note">：${note}</span>` : ''}
               </div>`;
             }).join('')}
