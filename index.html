@@ -173,6 +173,14 @@
 
   .card.card-urgent{border-color:var(--risk);box-shadow:0 0 0 1px var(--risk);}
 
+  .custom-stage-input{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
+    padding:3px 8px;border-radius:6px;border:1px dashed var(--border);
+    background:transparent;color:var(--muted-2);text-align:right;width:150px;
+  }
+  .custom-stage-input:focus{outline:none;border-color:var(--parallel);color:var(--parallel);border-style:solid;}
+  .custom-stage-input:not(:placeholder-shown){border-color:var(--parallel);color:var(--parallel);border-style:solid;}
+
   .urgent-toggle{
     font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
     padding:3px 8px;border-radius:6px;border:1px solid var(--border);
@@ -407,9 +415,14 @@
   .rp-internal-group{border-bottom:1px solid var(--rp-border);padding:14px 0;}
   .rp-internal-group:last-child{border-bottom:none;}
   .rp-internal-owner-name{font-weight:700;font-size:14px;color:var(--rp-blue);}
-  .rp-internal-sites{margin-top:6px;display:flex;flex-wrap:wrap;gap:8px;}
-  .rp-internal-site-chip{background:var(--rp-blue-soft);border-radius:6px;padding:4px 10px;font-size:12px;}
-  .rp-internal-site-chip b{margin-right:4px;}
+  .rp-internal-core-issue{font-size:12.5px;color:var(--rp-text);margin-top:4px;background:var(--rp-blue-soft);border-radius:6px;padding:6px 10px;display:inline-block;}
+  .rp-internal-site-rows{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+  .rp-internal-site-row{display:flex;align-items:center;gap:10px;font-size:12.5px;}
+  .rp-internal-code{font-weight:700;min-width:64px;}
+  .rp-internal-bar-wrap{display:inline-block;width:70px;height:6px;background:var(--rp-gray-soft);border-radius:3px;overflow:hidden;}
+  .rp-internal-bar-fill{display:block;height:100%;background:var(--rp-blue);}
+  .rp-internal-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rp-muted);min-width:32px;}
+  .rp-internal-note{color:var(--rp-muted);}
   .rp-internal-empty{color:var(--rp-muted);font-size:12.5px;}
 
   @media (max-width:900px){
@@ -856,6 +869,7 @@ function cardTemplate(site){
   const isUrgent = !!state[site.code]?.urgent;
   const note = state[site.code]?.note || '';
   const internalOwner = state[site.code]?.internalOwner || '';
+  const customStage = state[site.code]?.customStage || '';
 
   return `
     <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${getBlocker(site)?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
@@ -867,6 +881,7 @@ function cardTemplate(site){
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <span class="status-badge ${meta.cls}">${meta.label}</span>
+          <input type="text" class="custom-stage-input" data-code="${site.code}" placeholder="自定义阶段（如：付款中）" value="${customStage.replace(/"/g,'&quot;')}">
           <button class="urgent-toggle ${isUrgent ? 'active' : ''}" data-code="${site.code}">🚩 ${isUrgent ? '待办中' : '标记待办'}</button>
         </div>
       </div>
@@ -990,6 +1005,15 @@ function render(){
     });
   });
 
+  grid.querySelectorAll('.custom-stage-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), customStage: e.target.value};
+      await saveOverride(code, state[code]);
+    });
+  });
+
   grid.querySelectorAll('.card').forEach(card=>{
     card.addEventListener('click', ()=>{
       const code = card.dataset.code;
@@ -1032,16 +1056,6 @@ function attentionScore(site){
 
 function generateInsights(){
   const insights = [];
-
-  const stuckBlockers = SITES.filter(s => getBlocker(s) && (getStuckDays(s) ?? 0) >= 7);
-  if(stuckBlockers.length){
-    insights.push(`🔒 <b>${stuckBlockers.length}</b> 个站点有卡点且超过 7 天未更新：${stuckBlockers.map(s=>s.code).join('、')}`);
-  }
-
-  const hubIssues = SITES.filter(s => isHub(s) && getBlocker(s));
-  if(hubIssues.length){
-    insights.push(`🏢 Hub 站点中有 <b>${hubIssues.length}</b> 个存在卡点，建议优先处理：${hubIssues.map(s=>s.code).join('、')}`);
-  }
 
   const overdueEta = SITES.filter(s => {
     const remain = daysUntil(s.eta);
@@ -1812,15 +1826,32 @@ function renderReportTab(){
   });
   const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
   document.getElementById('rpInternalGroups').innerHTML = groupEntries.length
-    ? groupEntries.map(([owner, sites])=>`
+    ? groupEntries.map(([owner, sites])=>{
+        const notes = [...new Set(sites.map(s => state[s.code]?.note).filter(Boolean))];
+        const sharedNote = notes.length === 1 ? notes[0] : null;
+        return `
         <div class="rp-internal-group">
           <div class="rp-internal-owner-name">${owner}</div>
-          <div class="rp-internal-sites">${sites.map(s=>{
-            const note = state[s.code]?.note;
-            return `<span class="rp-internal-site-chip"><b>${s.code}</b>${note ? '：'+note : ''}</span>`;
-          }).join('')}</div>
+          ${sharedNote ? `<div class="rp-internal-core-issue">核心问题：${sharedNote}</div>` : ''}
+          <div class="rp-internal-site-rows">
+            ${sites.map(s=>{
+              const pct = getSitePct(s);
+              const status = getDisplayStatus(s);
+              const meta = statusMeta[status];
+              const custom = state[s.code]?.customStage;
+              const note = state[s.code]?.note;
+              return `<div class="rp-internal-site-row">
+                <span class="rp-internal-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
+                <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
+                <span class="rp-internal-pct">${pct}%</span>
+                <span class="rp-pill ${custom ? '' : (status==='done'?'done':status==='block'?'block':status==='search'?'search':'progress')}" ${custom ? 'style="background:var(--rp-blue-soft);color:var(--rp-blue);"' : ''}>${custom || meta.label}</span>
+                ${!sharedNote && note ? `<span class="rp-internal-note">：${note}</span>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
         </div>
-      `).join('')
+      `;
+      }).join('')
     : '<div class="rp-internal-empty">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动分组显示在这里</div>';
 
   document.getElementById('rpFooter').textContent =
