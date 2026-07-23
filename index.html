@@ -321,9 +321,16 @@
 
   .rp-health-row{display:grid;grid-template-columns:1fr 1.3fr;gap:24px;}
   .rp-stage-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;}
-  .rp-stage-seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#fff;}
+  .rp-stage-seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .15s ease;}
+  .rp-stage-seg:hover{opacity:0.85;}
+  .rp-stage-seg.active{box-shadow:inset 0 0 0 2px #172033;}
   .rp-stage-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;}
   .rp-stage-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--rp-muted);}
+  .rp-legend-clickable{cursor:pointer;padding:3px 8px;border-radius:6px;}
+  .rp-legend-clickable:hover{background:var(--rp-gray-soft);}
+  .rp-legend-clickable.active{background:#172033;color:#fff;font-weight:700;}
+  .rp-clear-filter{cursor:pointer;color:var(--rp-red);font-weight:600;padding:3px 8px;}
+  .rp-clear-filter:hover{text-decoration:underline;}
   .rp-stage-dot{width:10px;height:10px;border-radius:3px;}
 
   .rp-mini-title{font-size:12.5px;font-weight:700;color:var(--rp-muted);margin-bottom:10px;}
@@ -1575,7 +1582,9 @@ function populateReportFilters(){
   if([...ownerSel.options].some(o=>o.value===curOwner)) ownerSel.value = curOwner;
 }
 
-function getFilteredSitesForReport(){
+let rpHealthFilter = 'all';
+
+function getBaseFilteredSites(){
   const siteVal = document.getElementById('rpSiteFilter').value;
   const ownerVal = document.getElementById('rpOwnerFilter').value;
   const statusVal = document.getElementById('rpStatusFilter').value;
@@ -1585,6 +1594,12 @@ function getFilteredSitesForReport(){
     if(statusVal !== 'all' && getDisplayStatus(s) !== statusVal) return false;
     return true;
   });
+}
+
+function getFilteredSitesForReport(){
+  const base = getBaseFilteredSites();
+  if(rpHealthFilter === 'all') return base;
+  return base.filter(s => healthBucket(s) === rpHealthFilter);
 }
 
 function renderReportTab(){
@@ -1619,16 +1634,35 @@ function renderReportTab(){
   `;
 
   // 一、健康度分布 + 重点关注表
+  const barBase = getBaseFilteredSites();
   const counts = {}; HEALTH_BUCKETS.forEach(b=>counts[b.key]=0);
-  filtered.forEach(s => counts[healthBucket(s)]++);
+  barBase.forEach(s => counts[healthBucket(s)]++);
   document.getElementById('rpStageBar').innerHTML = HEALTH_BUCKETS.map(b=>{
     const n = counts[b.key];
     if(n===0) return '';
-    return `<div class="rp-stage-seg" style="flex-grow:${n};background:${b.color};" title="${b.label}：${n}">${n}</div>`;
+    const active = rpHealthFilter === b.key;
+    return `<div class="rp-stage-seg ${active ? 'active' : ''}" data-key="${b.key}" style="flex-grow:${n};background:${b.color};" title="点击查看${b.label}的站点">${n}</div>`;
   }).join('');
-  document.getElementById('rpStageLegend').innerHTML = HEALTH_BUCKETS.map(b=>
-    `<div class="rp-stage-legend-item"><span class="rp-stage-dot" style="background:${b.color};"></span>${b.label}（${counts[b.key]}）</div>`
-  ).join('');
+  document.getElementById('rpStageLegend').innerHTML =
+    (rpHealthFilter !== 'all' ? `<div class="rp-stage-legend-item rp-clear-filter" id="rpClearHealthFilter">✕ 清除筛选（${HEALTH_BUCKETS.find(b=>b.key===rpHealthFilter)?.label}）</div>` : '') +
+    HEALTH_BUCKETS.map(b=>
+      `<div class="rp-stage-legend-item rp-legend-clickable ${rpHealthFilter===b.key ? 'active' : ''}" data-key="${b.key}"><span class="rp-stage-dot" style="background:${b.color};"></span>${b.label}（${counts[b.key]}）</div>`
+    ).join('');
+
+  document.querySelectorAll('.rp-stage-seg, .rp-legend-clickable').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const key = el.dataset.key;
+      rpHealthFilter = (rpHealthFilter === key) ? 'all' : key;
+      renderReportTab();
+    });
+  });
+  const clearBtn = document.getElementById('rpClearHealthFilter');
+  if(clearBtn){
+    clearBtn.addEventListener('click', ()=>{
+      rpHealthFilter = 'all';
+      renderReportTab();
+    });
+  }
 
   const focusSites = getScoredSites(8).filter(x => filtered.includes(x.site));
   const focusTable = document.getElementById('rpFocusTable');
