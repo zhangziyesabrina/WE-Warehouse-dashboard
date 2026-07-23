@@ -636,7 +636,7 @@
     <div class="stats">
       <div class="stat" data-goto="all"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
       <div class="stat done" data-goto="done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
-      <div class="stat block" data-goto="block"><div class="stat-label">有卡点</div><div class="stat-value" id="statBlock">0</div></div>
+      <div class="stat block" data-goto="block"><div class="stat-label">含卡点信息</div><div class="stat-value" id="statBlock">0</div></div>
       <div class="stat risk" data-goto="risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
       <div class="stat avg" data-goto="all"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
     </div>
@@ -671,8 +671,8 @@
     <div class="chip active" data-f="all">全部</div>
     <div class="chip" data-f="done">已完成</div>
     <div class="chip" data-f="progress">进行中</div>
-    <div class="chip" data-f="block">有卡点</div>
-    <div class="chip" data-f="search">寻仓/看仓中</div>
+    <div class="chip" data-f="block">含卡点信息</div>
+    <div class="chip" data-f="search">找仓中</div>
     <div class="chip" data-f="risk">有风险点</div>
   </div>
 
@@ -716,7 +716,7 @@
             <option value="all">全部状态</option>
             <option value="done">已完成</option>
             <option value="progress">进行中</option>
-            <option value="block">有卡点</option>
+            <option value="block">含卡点信息</option>
             <option value="search">找仓中</option>
           </select>
         </label>
@@ -844,7 +844,6 @@ function renderStats(){
 
 function cardTemplate(site){
   const displayStatus = getDisplayStatus(site);
-  const meta = statusMeta[displayStatus];
   const stageInfo = getStageInfo(site);
   const {value: pct, estimated} = estimateSopPct(site);
 
