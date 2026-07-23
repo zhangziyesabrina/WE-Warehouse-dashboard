@@ -1822,9 +1822,12 @@ function renderReportTab(){
   const progressList = document.getElementById('rpProgressList');
   if(recentlyUpdated.length){
     progressList.innerHTML = recentlyUpdated.map(({s, d})=>{
+      const note = state[s.code]?.note;
+      const custom = state[s.code]?.customStage;
+      const changeText = note || s.desc || '无更新说明';
       return `<div class="rp-progress-card">
-        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-progress-pct">${getSitePct(s)}%</span></div>
-        <div class="rp-progress-row"><b>本周变化：</b>${s.desc || '无更新说明'}</div>
+        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}</div>
+        <div class="rp-progress-row"><b>本周变化：</b>${changeText}</div>
         ${s.eta ? `<div class="rp-progress-row"><b>下一步：</b>预计 ${s.eta}</div>` : ''}
       </div>`;
     }).join('');
@@ -1967,7 +1970,9 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   lines.push('');
   lines.push('三、本周关键进展：');
   filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
-    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${s.desc || '无更新说明'}${s.eta ? '，预计'+s.eta : ''}`);
+    const note = state[s.code]?.note;
+    const changeText = note || s.desc || '无更新说明';
+    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${changeText}${s.eta ? '，预计'+s.eta : ''}`);
   });
   lines.push('');
   lines.push('四、时间计划与延期风险：');
