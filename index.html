@@ -189,6 +189,13 @@
   .note-input::placeholder{color:var(--muted-2);}
   .note-input:focus{outline:none;border-color:var(--parallel);}
 
+  .internal-owner-input{
+    width:100%;background:rgba(63,193,240,0.08);border:1px solid var(--parallel);border-radius:6px;
+    padding:7px 10px;font-size:11.5px;color:var(--text);font-family:'Inter',sans-serif;font-weight:600;
+  }
+  .internal-owner-input::placeholder{color:var(--muted-2);font-weight:400;}
+  .internal-owner-input:focus{outline:none;border-color:var(--main);}
+
   /* insight card */
   .insight-card{
     margin-top:24px;background:linear-gradient(180deg, rgba(63,193,240,0.08), rgba(63,193,240,0.02));
@@ -352,6 +359,14 @@
   .rp-copy-btn:hover{opacity:0.9;}
 
   .rp-footer{margin-top:14px;font-size:11px;color:var(--rp-muted);}
+
+  .rp-internal-group{border-bottom:1px solid var(--rp-border);padding:14px 0;}
+  .rp-internal-group:last-child{border-bottom:none;}
+  .rp-internal-owner-name{font-weight:700;font-size:14px;color:var(--rp-blue);}
+  .rp-internal-sites{margin-top:6px;display:flex;flex-wrap:wrap;gap:8px;}
+  .rp-internal-site-chip{background:var(--rp-blue-soft);border-radius:6px;padding:4px 10px;font-size:12px;}
+  .rp-internal-site-chip b{margin-right:4px;}
+  .rp-internal-empty{color:var(--rp-muted);font-size:12.5px;}
 
   @media (max-width:900px){
     .rp-kpi-row{grid-template-columns:repeat(3,1fr);}
@@ -683,6 +698,11 @@
         <table class="rp-table" id="rpOwnerTable"></table>
       </div>
 
+      <div class="rp-section-block">
+        <div class="rp-section-title"><i data-lucide="users"></i>五、当前卡在内部谁手上</div>
+        <div id="rpInternalGroups"></div>
+      </div>
+
       <button id="copyReportBtn" class="rp-copy-btn">复制为文字（发给老板）</button>
       <div class="rp-footer" id="rpFooter"></div>
 
@@ -797,6 +817,7 @@ function cardTemplate(site){
 
   const isUrgent = !!state[site.code]?.urgent;
   const note = state[site.code]?.note || '';
+  const internalOwner = state[site.code]?.internalOwner || '';
 
   return `
     <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
@@ -814,8 +835,11 @@ function cardTemplate(site){
       <div class="desc">${site.desc}</div>
       ${progressHtml}
       ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
+      <div class="next-action-row internal-owner-row">
+        <input type="text" class="internal-owner-input" data-code="${site.code}" placeholder="内部处理人（比如：陈文-财务 / Alan-租赁组）" value="${internalOwner.replace(/"/g,'&quot;')}">
+      </div>
       <div class="next-action-row">
-        <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步 / 当前负责人（比如：在Alan手上审核LOI）" value="${note.replace(/"/g,'&quot;')}">
+        <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步说明（比如：代收协议待处理）" value="${note.replace(/"/g,'&quot;')}">
       </div>
       <div class="owners">跟进人：${site.owners.join(' · ')}</div>
       <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
@@ -895,6 +919,15 @@ function render(){
       state[code] = {...(state[code]||{}), note: e.target.value};
       await saveOverride(code, state[code]);
       renderAttention();
+    });
+  });
+
+  grid.querySelectorAll('.internal-owner-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), internalOwner: e.target.value};
+      await saveOverride(code, state[code]);
     });
   });
 
@@ -1665,6 +1698,28 @@ function renderReportTab(){
     ownerTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无数据</td></tr></tbody>';
   }
 
+  // 五、当前卡在内部谁手上
+  const internalGroups = {};
+  filtered.forEach(s=>{
+    const owner = state[s.code]?.internalOwner;
+    if(owner && owner.trim()){
+      if(!internalGroups[owner]) internalGroups[owner] = [];
+      internalGroups[owner].push(s);
+    }
+  });
+  const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
+  document.getElementById('rpInternalGroups').innerHTML = groupEntries.length
+    ? groupEntries.map(([owner, sites])=>`
+        <div class="rp-internal-group">
+          <div class="rp-internal-owner-name">${owner}</div>
+          <div class="rp-internal-sites">${sites.map(s=>{
+            const note = state[s.code]?.note;
+            return `<span class="rp-internal-site-chip"><b>${s.code}</b>${note ? '：'+note : ''}</span>`;
+          }).join('')}</div>
+        </div>
+      `).join('')
+    : '<div class="rp-internal-empty">还没有站点填写"内部处理人"——在站点卡片上填了之后会自动分组显示在这里</div>';
+
   document.getElementById('rpFooter').textContent =
     `数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
@@ -1723,6 +1778,28 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   Object.entries(ownerMap).sort((a,b)=>b[1].count-a[1].count).forEach(([owner,d])=>{
     lines.push(`  ${owner} - 负责${d.count}个站点，${d.blockers}个有卡点`);
   });
+  lines.push('');
+  lines.push('五、当前卡在内部谁手上：');
+  const internalGroups = {};
+  filtered.forEach(s=>{
+    const owner = state[s.code]?.internalOwner;
+    if(owner && owner.trim()){
+      if(!internalGroups[owner]) internalGroups[owner] = [];
+      internalGroups[owner].push(s);
+    }
+  });
+  const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
+  if(groupEntries.length){
+    groupEntries.forEach(([owner, sites])=>{
+      const siteDescs = sites.map(s=>{
+        const note = state[s.code]?.note;
+        return note ? `${s.code}(${note})` : s.code;
+      }).join('、');
+      lines.push(`  ${owner}：${siteDescs}`);
+    });
+  } else {
+    lines.push('  暂无标记');
+  }
   lines.push('');
   lines.push(`数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`);
 
