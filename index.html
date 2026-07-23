@@ -1048,7 +1048,8 @@ function getStuckDays(site){
 function attentionScore(site){
   let score = 0;
   if(state[site.code]?.urgent) score += 10;
-  if(getBlocker(site)) score += 3;
+  const customStage = state[site.code]?.customStage;
+  if(customStage && customStage.trim()) score += 5;
   const stuck = getStuckDays(site);
   if(stuck !== null){
     if(stuck >= 7) score += 3;
@@ -1056,7 +1057,6 @@ function attentionScore(site){
   }
   const remain = daysUntil(site.eta);
   if(remain !== null && remain < 0 && getDisplayStatus(site) !== 'done') score += 4;
-  if(getDisplayStatus(site) === 'block') score += 1;
   return score;
 }
 
@@ -1601,16 +1601,18 @@ function classifyForInsight(site){
   const status = getDisplayStatus(site);
   const stuck = getStuckDays(site);
   const urgent = !!state[site.code]?.urgent;
+  const customStage = state[site.code]?.customStage;
 
   if(urgent){
     const note = state[site.code]?.note;
     return {priority:0, icon:'triangle-alert', color:'var(--rp-red)', text: note || getBlocker(site) || '已标记为紧急待办'};
   }
+  if(customStage && customStage.trim()){
+    const note = state[site.code]?.note;
+    return {priority:0.5, icon:'refresh-cw', color:'var(--rp-blue)', text: `${customStage.trim()}，进度 ${pct}%${note ? '，' + note : ''}`};
+  }
   if(remain !== null && remain < 0 && status !== 'done'){
     return {priority:1, icon:'calendar-clock', color:'var(--rp-red)', text:`已超过预计完成日期 ${Math.abs(remain)} 天，需要跟进`};
-  }
-  if(getBlocker(site) && stuck !== null && stuck >= 7){
-    return {priority:1.5, icon:'triangle-alert', color:'var(--rp-orange)', text:`卡点：${getBlocker(site)}，整体进度仅 ${pct}%`};
   }
   if(pct >= 80 && status !== 'done'){
     return {priority:2, icon:'trending-up', color:'var(--rp-blue)', text:`进度已达 ${pct}%${site.eta ? `，预计 ${site.eta} 完成` : ''}`};
