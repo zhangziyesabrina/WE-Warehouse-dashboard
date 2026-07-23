@@ -257,6 +257,18 @@
   table.site-table tbody tr:hover{background:rgba(255,255,255,0.03);}
   table.site-table td.t-code{font-weight:700;}
   table.site-table td.t-stuck-high{color:var(--risk);font-weight:700;}
+  table.site-table td.t-muted{color:var(--muted);font-size:11.5px;}
+  table.site-table td.t-owners{max-width:220px;white-space:normal;}
+  table.site-table td.t-risk{color:var(--risk);font-size:11.5px;max-width:200px;white-space:normal;}
+  .t-bar-wrap{display:inline-block;width:56px;height:6px;background:#1B2743;border-radius:3px;vertical-align:middle;margin-right:6px;overflow:hidden;}
+  .t-bar-fill{display:block;height:100%;}
+  .t-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .t-blocker-input{
+    width:100%;min-width:150px;background:#0F1830;border:1px solid var(--border);border-radius:6px;
+    padding:5px 8px;font-size:11.5px;color:var(--text);font-family:'Inter',sans-serif;
+  }
+  .t-blocker-input::placeholder{color:var(--muted-2);}
+  .t-blocker-input:focus{outline:none;border-color:var(--parallel);background:#132038;}
 
   .tab-count{
     font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
@@ -774,7 +786,7 @@ function getDisplayStatus(site){
   const {value: pct} = estimateSopPct(site);
   if(pct === 100) return 'done';
   if(isSearchStage(site)) return 'search';
-  if(site.blocker) return 'block';
+  if(getBlocker(site)) return 'block';
   return site.status;
 }
 
@@ -813,7 +825,7 @@ function cardTemplate(site){
   `;
 
   const tags = [];
-  if(site.blocker) tags.push(`<span class="tag blocker">🔒 卡点：${site.blocker}</span>`);
+  if(getBlocker(site)) tags.push(`<span class="tag blocker">🔒 卡点：${getBlocker(site)}</span>`);
   if(site.risk) tags.push(`<span class="tag risk">⚠️ ${site.risk}</span>`);
   if(site.start) tags.push(`<span class="tag eta">📅 开始：${site.start}</span>`);
   if(site.eta){
@@ -832,7 +844,7 @@ function cardTemplate(site){
   const internalOwner = state[site.code]?.internalOwner || '';
 
   return `
-    <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${site.blocker?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
+    <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${getBlocker(site)?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
       <div class="card-top">
         <div>
           <div class="code">${site.code}${isHub(site) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
@@ -964,6 +976,12 @@ function getSitePct(site){
   return estimateSopPct(site).value;
 }
 
+function getBlocker(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'blockerOverride')) return o['blockerOverride'];
+  return site['blocker'] || '';
+}
+
 function getStuckDays(site){
   return daysSince(site.updated);
 }
@@ -971,7 +989,7 @@ function getStuckDays(site){
 function attentionScore(site){
   let score = 0;
   if(state[site.code]?.urgent) score += 10;
-  if(site.blocker) score += 3;
+  if(getBlocker(site)) score += 3;
   if(site.risk) score += 2;
   const stuck = getStuckDays(site);
   if(stuck !== null){
@@ -987,7 +1005,7 @@ function attentionScore(site){
 function generateInsights(){
   const insights = [];
 
-  const stuckBlockers = SITES.filter(s => s.blocker && (getStuckDays(s) ?? 0) >= 7);
+  const stuckBlockers = SITES.filter(s => getBlocker(s) && (getStuckDays(s) ?? 0) >= 7);
   if(stuckBlockers.length){
     insights.push(`🔒 <b>${stuckBlockers.length}</b> 个站点有卡点且超过 7 天未更新：${stuckBlockers.map(s=>s.code).join('、')}`);
   }
@@ -997,7 +1015,7 @@ function generateInsights(){
     insights.push(`⚠️ <b>${riskSites.length}</b> 个站点存在风险点：${riskSites.map(s=>s.code).join('、')}`);
   }
 
-  const hubIssues = SITES.filter(s => isHub(s) && (s.blocker || s.risk));
+  const hubIssues = SITES.filter(s => isHub(s) && (getBlocker(s) || s.risk));
   if(hubIssues.length){
     insights.push(`🏢 Hub 站点中有 <b>${hubIssues.length}</b> 个存在卡点或风险点，建议优先处理：${hubIssues.map(s=>s.code).join('、')}`);
   }
@@ -1090,27 +1108,30 @@ function renderTable(){
     {key:'code', label:'站点'},
     {key:'type', label:'类型'},
     {key:'status', label:'状态'},
-    {key:'pct', label:'进度%'},
-    {key:'blocker', label:'卡点'},
+    {key:'pct', label:'进度'},
+    {key:'blocker', label:'卡点（可编辑）'},
     {key:'risk', label:'风险点'},
-    {key:'owners', label:'跟进人'},
-    {key:'start', label:'开始时间'},
+    {key:'start', label:'开始'},
     {key:'eta', label:'预计完成'},
-    {key:'remain', label:'剩余/超期天数'},
+    {key:'remain', label:'剩余/超期'},
+    {key:'owners', label:'跟进人'},
   ];
 
   const rows = SITES.map(s=>{
     const pct = getSitePct(s);
     const remain = daysUntil(s.eta);
     const status = getDisplayStatus(s);
+    const meta = statusMeta[status];
+    const blockerVal = getBlocker(s);
     return {
+      site: s,
       code: s.code,
       type: isHub(s) ? 'Hub' : '站点',
-      status: statusMeta[status]?.label || s.status,
+      status: meta?.label || s.status,
+      statusCls: meta?.cls || '',
       pct: pct ?? -1,
-      pctDisplay: pct !== null && pct !== undefined ? pct+'%' : '—',
-      blocker: s.blocker || '—',
-      risk: s.risk ? '⚠️' : '—',
+      blocker: blockerVal,
+      risk: s.risk || '',
       owners: s.owners.join(' · ') || '—',
       start: s.start || '—',
       eta: s.eta || '—',
@@ -1135,17 +1156,21 @@ function renderTable(){
   html += '</tr></thead><tbody>';
   rows.forEach(r=>{
     const remainClass = r.remainOverdue ? 't-stuck-high' : '';
+    const barColor = r.status==='已完成' ? 'var(--done)' : r.statusCls==='status-block' ? 'var(--block)' : 'var(--main)';
     html += `<tr data-code="${r.code}">
-      <td class="t-code">${r.code}</td>
-      <td>${r.type}</td>
-      <td>${r.status}</td>
-      <td>${r.pctDisplay}</td>
-      <td>${r.blocker}</td>
-      <td>${r.risk}</td>
-      <td>${r.owners}</td>
-      <td>${r.start}</td>
-      <td>${r.eta}</td>
+      <td class="t-code">${r.code}${isHub(r.site) ? ' 🏢' : ''}</td>
+      <td class="t-muted">${r.type}</td>
+      <td><span class="status-badge ${r.statusCls}">${r.status}</span></td>
+      <td>
+        <span class="t-bar-wrap"><span class="t-bar-fill" style="width:${r.pct}%;background:${barColor};"></span></span>
+        <span class="t-pct">${r.pct}%</span>
+      </td>
+      <td><input type="text" class="t-blocker-input" data-code="${r.code}" placeholder="—" value="${r.blocker.replace(/"/g,'&quot;')}"></td>
+      <td class="t-risk" title="${r.risk}">${r.risk ? '⚠️ ' + (r.risk.length>18 ? r.risk.slice(0,18)+'…' : r.risk) : '—'}</td>
+      <td class="t-muted">${r.start}</td>
+      <td class="t-muted">${r.eta}</td>
       <td class="${remainClass}">${r.remainDisplay}</td>
+      <td class="t-muted t-owners">${r.owners}</td>
     </tr>`;
   });
   html += '</tbody>';
@@ -1163,8 +1188,19 @@ function renderTable(){
     });
   });
 
+  table.querySelectorAll('.t-blocker-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), blockerOverride: e.target.value};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
   table.querySelectorAll('tbody tr').forEach(tr=>{
-    tr.addEventListener('click', ()=>{
+    tr.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('t-blocker-input')) return;
       const site = SITES.find(s=>s.code===tr.dataset.code);
       if(site) openTrainModal(site);
     });
@@ -1209,7 +1245,7 @@ const SOP_KEYWORDS = [
 ];
 
 function estimateSopPctFromText(site){
-  const text = [site.desc, site.blocker, site.eta, site.risk].filter(Boolean).join(' ');
+  const text = [site.desc, getBlocker(site), site.eta, site.risk].filter(Boolean).join(' ');
   let best = null;
   for(const item of SOP_KEYWORDS){
     for(const kw of item.kws){
@@ -1313,9 +1349,9 @@ function openTrainModal(site){
         <div class="lbl">距上次更新</div>
         <div class="val">${stuckText}</div>
       </div>
-      <div class="train-status-card ${site.blocker ? 'stuck' : 'ok'}">
+      <div class="train-status-card ${getBlocker(site) ? 'stuck' : 'ok'}">
         <div class="lbl">卡在谁 / 什么这里</div>
-        <div class="val">${site.blocker || '暂无明确卡点'}</div>
+        <div class="val">${getBlocker(site) || '暂无明确卡点'}</div>
       </div>
       <div class="train-status-card">
         <div class="lbl">跟进人</div>
@@ -1490,7 +1526,7 @@ function reasonsFor(site){
   const reasons = [];
   const note = state[site.code]?.note;
   if(note) reasons.push(`📝 ${note}`);
-  if(site.blocker) reasons.push(`卡点：${site.blocker}`);
+  if(getBlocker(site)) reasons.push(`卡点：${getBlocker(site)}`);
   if(site.risk) reasons.push(`风险：${site.risk}`);
   const remain = daysUntil(site.eta);
   if(remain !== null && remain < 0 && getDisplayStatus(site) !== 'done') reasons.push(`超期${Math.abs(remain)}天`);
@@ -1527,13 +1563,13 @@ function classifyForInsight(site){
 
   if(urgent){
     const note = state[site.code]?.note;
-    return {priority:0, icon:'triangle-alert', color:'var(--rp-red)', text: note || site.blocker || '已标记为紧急待办'};
+    return {priority:0, icon:'triangle-alert', color:'var(--rp-red)', text: note || getBlocker(site) || '已标记为紧急待办'};
   }
   if(remain !== null && remain < 0 && status !== 'done'){
     return {priority:1, icon:'calendar-clock', color:'var(--rp-red)', text:`已超过预计完成日期 ${Math.abs(remain)} 天，需要跟进`};
   }
-  if(site.blocker && stuck !== null && stuck >= 7){
-    return {priority:1.5, icon:'triangle-alert', color:'var(--rp-orange)', text:`卡点：${site.blocker}，整体进度仅 ${pct}%`};
+  if(getBlocker(site) && stuck !== null && stuck >= 7){
+    return {priority:1.5, icon:'triangle-alert', color:'var(--rp-orange)', text:`卡点：${getBlocker(site)}，整体进度仅 ${pct}%`};
   }
   if(pct >= 80 && status !== 'done'){
     return {priority:2, icon:'trending-up', color:'var(--rp-blue)', text:`进度已达 ${pct}%${site.eta ? `，预计 ${site.eta} 完成` : ''}`};
