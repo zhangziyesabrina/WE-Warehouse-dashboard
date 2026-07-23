@@ -738,7 +738,7 @@
             <div class="rp-stage-legend" id="rpStageLegend"></div>
           </div>
           <div class="rp-health-right">
-            <div class="rp-mini-title">重点关注站点</div>
+            <div class="rp-mini-title">重点跟进站点</div>
             <table class="rp-table" id="rpFocusTable"></table>
           </div>
         </div>
@@ -1286,16 +1286,16 @@ document.querySelectorAll('.view-btn').forEach(btn=>{
 
 // ===== SOP train modal =====
 const SOP_MILESTONES = [
-  {pct:10, name:'拿到需求，中介准备仓源'},
-  {pct:15, name:'确定新仓定位 / 搜寻看仓'},
-  {pct:20, name:'区长选定意向'},
-  {pct:25, name:'谈判商业条款，出具 LOI'},
-  {pct:30, name:'签署 LOI'},
-  {pct:50, name:'房东出合同 → 法务审阅'},
-  {pct:55, name:'各条款逐渐达成一致'},
-  {pct:60, name:'租约签字流程（我方签字）'},
-  {pct:90, name:'拿到保险 COI，合同双签'},
-  {pct:100, name:'付款流程（完成）'},
+  {pct:10, name:'拿到需求，中介准备仓源', short:'巡仓中'},
+  {pct:15, name:'确定新仓定位 / 搜寻看仓', short:'巡仓中'},
+  {pct:20, name:'区长选定意向', short:'意向筛选'},
+  {pct:25, name:'谈判商业条款，出具 LOI', short:'已发意向书'},
+  {pct:30, name:'签署 LOI', short:'已签LOI'},
+  {pct:50, name:'房东出合同 → 法务审阅', short:'待法务审阅'},
+  {pct:55, name:'各条款逐渐达成一致', short:'条款协商中'},
+  {pct:60, name:'租约签字流程（我方签字）', short:'待签约'},
+  {pct:90, name:'拿到保险 COI，合同双签', short:'COI+双签中'},
+  {pct:100, name:'付款流程（完成）', short:'付款流程中'},
 ];
 
 const SOP_KEYWORDS = [
@@ -1638,7 +1638,8 @@ function classifyForInsight(site){
     return {priority:1, icon:'calendar-clock', color:'var(--rp-red)', text:`已超过预计完成日期 ${Math.abs(remain)} 天，需要跟进`};
   }
   if(pct >= 80 && status !== 'done'){
-    return {priority:2, icon:'trending-up', color:'var(--rp-blue)', text:`进度已达 ${pct}%${site.eta ? `，预计 ${site.eta} 完成` : ''}`};
+    const stepName = currentSopStep(pct).short;
+    return {priority:2, icon:'trending-up', color:'var(--rp-blue)', text:`目前${stepName}，进度 ${pct}%${site.eta ? `，预计 ${site.eta} 完成` : ''}`};
   }
   if(status === 'done'){
     return {priority:3, icon:'circle-check', color:'var(--rp-green)', text:`已完成${site.eta ? `，${site.eta}` : ''}`};
@@ -1789,20 +1790,25 @@ function renderReportTab(){
     });
   }
 
-  const focusSites = getScoredSites(8).filter(x => filtered.includes(x.site));
+  const hubSites = filtered.filter(s => isHub(s));
+  const datedSites = filtered
+    .filter(s => !hubSites.includes(s) && daysUntil(s.eta) !== null && getDisplayStatus(s) !== 'done')
+    .sort((a,b) => daysUntil(a.eta) - daysUntil(b.eta));
+  const followUpSites = [...hubSites, ...datedSites].slice(0, 10);
+
   const focusTable = document.getElementById('rpFocusTable');
-  if(focusSites.length){
+  if(followUpSites.length){
     focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>核心问题</th></tr></thead><tbody>` +
-      focusSites.map(({site})=>{
+      followUpSites.map(site=>{
         const custom = state[site.code]?.customStage;
-        const bucket = healthBucket(site);
-        const pillCls = custom && custom.trim() ? 'progress' : (bucket === 'signing' ? 'progress' : bucket);
-        const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
+        const doneNow = getDisplayStatus(site) === 'done';
+        const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
+        const pillCls = doneNow ? 'done' : (custom && custom.trim() ? 'progress' : 'negotiating');
         const reasons = reasonsFor(site);
-        return `<tr><td><b>${site.code}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
+        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
-    focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点关注的站点 👍</td></tr></tbody>';
+    focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点跟进的站点 👍</td></tr></tbody>';
   }
 
   // 二、本周关键进展
@@ -1917,12 +1923,19 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
     if(n>0) lines.push(`  ${b.label}：${n}个`);
   });
   lines.push('');
-  lines.push('重点关注站点：');
-  const focusSites = getScoredSites(8).filter(x => filtered.includes(x.site));
-  if(focusSites.length){
-    focusSites.forEach(({site})=>{
+  lines.push('重点跟进站点：');
+  const hubSitesCopy = filtered.filter(s => isHub(s));
+  const datedSitesCopy = filtered
+    .filter(s => !hubSitesCopy.includes(s) && daysUntil(s.eta) !== null && getDisplayStatus(s) !== 'done')
+    .sort((a,b) => daysUntil(a.eta) - daysUntil(b.eta));
+  const followUpSitesCopy = [...hubSitesCopy, ...datedSitesCopy].slice(0, 10);
+  if(followUpSitesCopy.length){
+    followUpSitesCopy.forEach(site=>{
+      const custom = state[site.code]?.customStage;
+      const doneNow = getDisplayStatus(site) === 'done';
+      const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
       const reasons = reasonsFor(site);
-      lines.push(`  ${site.code}（${getSitePct(site)}%）- ${reasons.join('，') || '需关注'}`);
+      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）- ${reasons.join('，') || '需关注'}`);
     });
   } else {
     lines.push('  暂无');
