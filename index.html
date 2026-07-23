@@ -699,23 +699,18 @@
       </div>
 
       <div class="rp-section-block">
-        <div class="rp-section-title"><i data-lucide="trending-up"></i>二、本周关键进展</div>
+        <div class="rp-section-title"><i data-lucide="users"></i>二、当前卡在谁手上</div>
+        <div id="rpInternalGroups"></div>
+      </div>
+
+      <div class="rp-section-block">
+        <div class="rp-section-title"><i data-lucide="trending-up"></i>三、本周关键进展</div>
         <div id="rpProgressList"></div>
       </div>
 
       <div class="rp-section-block">
-        <div class="rp-section-title"><i data-lucide="calendar-clock"></i>三、时间计划与延期风险</div>
+        <div class="rp-section-title"><i data-lucide="calendar-clock"></i>四、时间计划与延期风险</div>
         <div id="rpTimeline"></div>
-      </div>
-
-      <div class="rp-section-block">
-        <div class="rp-section-title"><i data-lucide="user-round"></i>四、负责人工作量</div>
-        <table class="rp-table" id="rpOwnerTable"></table>
-      </div>
-
-      <div class="rp-section-block">
-        <div class="rp-section-title"><i data-lucide="users"></i>五、当前卡在内部谁手上</div>
-        <div id="rpInternalGroups"></div>
       </div>
 
       <button id="copyReportBtn" class="rp-copy-btn">复制为文字（发给老板）</button>
@@ -1692,7 +1687,6 @@ function renderReportTab(){
         <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-progress-pct">${getSitePct(s)}%</span></div>
         <div class="rp-progress-row"><b>本周变化：</b>${s.desc || '无更新说明'}</div>
         ${s.eta ? `<div class="rp-progress-row"><b>下一步：</b>预计 ${s.eta}</div>` : ''}
-        <div class="rp-progress-row"><b>负责人：</b>${s.owners.join(' / ') || '未指定'}</div>
       </div>`;
     }).join('');
   } else {
@@ -1722,31 +1716,7 @@ function renderReportTab(){
       <div class="rp-stage-legend-item"><span class="rp-flag none"></span>未设日期</div>
     </div>`;
 
-  // 四、负责人工作量
-  const ownerMap = {};
-  filtered.forEach(s=>{
-    s.owners.forEach(o=>{
-      if(!ownerMap[o]) ownerMap[o] = {count:0, blockers:0, lastUpdate:null, lastUpdateStr:''};
-      ownerMap[o].count++;
-      if(s.blocker) ownerMap[o].blockers++;
-      const d = parseUsDate(s.updated);
-      if(d && (!ownerMap[o].lastUpdate || d > ownerMap[o].lastUpdate)){
-        ownerMap[o].lastUpdate = d;
-        ownerMap[o].lastUpdateStr = s.updated;
-      }
-    });
-  });
-  const ownerRows = Object.entries(ownerMap).sort((a,b)=>b[1].count-a[1].count);
-  const ownerTable = document.getElementById('rpOwnerTable');
-  if(ownerRows.length){
-    ownerTable.innerHTML = `<thead><tr><th>负责人</th><th>负责站点</th><th>卡点项目</th><th>最近更新</th></tr></thead><tbody>` +
-      ownerRows.map(([owner, d])=>`<tr><td>${owner}</td><td>${d.count}</td><td>${d.blockers}</td><td>${d.lastUpdateStr || '—'}</td></tr>`).join('') +
-      '</tbody>';
-  } else {
-    ownerTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无数据</td></tr></tbody>';
-  }
-
-  // 五、当前卡在内部谁手上
+  // 二、当前卡在谁手上
   const internalGroups = {};
   filtered.forEach(s=>{
     const owner = state[s.code]?.internalOwner;
@@ -1766,7 +1736,7 @@ function renderReportTab(){
           }).join('')}</div>
         </div>
       `).join('')
-    : '<div class="rp-internal-empty">还没有站点填写"内部处理人"——在站点卡片上填了之后会自动分组显示在这里</div>';
+    : '<div class="rp-internal-empty">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动分组显示在这里</div>';
 
   document.getElementById('rpFooter').textContent =
     `数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1809,25 +1779,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
     lines.push('  暂无');
   }
   lines.push('');
-  lines.push('二、本周关键进展：');
-  filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
-    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${s.desc || '无更新说明'}${s.eta ? '，预计'+s.eta : ''}，负责人：${s.owners.join('/')||'未指定'}`);
-  });
-  lines.push('');
-  lines.push('四、负责人工作量：');
-  const ownerMap = {};
-  filtered.forEach(s=>{
-    s.owners.forEach(o=>{
-      if(!ownerMap[o]) ownerMap[o] = {count:0, blockers:0};
-      ownerMap[o].count++;
-      if(s.blocker) ownerMap[o].blockers++;
-    });
-  });
-  Object.entries(ownerMap).sort((a,b)=>b[1].count-a[1].count).forEach(([owner,d])=>{
-    lines.push(`  ${owner} - 负责${d.count}个站点，${d.blockers}个有卡点`);
-  });
-  lines.push('');
-  lines.push('五、当前卡在内部谁手上：');
+  lines.push('二、当前卡在谁手上：');
   const internalGroups = {};
   filtered.forEach(s=>{
     const owner = state[s.code]?.internalOwner;
@@ -1848,6 +1800,23 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   } else {
     lines.push('  暂无标记');
   }
+  lines.push('');
+  lines.push('三、本周关键进展：');
+  filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
+    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${s.desc || '无更新说明'}${s.eta ? '，预计'+s.eta : ''}`);
+  });
+  lines.push('');
+  lines.push('四、时间计划与延期风险：');
+  const timelineGroups = {};
+  filtered.forEach(s=>{
+    const {key, label} = etaMonthLabel(s);
+    if(!timelineGroups[key]) timelineGroups[key] = {label, sites:[]};
+    timelineGroups[key].sites.push(s);
+  });
+  Object.keys(timelineGroups).sort().forEach(key=>{
+    const g = timelineGroups[key];
+    lines.push(`  ${g.label}：${g.sites.map(s=>s.code).join('、')}`);
+  });
   lines.push('');
   lines.push(`数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`);
 
