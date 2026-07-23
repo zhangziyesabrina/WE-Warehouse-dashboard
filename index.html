@@ -880,7 +880,7 @@ function cardTemplate(site){
           ${site.area ? `<div class="area">计划面积 ${site.area}</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <span class="status-badge ${meta.cls}">${meta.label}</span>
+          <span class="status-badge ${meta.cls}">${getDisplayLabel(site, meta.label)}</span>
           <input type="text" class="custom-stage-input" data-code="${site.code}" placeholder="自定义阶段（如：付款中）" value="${customStage.replace(/"/g,'&quot;')}">
           <button class="urgent-toggle ${isUrgent ? 'active' : ''}" data-code="${site.code}">🚩 ${isUrgent ? '待办中' : '标记待办'}</button>
         </div>
@@ -1011,6 +1011,7 @@ function render(){
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), customStage: e.target.value};
       await saveOverride(code, state[code]);
+      render();
     });
   });
 
@@ -1033,6 +1034,11 @@ function getBlocker(site){
   const o = state[site.code];
   if(o && Object.prototype.hasOwnProperty.call(o, 'blockerOverride')) return o['blockerOverride'];
   return site['blocker'] || '';
+}
+
+function getDisplayLabel(site, fallbackLabel){
+  const custom = state[site.code]?.customStage;
+  return (custom && custom.trim()) ? custom.trim() : fallbackLabel;
 }
 
 function getStuckDays(site){
@@ -1164,7 +1170,7 @@ function renderTable(){
       site: s,
       code: s.code,
       type: isHub(s) ? 'Hub' : '站点',
-      status: meta?.label || s.status,
+      status: getDisplayLabel(s, meta?.label || s.status),
       statusCls: meta?.cls || '',
       pct: pct ?? -1,
       blocker: blockerVal,
@@ -1511,7 +1517,7 @@ function renderTodoTab(){
       <div class="todo-card" data-code="${site.code}">
         <div class="todo-card-top">
           <span class="todo-code">🚩 ${site.code}${isHub(site) ? ' 🏢' : ''}</span>
-          <span class="status-badge ${meta.cls} todo-status">${meta.label}</span>
+          <span class="status-badge ${meta.cls} todo-status">${getDisplayLabel(site, meta.label)}</span>
         </div>
         ${note ? `<div class="todo-note">📝 ${note}</div>` : '<div class="todo-note-empty">还没填下一步备注</div>'}
         <button class="todo-unflag" data-code="${site.code}">移出待办</button>
@@ -1767,7 +1773,7 @@ function renderReportTab(){
         const meta = statusMeta[status];
         const pillCls = status==='done'?'done':status==='block'?'block':status==='search'?'search':'progress';
         const reasons = reasonsFor(site);
-        return `<tr><td><b>${site.code}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${meta.label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
+        return `<tr><td><b>${site.code}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${getDisplayLabel(site, meta.label)}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点关注的站点 👍</td></tr></tbody>';
