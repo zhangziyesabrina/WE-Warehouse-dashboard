@@ -964,6 +964,9 @@ function render(){
       renderStats();
       await saveOverride(code, state[code]);
     });
+    input.addEventListener('change', ()=>{
+      render();
+    });
     input.addEventListener('click', (e)=> e.stopPropagation());
   });
 
