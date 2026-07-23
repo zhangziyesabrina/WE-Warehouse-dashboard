@@ -196,6 +196,21 @@
   .internal-owner-input::placeholder{color:var(--muted-2);font-weight:400;}
   .internal-owner-input:focus{outline:none;}
 
+  .blocker-banner{
+    display:flex;align-items:center;gap:8px;margin:2px 0 2px;
+    border-radius:8px;padding:8px 10px;
+  }
+  .blocker-banner.empty{background:rgba(139,150,172,0.08);border:1px dashed var(--border);}
+  .blocker-banner.filled{background:var(--block-soft);border:1px solid var(--block);}
+  .blocker-banner-icon{font-size:13px;flex-shrink:0;}
+  .blocker-edit-input{
+    flex:1;background:transparent;border:none;font-size:12.5px;font-weight:700;color:var(--block);
+    font-family:'Inter',sans-serif;
+  }
+  .blocker-banner.empty .blocker-edit-input{color:var(--muted-2);font-weight:400;}
+  .blocker-edit-input::placeholder{color:var(--muted-2);font-weight:400;}
+  .blocker-edit-input:focus{outline:none;}
+
   .next-action-row{margin-top:2px;}
   .note-input{
     width:100%;background:#0F1830;border:1px solid var(--border);border-radius:6px;
@@ -825,7 +840,6 @@ function cardTemplate(site){
   `;
 
   const tags = [];
-  if(getBlocker(site)) tags.push(`<span class="tag blocker">🔒 卡点：${getBlocker(site)}</span>`);
   if(site.risk) tags.push(`<span class="tag risk">⚠️ ${site.risk}</span>`);
   if(site.start) tags.push(`<span class="tag eta">📅 开始：${site.start}</span>`);
   if(site.eta){
@@ -860,6 +874,11 @@ function cardTemplate(site){
       <div class="owner-banner ${internalOwner ? 'filled' : 'empty'}">
         <span class="owner-banner-icon">📍</span>
         <input type="text" class="internal-owner-input" data-code="${site.code}" placeholder="点击填写：现在在谁手上（比如：陈文-财务 / Alan-租赁组）" value="${internalOwner.replace(/"/g,'&quot;')}">
+      </div>
+
+      <div class="blocker-banner ${getBlocker(site) ? 'filled' : 'empty'}">
+        <span class="blocker-banner-icon">🔒</span>
+        <input type="text" class="blocker-edit-input" data-code="${site.code}" placeholder="点击填写卡点（比如：代收协议待财务处理）" value="${getBlocker(site).replace(/"/g,'&quot;')}">
       </div>
 
       <div class="desc">${site.desc}</div>
@@ -958,6 +977,16 @@ function render(){
       banner.classList.toggle('filled', !!e.target.value.trim());
       banner.classList.toggle('empty', !e.target.value.trim());
       await saveOverride(code, state[code]);
+    });
+  });
+
+  grid.querySelectorAll('.blocker-edit-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), blockerOverride: e.target.value};
+      await saveOverride(code, state[code]);
+      render();
     });
   });
 
