@@ -489,9 +489,11 @@
   .train-stop-label{font-size:9.5px;color:var(--muted);max-width:70px;margin-top:3px;line-height:1.3;}
 
   .train-icon{
-    position:absolute;top:14px;transform:translateX(-50%);
-    font-size:26px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    position:absolute;top:4px;transform:translateX(-50%);
+    z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    transition:left .3s ease;
   }
+  .train-icon svg{display:block;}
 
   .train-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
   .train-status-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
@@ -1451,7 +1453,20 @@ function openTrainModal(site){
       <div class="train-track">
         <div class="train-line"></div>
         <div class="train-line-fill" style="width:${fillPct}%;"></div>
-        <div class="train-icon" style="left:${fillPct}%;">🚂</div>
+        <div class="train-icon" style="left:${fillPct}%;">
+          <svg width="38" height="34" viewBox="0 0 38 34" xmlns="http://www.w3.org/2000/svg">
+            <line x1="17" y1="0" x2="17" y2="12" stroke="#5C6784" stroke-width="1.6"/>
+            <path d="M17.5 1 L29 4.3 L17.5 7.6 Z" fill="#FF8A3D"/>
+            <text x="19" y="5.9" font-size="4.6" font-weight="800" fill="#2A1400" font-family="'Space Grotesk', Arial, sans-serif">GO</text>
+            <rect x="2" y="12" width="20" height="13" rx="2.5" fill="#3FC1F0"/>
+            <path d="M22 15.8 h7 a2.3 2.3 0 0 1 2.3 2.3 v6.9 h-9.3 z" fill="#FF8A3D"/>
+            <rect x="24.4" y="17.7" width="3.8" height="3.4" rx="0.6" fill="#0B1220" opacity="0.55"/>
+            <circle cx="8" cy="25.5" r="3.3" fill="#111726" stroke="#8B96AC" stroke-width="1.2"/>
+            <circle cx="27.5" cy="25.5" r="3.3" fill="#111726" stroke="#8B96AC" stroke-width="1.2"/>
+            <circle cx="8" cy="25.5" r="1.2" fill="#8B96AC"/>
+            <circle cx="27.5" cy="25.5" r="1.2" fill="#8B96AC"/>
+          </svg>
+        </div>
         <div class="train-stops">${stopsHtml}</div>
       </div>
       ${estimated ? '<div class="train-note">⚠️ 该站点没有记录具体进度百分比，此处位置是根据当前状态估算的参考位置，不是精确值。</div>' : ''}
