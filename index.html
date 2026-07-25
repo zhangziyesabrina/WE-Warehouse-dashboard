@@ -478,7 +478,7 @@
   }
   .train-panel-title{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:20px;}
 
-  .train-track{position:relative;padding:26px 4px 30px;}
+  .train-track{position:relative;padding:40px 4px 30px;}
   .train-line{position:absolute;left:0;right:0;top:38px;height:3px;background:#1B2743;border-radius:3px;}
   .train-line-fill{position:absolute;left:0;top:38px;height:3px;background:linear-gradient(90deg,var(--main),var(--parallel));border-radius:3px;}
   .train-stops{position:relative;display:flex;justify-content:space-between;}
@@ -1454,17 +1454,17 @@ function openTrainModal(site){
         <div class="train-line"></div>
         <div class="train-line-fill" style="width:${fillPct}%;"></div>
         <div class="train-icon" style="left:${fillPct}%;">
-          <svg width="52" height="36" viewBox="0 0 52 36" xmlns="http://www.w3.org/2000/svg">
-            <line x1="17" y1="0" x2="17" y2="14" stroke="#5C6784" stroke-width="1.8"/>
-            <path d="M17.5 0.5 L40 6 L17.5 11.5 Z" fill="#FF8A3D"/>
-            <text x="19.5" y="7.8" font-size="6.6" font-weight="800" fill="#2A1400" font-family="'Space Grotesk', Arial, sans-serif">GOFO</text>
-            <rect x="2" y="14" width="20" height="13" rx="2.5" fill="#3FC1F0"/>
-            <path d="M22 17.8 h7 a2.3 2.3 0 0 1 2.3 2.3 v6.9 h-9.3 z" fill="#FF8A3D"/>
-            <rect x="24.4" y="19.7" width="3.8" height="3.4" rx="0.6" fill="#0B1220" opacity="0.55"/>
-            <circle cx="8" cy="27.5" r="3.3" fill="#111726" stroke="#8B96AC" stroke-width="1.2"/>
-            <circle cx="27.5" cy="27.5" r="3.3" fill="#111726" stroke="#8B96AC" stroke-width="1.2"/>
-            <circle cx="8" cy="27.5" r="1.2" fill="#8B96AC"/>
-            <circle cx="27.5" cy="27.5" r="1.2" fill="#8B96AC"/>
+          <svg width="64" height="42" viewBox="0 0 64 42" xmlns="http://www.w3.org/2000/svg">
+            <line x1="17" y1="0" x2="17" y2="18" stroke="#5C6784" stroke-width="2"/>
+            <path d="M17.5 0 L50 8 L17.5 16 Z" fill="#FF8A3D"/>
+            <text x="20.5" y="10.6" font-size="9" font-weight="800" fill="#2A1400" font-family="'Space Grotesk', Arial, sans-serif">GOFO</text>
+            <rect x="2" y="18" width="20" height="13" rx="2.5" fill="#3FC1F0"/>
+            <path d="M22 21.8 h7 a2.3 2.3 0 0 1 2.3 2.3 v6.9 h-9.3 z" fill="#FF8A3D"/>
+            <rect x="24.4" y="23.7" width="3.8" height="3.4" rx="0.6" fill="#0B1220" opacity="0.55"/>
+            <circle cx="8" cy="31.5" r="3.3" fill="#111726" stroke="#8B96AC" stroke-width="1.2"/>
+            <circle cx="27.5" cy="31.5" r="3.3" fill="#111726" stroke="#8B96AC" stroke-width="1.2"/>
+            <circle cx="8" cy="31.5" r="1.2" fill="#8B96AC"/>
+            <circle cx="27.5" cy="31.5" r="1.2" fill="#8B96AC"/>
           </svg>
         </div>
         <div class="train-stops">${stopsHtml}</div>
