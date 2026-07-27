@@ -5,7 +5,7 @@
     "address": "",
     "area": "10000+",
     "desc": "TUC目前仓库有两家中介，Cushman 这一家（Melissa）我们选了一个仓库，中介正在约本周看仓库，另外一家中介（Brian）我们正在选仓库list准备去看仓",
-    "pct": 1,
+    "pct": 30,
     "blocker": "中介Melissa回消息非常慢",
     "start": "7/14/2026",
     "eta": "8/31/2026",
@@ -14,15 +14,22 @@
       "@Jessica Han"
     ],
     "updated": "7/21/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "LAS",
-    "status": "progress",
+    "status": "done",
     "address": "4751 Vandenberg Dr, North Las Vegas, NV 89081",
     "area": "20000+",
-    "desc": "目前已经打款， 周五拿钥匙",
-    "pct": 90,
+    "desc": "已拿钥匙",
+    "pct": 100,
     "blocker": "",
     "start": "4/1/2026",
     "eta": "7/24/2026",
@@ -32,7 +39,14 @@
       "@Alan Zhan"
     ],
     "updated": "7/21/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "PHX",
@@ -49,7 +63,14 @@
       "@Jessica Han"
     ],
     "updated": "7/21/2026",
-    "siteType": "Hub"
+    "siteType": "Hub",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "HNL",
@@ -67,7 +88,14 @@
       "@尤梦楠Yuko（Mengnan You）"
     ],
     "updated": "7/21/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "BKD",
@@ -84,58 +112,86 @@
       "@Tyler Pan"
     ],
     "updated": "7/10/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "LAX03",
-    "status": "progress",
+    "status": "done",
     "address": "7412 Anaconda Ave., Garden Grove, CA 92841",
     "area": 32000,
-    "desc": "房东已回复合同修改意见（7412 Anaconda Ave. Lease Comments.pdf），并要求GOFO提供Corporate Resolution确认两名授权签字人。Alan已转发法务团队处理，Michael重新调整后再次发送修改版文件。",
-    "pct": null,
+    "desc": "7月27号已拿钥匙",
+    "pct": 100,
     "blocker": "",
     "start": "",
-    "eta": "",
+    "eta": "7/27/2026",
     "risk": "",
     "owners": [
       "@Vicky Weng"
     ],
     "updated": "6/25/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "LAX02",
-    "status": "block",
+    "status": "done",
     "address": "6303 Corsair St, Commerce, CA 90040",
     "area": 54264,
-    "desc": "6303 已经搬入，但目前大房东还未对二房东转租行为作出回应。@Lois Qiao在负责和二房东的沟通。",
-    "pct": null,
-    "blocker": "房东",
+    "desc": "7已搬仓",
+    "pct": 100,
+    "blocker": "",
     "start": "",
-    "eta": "",
+    "eta": "23-jul",
     "risk": "",
     "owners": [
       "@Lois Qiao"
     ],
     "updated": "7/10/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "LAX01",
     "status": "progress",
     "address": "17055 Gale Ave, City of Industry, CA 91745",
     "area": 62000,
-    "desc": "合同有处租金条款错误（应为$1.45含运营费），已提请房东修正。其他不变，法务审核中，目标7/1入住。",
-    "pct": null,
+    "desc": "7月28号拿钥匙",
+    "pct": 97,
     "blocker": "",
     "start": "",
-    "eta": "",
+    "eta": "7/28/2026",
     "risk": "",
     "owners": [
       "@Vicky Weng"
     ],
     "updated": "6/30/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "SFV01",
@@ -153,33 +209,46 @@
       "@翁语晨 Vicky （Yuchen Weng）"
     ],
     "updated": "",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "GEG 已完成",
-    "status": "progress",
+    "status": "done",
     "address": "411 N Dyer Rd, Spokane Valley, WA 99212",
     "area": "6000-10000",
     "desc": "已完成",
-    "pct": null,
+    "pct": 100,
     "blocker": "",
     "start": "",
     "eta": "6/30已经可以拿钥匙了",
     "risk": "",
     "owners": [
-      "@齐瀚飞（Hanfei Qi）",
       "@张恩泽Vincent（Enze Zhang）"
     ],
     "updated": "",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "BOI",
     "status": "block",
     "address": "921 W Amity Rd, Boise, ID 83705-Suite 921",
     "area": 16517,
-    "desc": "等待付款",
-    "pct": 90,
+    "desc": "预计7月27号拿钥匙",
+    "pct": 95,
     "blocker": "审核付款账号",
     "start": "4/1/2026",
     "eta": "7/27/2026",
@@ -189,7 +258,14 @@
       "@Gina Gai"
     ],
     "updated": "7/21/2026",
-    "siteType": "自营站点"
+    "siteType": "自营站点",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "SLC",
@@ -206,7 +282,14 @@
       "@Jasmine Dong（Jasmine Dong）"
     ],
     "updated": "",
-    "siteType": "Hub"
+    "siteType": "Hub",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "PDX",
@@ -214,7 +297,7 @@
     "address": "14145 NE Airport Way",
     "area": 39375,
     "desc": "我方签字已完成，等待房东签字回传",
-    "pct": 80,
+    "pct": 90,
     "blocker": "房东签字",
     "start": "4/1/2026",
     "eta": "8/3/2026",
@@ -224,7 +307,14 @@
       "@Gina Gai"
     ],
     "updated": "7/21/2026",
-    "siteType": "自营站点"
+    "siteType": "自营站点",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "SMF",
@@ -241,48 +331,69 @@
       "@Cassie Lu"
     ],
     "updated": "7/21/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "SFO02",
     "status": "block",
     "address": "1001 Canal Blvd, Unit C, Richmond, CA 94804",
     "area": 25000,
-    "desc": "更改第二版LOI之后传回房东",
+    "desc": "第二版LOI counter没什么大问题看费用能否再谈低一点",
     "pct": 30,
-    "blocker": "中介Melissa回消息非常慢",
+    "blocker": "中介Melissa",
     "start": "5/20/2026",
     "eta": "9/1/2026",
     "risk": "",
     "owners": [
       "@Cassie Lu"
     ],
-    "updated": "7/15/2026",
-    "siteType": ""
+    "updated": "7/23/2026",
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "RNO",
     "status": "block",
     "address": "300 Morrill Ave Reno, Nevada 89512",
     "area": 8200,
-    "desc": "更改第二版LOI之后传回房东",
+    "desc": "第二版LOI房东回传，在与房东沟通屋顶费用，同时寻找备选仓",
     "pct": 30,
-    "blocker": "中介Melissa回消息非常慢",
+    "blocker": "中介Melissa",
     "start": "5/20/2026",
     "eta": "8/1/2026",
     "risk": "",
     "owners": [
       "@Cassie Lu"
     ],
-    "updated": "7/15/2026",
-    "siteType": ""
+    "updated": "7/23/2026",
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "MFR",
     "status": "block",
     "address": "4621 Grumman Dr",
     "area": 4000,
-    "desc": "还在看意向仓",
+    "desc": "寻找意向仓",
     "pct": 5,
     "blocker": "@Ben Zhao",
     "start": "7/10/2026",
@@ -292,7 +403,14 @@
       "@Cassie Lu"
     ],
     "updated": "7/21/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   },
   {
     "code": "PAE",
@@ -309,6 +427,35 @@
       "@Vincent Zhang"
     ],
     "updated": "7/21/2026",
-    "siteType": ""
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
+  },
+  {
+    "code": "SAN",
+    "status": "block",
+    "address": "原仓库分组",
+    "area": "",
+    "desc": "卡在法务那里",
+    "pct": null,
+    "blocker": "法务",
+    "start": "5/20/2026",
+    "eta": "",
+    "risk": "",
+    "owners": [],
+    "updated": "",
+    "siteType": "",
+    "customStage": "",
+    "note": "",
+    "internalOwner": "",
+    "warehouseArea": "",
+    "parkingSpots": "",
+    "officeArea": "",
+    "hasDock": ""
   }
 ]
