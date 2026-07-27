@@ -1701,6 +1701,19 @@ function healthBucket(site){
   return 'negotiating';
 }
 
+const FOLLOWUP_BUCKET_RANK = {paused:0, signing:1, negotiating:2, search:3};
+function followUpCompare(a, b){
+  const bucketA = FOLLOWUP_BUCKET_RANK[healthBucket(a)] ?? 9;
+  const bucketB = FOLLOWUP_BUCKET_RANK[healthBucket(b)] ?? 9;
+  if(bucketA !== bucketB) return bucketA - bucketB;
+  const remainA = daysUntil(a.eta);
+  const remainB = daysUntil(b.eta);
+  if(remainA !== null && remainB !== null) return remainA - remainB;
+  if(remainA !== null && remainB === null) return -1;
+  if(remainA === null && remainB !== null) return 1;
+  return getSitePct(b) - getSitePct(a);
+}
+
 function classifyForInsight(site){
   const remain = daysUntil(site.eta);
   const pct = getSitePct(site);
@@ -1875,8 +1888,8 @@ function renderReportTab(){
 
   const hubSites = filtered.filter(s => isHub(s));
   const datedSites = filtered
-    .filter(s => !hubSites.includes(s) && daysUntil(s.eta) !== null && getDisplayStatus(s) !== 'done')
-    .sort((a,b) => daysUntil(a.eta) - daysUntil(b.eta));
+    .filter(s => !hubSites.includes(s) && getDisplayStatus(s) !== 'done')
+    .sort(followUpCompare);
   const followUpSites = [...hubSites, ...datedSites].slice(0, 10);
 
   const focusTable = document.getElementById('rpFocusTable');
@@ -2021,8 +2034,8 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   lines.push('重点跟进站点：');
   const hubSitesCopy = filtered.filter(s => isHub(s));
   const datedSitesCopy = filtered
-    .filter(s => !hubSitesCopy.includes(s) && daysUntil(s.eta) !== null && getDisplayStatus(s) !== 'done')
-    .sort((a,b) => daysUntil(a.eta) - daysUntil(b.eta));
+    .filter(s => !hubSitesCopy.includes(s) && getDisplayStatus(s) !== 'done')
+    .sort(followUpCompare);
   const followUpSitesCopy = [...hubSitesCopy, ...datedSitesCopy].slice(0, 10);
   if(followUpSitesCopy.length){
     followUpSitesCopy.forEach(site=>{
