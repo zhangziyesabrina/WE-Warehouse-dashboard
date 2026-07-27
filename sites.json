@@ -21,7 +21,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "LAS",
@@ -46,7 +47,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "PHX",
@@ -70,7 +72,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "HNL",
@@ -95,7 +98,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "BKD",
@@ -119,7 +123,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "LAX03",
@@ -143,7 +148,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "LAX02",
@@ -167,7 +173,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "LAX01",
@@ -191,7 +198,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "SFV01",
@@ -216,7 +224,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "GEG 已完成",
@@ -240,7 +249,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "BOI",
@@ -265,7 +275,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "SLC",
@@ -289,7 +300,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "PDX",
@@ -314,7 +326,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "SMF",
@@ -338,7 +351,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "SFO02",
@@ -362,7 +376,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "RNO",
@@ -386,12 +401,13 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "MFR",
     "status": "block",
-    "address": "4621 Grumman Dr",
+    "address": "",
     "area": 4000,
     "desc": "寻找意向仓",
     "pct": 5,
@@ -410,7 +426,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "PAE",
@@ -434,7 +451,8 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   },
   {
     "code": "SAN",
@@ -456,6 +474,7 @@
     "warehouseArea": "",
     "parkingSpots": "",
     "officeArea": "",
-    "hasDock": ""
+    "hasDock": "",
+    "urgentSynced": false
   }
 ]
