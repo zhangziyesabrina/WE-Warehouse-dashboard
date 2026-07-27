@@ -824,7 +824,16 @@ const supabaseClient = (() => {
     return null;
   }
 
-  return window.supabase.createClient(url, key);
+  try{
+    if(!window.supabase || typeof window.supabase.createClient !== 'function'){
+      console.warn('Supabase SDK 加载失败（可能是网络/防火墙拦截了 CDN），暂时仅使用本地缓存。');
+      return null;
+    }
+    return window.supabase.createClient(url, key);
+  }catch(e){
+    console.error('初始化 Supabase 客户端失败，暂时仅使用本地缓存：', e);
+    return null;
+  }
 })();
 
 async function loadOverride(code){
@@ -904,6 +913,48 @@ function subscribeRealtimeOverrides(){
     .subscribe(status => {
       console.log('Supabase Realtime:', status);
     });
+}
+
+let lastPolledSnapshot = null;
+
+async function pollOverridesOnce(){
+  if(!supabaseClient) return;
+  const {data, error} = await supabaseClient
+    .from('site_overrides')
+    .select('code, data, updated_at');
+
+  if(error){
+    console.error('轮询 Supabase 失败:', error);
+    return;
+  }
+  if(!data) return;
+
+  const snapshot = JSON.stringify(data);
+  if(snapshot === lastPolledSnapshot) return;
+  lastPolledSnapshot = snapshot;
+
+  let changed = false;
+  data.forEach(row => {
+    if(!row || !row.code) return;
+    const newData = row.data || {};
+    const oldData = state[row.code] || {};
+    if(JSON.stringify(oldData) !== JSON.stringify(newData)){
+      state[row.code] = newData;
+      try{ localStorage.setItem('site:'+row.code, JSON.stringify(newData)); }catch(e){}
+      changed = true;
+    }
+  });
+
+  if(changed){
+    console.log('轮询检测到更新，刷新页面内容');
+    render();
+  }
+}
+
+function startPollingOverrides(intervalMs = 8000){
+  if(!supabaseClient) return;
+  pollOverridesOnce();
+  setInterval(pollOverridesOnce, intervalMs);
 }
 
 const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse', '看仓库', '准备去看仓', '选仓库'];
@@ -1046,6 +1097,7 @@ async function init(){
   renderCalendar();
   render();
   subscribeRealtimeOverrides();
+  startPollingOverrides();
 }
 
 function render(){
