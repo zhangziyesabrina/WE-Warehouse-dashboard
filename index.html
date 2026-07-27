@@ -614,12 +614,14 @@
   }
 </style>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 </head>
 <body>
 <div class="wrap">
   <div class="eyebrow">GOFO · 仓库租赁业务</div>
   <h1>新仓落地进度 Dashboard</h1>
-  <p class="subtitle">来自租赁跟进表快照数据。进度条可直接拖动调整，改动会保存在本地，下次打开自动保留 —— 用于团队日常跟进，不代表与原始表格实时同步。</p>
+  <p class="subtitle">来自租赁跟进表数据。网页上的修改会保存到共享数据库，并实时同步给所有已打开此页面的用户。</p>
 
   <div class="tabbar">
     <div class="tabbtn active" data-tab="live">🏭 仓库实时进度</div>
@@ -813,18 +815,95 @@ const statusMeta = {
 const state = {}; // runtime overrides: code -> {pct}
 const HUB_CODES = ['PHX', 'SLC'];
 
+const supabaseClient = (() => {
+  const url = window.WE_SUPABASE_URL;
+  const key = window.WE_SUPABASE_ANON_KEY;
+
+  if(!url || !key || url.includes('PASTE_') || key.includes('PASTE_')){
+    console.warn('Supabase 尚未配置，当前仅使用本地缓存。');
+    return null;
+  }
+
+  return window.supabase.createClient(url, key);
+})();
+
 async function loadOverride(code){
+  if(supabaseClient){
+    const {data, error} = await supabaseClient
+      .from('site_overrides')
+      .select('data')
+      .eq('code', code)
+      .maybeSingle();
+
+    if(error){
+      console.error('读取 Supabase 失败:', code, error);
+    }else if(data){
+      try{
+        localStorage.setItem('site:'+code, JSON.stringify(data.data || {}));
+      }catch(e){}
+      return data.data || null;
+    }
+  }
+
   try{
     const raw = localStorage.getItem('site:'+code);
     if(raw) return JSON.parse(raw);
-  }catch(e){ /* no stored value or storage unavailable */ }
+  }catch(e){}
   return null;
 }
 
 async function saveOverride(code, data){
   try{
     localStorage.setItem('site:'+code, JSON.stringify(data));
-  }catch(e){ /* storage unavailable, keep in-memory only */ }
+  }catch(e){}
+
+  if(!supabaseClient) return;
+
+  const {error} = await supabaseClient
+    .from('site_overrides')
+    .upsert(
+      {
+        code,
+        data,
+        updated_at: new Date().toISOString()
+      },
+      {onConflict: 'code'}
+    );
+
+  if(error){
+    console.error('保存到 Supabase 失败:', code, error);
+    throw error;
+  }
+}
+
+function subscribeRealtimeOverrides(){
+  if(!supabaseClient) return;
+
+  supabaseClient
+    .channel('we-warehouse-site-overrides')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'site_overrides'
+      },
+      payload => {
+        const row = payload.new;
+        if(!row || !row.code) return;
+
+        state[row.code] = row.data || {};
+
+        try{
+          localStorage.setItem('site:'+row.code, JSON.stringify(state[row.code]));
+        }catch(e){}
+
+        render();
+      }
+    )
+    .subscribe(status => {
+      console.log('Supabase Realtime:', status);
+    });
 }
 
 const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse', '看仓库', '准备去看仓', '选仓库'];
@@ -966,6 +1045,7 @@ async function init(){
   }
   renderCalendar();
   render();
+  subscribeRealtimeOverrides();
 }
 
 function render(){
