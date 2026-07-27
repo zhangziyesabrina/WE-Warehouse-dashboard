@@ -890,7 +890,7 @@ function cardTemplate(site){
     }
   }
 
-  const isUrgent = !!state[site.code]?.urgent;
+  const isUrgent = getUrgent(site);
   const note = getField(site, 'note') || '';
   const internalOwner = getField(site, 'internalOwner') || '';
   const customStage = getField(site, 'customStage') || '';
@@ -1001,7 +1001,8 @@ function render(){
     btn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       const code = btn.dataset.code;
-      const isNowUrgent = !(state[code]?.urgent);
+      const site = SITES.find(s=>s.code===code);
+      const isNowUrgent = !getUrgent(site);
       state[code] = {...(state[code]||{}), urgent: isNowUrgent};
       await saveOverride(code, state[code]);
       render();
@@ -1101,6 +1102,12 @@ function getField(site, field){
   return (state[site.code] && state[site.code][field]) || site[field] || '';
 }
 
+function getUrgent(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'urgent')) return !!o.urgent;
+  return !!site.urgentSynced;
+}
+
 function getDisplayLabel(site, fallbackLabel){
   const custom = getField(site, 'customStage');
   return (custom && custom.trim()) ? custom.trim() : fallbackLabel;
@@ -1130,7 +1137,7 @@ function getStuckDays(site){
 
 function attentionScore(site){
   let score = 0;
-  if(state[site.code]?.urgent) score += 10;
+  if(getUrgent(site)) score += 10;
   const customStage = getField(site, 'customStage');
   if(customStage && customStage.trim()) score += 5;
   const stuck = getStuckDays(site);
@@ -1213,7 +1220,7 @@ function renderAttention(){
     return;
   }
   list.innerHTML = scored.map(({site})=>{
-    const isUrgent = !!state[site.code]?.urgent;
+    const isUrgent = getUrgent(site);
     const reasons = reasonsFor(site);
     return `<li data-code="${site.code}">${isUrgent ? '🚩 ' : ''}<b>${site.code}</b> <span class="reason">· ${reasons.join(' · ') || '关注中'}</span></li>`;
   }).join('');
@@ -1615,7 +1622,7 @@ document.querySelectorAll('.stat[data-goto]').forEach(stat=>{
 
 // ===== To-do tab =====
 function renderTodoTab(){
-  const urgentSites = SITES.filter(s => state[s.code]?.urgent);
+  const urgentSites = SITES.filter(s => getUrgent(s));
   document.getElementById('todoCount').textContent = urgentSites.length ? `(${urgentSites.length})` : '';
 
   const list = document.getElementById('todoList');
@@ -1727,7 +1734,7 @@ function classifyForInsight(site){
   const pct = getSitePct(site);
   const status = getDisplayStatus(site);
   const stuck = getStuckDays(site);
-  const urgent = !!state[site.code]?.urgent;
+  const urgent = getUrgent(site);
   const customStage = getField(site, 'customStage');
 
   if(urgent){
