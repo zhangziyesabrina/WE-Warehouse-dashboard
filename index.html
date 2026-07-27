@@ -1888,7 +1888,8 @@ function renderReportTab(){
         const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
         const pillCls = doneNow ? 'done' : (custom && custom.trim() ? 'progress' : 'negotiating');
         const reasons = reasonsFor(site);
-        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td>${getSitePct(site)}%</td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
+        const pct = getSitePct(site);
+        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点跟进的站点 👍</td></tr></tbody>';
