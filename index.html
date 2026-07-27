@@ -891,9 +891,9 @@ function cardTemplate(site){
   }
 
   const isUrgent = !!state[site.code]?.urgent;
-  const note = state[site.code]?.note || '';
-  const internalOwner = state[site.code]?.internalOwner || '';
-  const customStage = state[site.code]?.customStage || '';
+  const note = getField(site, 'note') || '';
+  const internalOwner = getField(site, 'internalOwner') || '';
+  const customStage = getField(site, 'customStage') || '';
 
   return `
     <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${getBlocker(site)?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
@@ -921,10 +921,10 @@ function cardTemplate(site){
       </div>
 
       <div class="req-grid">
-        <label class="req-field"><span class="req-label">仓库面积</span><input type="text" class="req-input" data-code="${site.code}" data-field="warehouseArea" placeholder="—" value="${(state[site.code]?.warehouseArea||'').replace(/"/g,'&quot;')}"></label>
-        <label class="req-field"><span class="req-label">停车位</span><input type="text" class="req-input" data-code="${site.code}" data-field="parkingSpots" placeholder="—" value="${(state[site.code]?.parkingSpots||'').replace(/"/g,'&quot;')}"></label>
-        <label class="req-field"><span class="req-label">办公室面积</span><input type="text" class="req-input" data-code="${site.code}" data-field="officeArea" placeholder="—" value="${(state[site.code]?.officeArea||'').replace(/"/g,'&quot;')}"></label>
-        <label class="req-field"><span class="req-label">Dock</span><input type="text" class="req-input" data-code="${site.code}" data-field="hasDock" placeholder="有/无" value="${(state[site.code]?.hasDock||'').replace(/"/g,'&quot;')}"></label>
+        <label class="req-field"><span class="req-label">仓库面积</span><input type="text" class="req-input" data-code="${site.code}" data-field="warehouseArea" placeholder="—" value="${(getField(site, 'warehouseArea')||'').replace(/"/g,'&quot;')}"></label>
+        <label class="req-field"><span class="req-label">停车位</span><input type="text" class="req-input" data-code="${site.code}" data-field="parkingSpots" placeholder="—" value="${(getField(site, 'parkingSpots')||'').replace(/"/g,'&quot;')}"></label>
+        <label class="req-field"><span class="req-label">办公室面积</span><input type="text" class="req-input" data-code="${site.code}" data-field="officeArea" placeholder="—" value="${(getField(site, 'officeArea')||'').replace(/"/g,'&quot;')}"></label>
+        <label class="req-field"><span class="req-label">Dock</span><input type="text" class="req-input" data-code="${site.code}" data-field="hasDock" placeholder="有/无" value="${(getField(site, 'hasDock')||'').replace(/"/g,'&quot;')}"></label>
       </div>
 
       <textarea class="desc-input" data-code="${site.code}" placeholder="进度描述">${getDesc(site)}</textarea>
@@ -1097,8 +1097,12 @@ function getDesc(site){
   return site['desc'] || '';
 }
 
+function getField(site, field){
+  return (state[site.code] && state[site.code][field]) || site[field] || '';
+}
+
 function getDisplayLabel(site, fallbackLabel){
-  const custom = state[site.code]?.customStage;
+  const custom = getField(site, 'customStage');
   return (custom && custom.trim()) ? custom.trim() : fallbackLabel;
 }
 
@@ -1112,7 +1116,7 @@ const STAGE_LABEL = {
 };
 
 function getStageInfo(site){
-  const custom = state[site.code]?.customStage;
+  const custom = getField(site, 'customStage');
   if(custom && custom.trim()){
     return {label: custom.trim(), cls: 'status-progress'};
   }
@@ -1127,7 +1131,7 @@ function getStuckDays(site){
 function attentionScore(site){
   let score = 0;
   if(state[site.code]?.urgent) score += 10;
-  const customStage = state[site.code]?.customStage;
+  const customStage = getField(site, 'customStage');
   if(customStage && customStage.trim()) score += 5;
   const stuck = getStuckDays(site);
   if(stuck !== null){
@@ -1622,7 +1626,7 @@ function renderTodoTab(){
 
   list.innerHTML = urgentSites.map(site=>{
     const stageInfo = getStageInfo(site);
-    const note = state[site.code]?.note || '';
+    const note = getField(site, 'note') || '';
     return `
       <div class="todo-card" data-code="${site.code}">
         <div class="todo-card-top">
@@ -1677,7 +1681,7 @@ function getScoredSites(limit){
 
 function reasonsFor(site){
   const reasons = [];
-  const note = state[site.code]?.note;
+  const note = getField(site, 'note');
   if(note) reasons.push(`📝 ${note}`);
   if(getBlocker(site)) reasons.push(`卡点：${getBlocker(site)}`);
   if(site.risk) reasons.push(`风险：${site.risk}`);
@@ -1724,14 +1728,14 @@ function classifyForInsight(site){
   const status = getDisplayStatus(site);
   const stuck = getStuckDays(site);
   const urgent = !!state[site.code]?.urgent;
-  const customStage = state[site.code]?.customStage;
+  const customStage = getField(site, 'customStage');
 
   if(urgent){
-    const note = state[site.code]?.note;
+    const note = getField(site, 'note');
     return {priority:0, icon:'triangle-alert', color:'var(--rp-red)', text: note || getBlocker(site) || '已标记为紧急待办'};
   }
   if(customStage && customStage.trim()){
-    const note = state[site.code]?.note;
+    const note = getField(site, 'note');
     return {priority:0.5, icon:'refresh-cw', color:'var(--rp-blue)', text: `${customStage.trim()}，进度 ${pct}%${note ? '，' + note : ''}`};
   }
   if(remain !== null && remain < 0 && status !== 'done'){
@@ -1900,7 +1904,7 @@ function renderReportTab(){
   if(followUpSites.length){
     focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>核心问题</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
-        const custom = state[site.code]?.customStage;
+        const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
         const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
         const pillCls = doneNow ? 'done' : (custom && custom.trim() ? 'progress' : 'negotiating');
@@ -1921,8 +1925,8 @@ function renderReportTab(){
   const progressList = document.getElementById('rpProgressList');
   if(recentlyUpdated.length){
     progressList.innerHTML = recentlyUpdated.map(({s, d})=>{
-      const note = state[s.code]?.note;
-      const custom = state[s.code]?.customStage;
+      const note = getField(s, 'note');
+      const custom = getField(s, 'customStage');
       const changeText = note || getDesc(s) || '无更新说明';
       return `<div class="rp-progress-card">
         <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}</div>
@@ -1960,7 +1964,7 @@ function renderReportTab(){
   // 二、当前卡在谁手上
   const internalGroups = {};
   filtered.forEach(s=>{
-    const owner = state[s.code]?.internalOwner;
+    const owner = getField(s, 'internalOwner');
     if(owner && owner.trim()){
       if(!internalGroups[owner]) internalGroups[owner] = [];
       internalGroups[owner].push(s);
@@ -1969,7 +1973,7 @@ function renderReportTab(){
   const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
   document.getElementById('rpInternalGroups').innerHTML = groupEntries.length
     ? groupEntries.map(([owner, sites])=>{
-        const notes = [...new Set(sites.map(s => state[s.code]?.note).filter(Boolean))];
+        const notes = [...new Set(sites.map(s => getField(s, 'note')).filter(Boolean))];
         const sharedNote = notes.length === 1 ? notes[0] : null;
         return `
         <div class="rp-internal-group">
@@ -1978,11 +1982,11 @@ function renderReportTab(){
           <div class="rp-internal-site-rows">
             ${sites.map(s=>{
               const pct = getSitePct(s);
-              const custom = state[s.code]?.customStage;
+              const custom = getField(s, 'customStage');
               const bucket = healthBucket(s);
               const pillCls = custom && custom.trim() ? 'progress' : (bucket === 'signing' ? 'progress' : bucket);
               const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
-              const note = state[s.code]?.note;
+              const note = getField(s, 'note');
               return `<div class="rp-internal-site-row">
                 <span class="rp-internal-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
                 <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
@@ -2043,7 +2047,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   const followUpSitesCopy = [...hubSitesCopy, ...datedSitesCopy].slice(0, 10);
   if(followUpSitesCopy.length){
     followUpSitesCopy.forEach(site=>{
-      const custom = state[site.code]?.customStage;
+      const custom = getField(site, 'customStage');
       const doneNow = getDisplayStatus(site) === 'done';
       const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
       const reasons = reasonsFor(site);
@@ -2056,7 +2060,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   lines.push('二、当前卡在谁手上：');
   const internalGroups = {};
   filtered.forEach(s=>{
-    const owner = state[s.code]?.internalOwner;
+    const owner = getField(s, 'internalOwner');
     if(owner && owner.trim()){
       if(!internalGroups[owner]) internalGroups[owner] = [];
       internalGroups[owner].push(s);
@@ -2066,7 +2070,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   if(groupEntries.length){
     groupEntries.forEach(([owner, sites])=>{
       const siteDescs = sites.map(s=>{
-        const note = state[s.code]?.note;
+        const note = getField(s, 'note');
         return note ? `${s.code}(${note})` : s.code;
       }).join('、');
       lines.push(`  ${owner}：${siteDescs}`);
@@ -2077,7 +2081,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   lines.push('');
   lines.push('三、本周关键进展：');
   filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
-    const note = state[s.code]?.note;
+    const note = getField(s, 'note');
     const changeText = note || getDesc(s) || '无更新说明';
     lines.push(`  ${s.code}（${getSitePct(s)}%）- ${changeText}${s.eta ? '，预计'+s.eta : ''}`);
   });
