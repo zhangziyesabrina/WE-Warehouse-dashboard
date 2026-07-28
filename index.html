@@ -871,6 +871,8 @@ async function loadOverride(code){
 }
 
 async function saveOverride(code, data){
+  data._lastEditedAt = new Date().toISOString();
+
   try{
     localStorage.setItem('site:'+code, JSON.stringify(data));
   }catch(e){}
@@ -1156,7 +1158,7 @@ function render(){
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), note: e.target.value};
       await saveOverride(code, state[code]);
-      renderAttention();
+      render();
     });
   });
 
@@ -1165,10 +1167,8 @@ function render(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), internalOwner: e.target.value};
-      const banner = e.target.closest('.owner-banner');
-      banner.classList.toggle('filled', !!e.target.value.trim());
-      banner.classList.toggle('empty', !e.target.value.trim());
       await saveOverride(code, state[code]);
+      render();
     });
   });
 
@@ -1209,6 +1209,7 @@ function render(){
       const field = e.target.dataset.field;
       state[code] = {...(state[code]||{}), [field]: e.target.value};
       await saveOverride(code, state[code]);
+      render();
     });
   });
 
@@ -1289,15 +1290,21 @@ const STAGE_LABEL = {
 
 function getStageInfo(site){
   const custom = getField(site, 'customStage');
-  if(custom && custom.trim()){
-    return {label: custom.trim(), cls: 'status-progress'};
-  }
   const bucket = healthBucket(site);
-  return {label: STAGE_LABEL[bucket] || bucket, cls: STAGE_CLASS[bucket] || 'status-progress'};
+  const realCls = STAGE_CLASS[bucket] || 'status-progress';
+  if(custom && custom.trim()){
+    return {label: custom.trim(), cls: bucket === 'done' ? 'status-done' : realCls};
+  }
+  return {label: STAGE_LABEL[bucket] || bucket, cls: realCls};
 }
 
 function getStuckDays(site){
-  return daysSince(site.updated);
+  const larkDays = daysSince(site.updated);
+  const localTs = state[site.code]?._lastEditedAt;
+  if(!localTs) return larkDays;
+  const localDays = Math.floor((Date.now() - new Date(localTs).getTime()) / 86400000);
+  if(larkDays === null) return localDays;
+  return Math.min(larkDays, localDays);
 }
 
 function attentionScore(site){
