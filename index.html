@@ -312,6 +312,14 @@
   }
   .t-blocker-input::placeholder{color:var(--muted-2);}
   .t-blocker-input:focus{outline:none;border-color:var(--parallel);background:#132038;}
+  .t-edit-input{
+    width:100%;min-width:90px;background:#0F1830;border:1px solid var(--border);border-radius:6px;
+    padding:5px 8px;font-size:11.5px;color:var(--text);font-family:'Inter',sans-serif;
+  }
+  .t-edit-input::placeholder{color:var(--muted-2);}
+  .t-edit-input:focus{outline:none;border-color:var(--parallel);background:#132038;}
+  .t-risk-input{color:var(--risk);min-width:180px;}
+  .t-owners-input{color:var(--parallel);min-width:180px;}
 
   .tab-count{
     font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
@@ -960,7 +968,7 @@ function startPollingOverrides(intervalMs = 8000){
 const SEARCH_KEYWORDS = ['寻找', '看仓中', '意向仓', '找仓库', '预约看仓', '还在寻找', '还在看', '重新找', '按照hub规模在看', '还在选', 'warehouse', '看仓库', '准备去看仓', '选仓库'];
 
 function isSearchStage(site){
-  const text = [getDesc(site), site.address, site.eta].filter(Boolean).join(' ');
+  const text = [getDesc(site), site.address, getEta(site)].filter(Boolean).join(' ');
   return SEARCH_KEYWORDS.some(k => text.includes(k));
 }
 
@@ -976,7 +984,7 @@ function renderStats(){
   const total = SITES.length;
   const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
   const block = SITES.filter(s=>getDisplayStatus(s)==='block').length;
-  const risk = SITES.filter(s=>s.risk).length;
+  const risk = SITES.filter(s=>getRisk(s)).length;
   const withPct = SITES.filter(s=>{
     const p = state[s.code]?.pct ?? s.pct;
     return p !== null && p !== undefined;
@@ -1007,16 +1015,16 @@ function cardTemplate(site){
   `;
 
   const tags = [];
-  if(site.risk) tags.push(`<span class="tag risk">⚠️ ${site.risk}</span>`);
-  if(site.start) tags.push(`<span class="tag eta">📅 开始：${site.start}</span>`);
-  if(site.eta){
-    const remain = daysUntil(site.eta);
+  if(getRisk(site)) tags.push(`<span class="tag risk">⚠️ ${getRisk(site)}</span>`);
+  if(getStart(site)) tags.push(`<span class="tag eta">📅 开始：${getStart(site)}</span>`);
+  if(getEta(site)){
+    const remain = daysUntil(getEta(site));
     if(remain !== null && remain < 0 && displayStatus !== 'done'){
-      tags.push(`<span class="tag risk">🔴 已超期 ${Math.abs(remain)} 天（预计 ${site.eta}）</span>`);
+      tags.push(`<span class="tag risk">🔴 已超期 ${Math.abs(remain)} 天（预计 ${getEta(site)}）</span>`);
     } else if(remain !== null && displayStatus !== 'done'){
-      tags.push(`<span class="tag eta">🕐 预计完成：${site.eta}（还剩${remain}天）</span>`);
+      tags.push(`<span class="tag eta">🕐 预计完成：${getEta(site)}（还剩${remain}天）</span>`);
     } else {
-      tags.push(`<span class="tag eta">🕐 ${site.eta}</span>`);
+      tags.push(`<span class="tag eta">🕐 ${getEta(site)}</span>`);
     }
   }
 
@@ -1026,7 +1034,7 @@ function cardTemplate(site){
   const customStage = getField(site, 'customStage') || '';
 
   return `
-    <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${getBlocker(site)?1:0}" data-risk="${site.risk?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
+    <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${getBlocker(site)?1:0}" data-risk="${getRisk(site)?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
       <div class="card-top">
         <div>
           <div class="code">${site.code}${isHub(site) ? ' <span style="font-size:10px;color:var(--parallel);font-weight:700;">🏢 HUB</span>' : ''}</div>
@@ -1063,7 +1071,7 @@ function cardTemplate(site){
       <div class="next-action-row">
         <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步说明（比如：代收协议待处理）" value="${note.replace(/"/g,'&quot;')}">
       </div>
-      <div class="owners">跟进人：${site.owners.join(' · ')}</div>
+      <div class="owners">跟进人：${getOwnersText(site)}</div>
       <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
     </div>
   `;
@@ -1230,6 +1238,30 @@ function getDesc(site){
   return site['desc'] || '';
 }
 
+function getOwnersText(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'ownersOverride')) return o['ownersOverride'];
+  return (site.owners || []).join(' · ');
+}
+
+function getRisk(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'riskOverride')) return o['riskOverride'];
+  return site['risk'] || '';
+}
+
+function getStart(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'startOverride')) return o['startOverride'];
+  return site['start'] || '';
+}
+
+function getEta(site){
+  const o = state[site.code];
+  if(o && Object.prototype.hasOwnProperty.call(o, 'etaOverride')) return o['etaOverride'];
+  return site['eta'] || '';
+}
+
 function getField(site, field){
   return (state[site.code] && state[site.code][field]) || site[field] || '';
 }
@@ -1277,7 +1309,7 @@ function attentionScore(site){
     if(stuck >= 7) score += 3;
     else if(stuck >= 3) score += 1;
   }
-  const remain = daysUntil(site.eta);
+  const remain = daysUntil(getEta(site));
   if(remain !== null && remain < 0 && getDisplayStatus(site) !== 'done') score += 4;
   return score;
 }
@@ -1286,7 +1318,7 @@ function generateInsights(){
   const insights = [];
 
   const overdueEta = SITES.filter(s => {
-    const remain = daysUntil(s.eta);
+    const remain = daysUntil(getEta(s));
     return remain !== null && remain < 0 && getDisplayStatus(s) !== 'done';
   });
   if(overdueEta.length){
@@ -1384,7 +1416,7 @@ function renderTable(){
 
   const rows = SITES.map(s=>{
     const pct = getSitePct(s);
-    const remain = daysUntil(s.eta);
+    const remain = daysUntil(getEta(s));
     const status = getDisplayStatus(s);
     const stageInfo = getStageInfo(s);
     const blockerVal = getBlocker(s);
@@ -1396,10 +1428,10 @@ function renderTable(){
       statusCls: stageInfo.cls,
       pct: pct ?? -1,
       blocker: blockerVal,
-      risk: s.risk || '',
-      owners: s.owners.join(' · ') || '—',
-      start: s.start || '—',
-      eta: s.eta || '—',
+      risk: getRisk(s) || '',
+      owners: getOwnersText(s) || '—',
+      start: getStart(s) || '—',
+      eta: getEta(s) || '—',
       remain: remain ?? 9999,
       remainDisplay: remain === null ? '—' : (remain < 0 ? `超期${Math.abs(remain)}天` : `${remain}天`),
       remainOverdue: remain !== null && remain < 0 && status !== 'done',
@@ -1432,11 +1464,11 @@ function renderTable(){
         <span class="t-pct">${r.pct}%</span>
       </td>
       <td><input type="text" class="t-blocker-input" data-code="${r.code}" placeholder="—" value="${r.blocker.replace(/"/g,'&quot;')}"></td>
-      <td class="t-risk" title="${r.risk}">${r.risk ? '⚠️ ' + (r.risk.length>18 ? r.risk.slice(0,18)+'…' : r.risk) : '—'}</td>
-      <td class="t-muted">${r.start}</td>
-      <td class="t-muted">${r.eta}</td>
+      <td><input type="text" class="t-edit-input t-risk-input" data-code="${r.code}" data-field="riskOverride" placeholder="—" value="${r.risk.replace(/"/g,'&quot;')}"></td>
+      <td><input type="text" class="t-edit-input" data-code="${r.code}" data-field="startOverride" placeholder="—" value="${r.start.replace(/"/g,'&quot;')}"></td>
+      <td><input type="text" class="t-edit-input" data-code="${r.code}" data-field="etaOverride" placeholder="—" value="${r.eta.replace(/"/g,'&quot;')}"></td>
       <td class="${remainClass}">${r.remainDisplay}</td>
-      <td class="t-muted t-owners">${r.owners}</td>
+      <td><input type="text" class="t-edit-input t-owners-input" data-code="${r.code}" data-field="ownersOverride" placeholder="—" value="${r.owners.replace(/"/g,'&quot;')}"></td>
     </tr>`;
   });
   html += '</tbody>';
@@ -1464,9 +1496,20 @@ function renderTable(){
     });
   });
 
+  table.querySelectorAll('.t-edit-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      const field = e.target.dataset.field;
+      state[code] = {...(state[code]||{}), [field]: e.target.value};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
   table.querySelectorAll('tbody tr').forEach(tr=>{
     tr.addEventListener('click', (e)=>{
-      if(e.target.classList.contains('t-blocker-input')) return;
+      if(e.target.classList.contains('t-blocker-input') || e.target.classList.contains('t-edit-input')) return;
       const site = SITES.find(s=>s.code===tr.dataset.code);
       if(site) openTrainModal(site);
     });
@@ -1511,7 +1554,7 @@ const SOP_KEYWORDS = [
 ];
 
 function estimateSopPctFromText(site){
-  const text = [getDesc(site), getBlocker(site), site.eta].filter(Boolean).join(' ');
+  const text = [getDesc(site), getBlocker(site), getEta(site)].filter(Boolean).join(' ');
   let best = null;
   for(const item of SOP_KEYWORDS){
     for(const kw of item.kws){
@@ -1634,11 +1677,11 @@ function openTrainModal(site){
       </div>
       <div class="train-status-card">
         <div class="lbl">跟进人</div>
-        <div class="val" style="font-size:12.5px;">${site.owners.join(' · ') || '未指定'}</div>
+        <div class="val" style="font-size:12.5px;">${getOwnersText(site) || '未指定'}</div>
       </div>
     </div>
 
-    ${site.risk ? `<div class="train-note">⚠️ 风险点：${site.risk}</div>` : ''}
+    ${getRisk(site) ? `<div class="train-note">⚠️ 风险点：${getRisk(site)}</div>` : ''}
     <div class="train-note">"距上次更新"是按最后一次记录更新的日期计算，不代表停留在同一步骤的时间——如果更新是加速推进也会一起被算进去，仅供参考。</div>
   `;
 
@@ -1823,8 +1866,8 @@ function reasonsFor(site){
   const note = getField(site, 'note');
   if(note) reasons.push(`📝 ${note}`);
   if(getBlocker(site)) reasons.push(`卡点：${getBlocker(site)}`);
-  if(site.risk) reasons.push(`风险：${site.risk}`);
-  const remain = daysUntil(site.eta);
+  if(getRisk(site)) reasons.push(`风险：${getRisk(site)}`);
+  const remain = daysUntil(getEta(site));
   if(remain !== null && remain < 0 && getDisplayStatus(site) !== 'done') reasons.push(`超期${Math.abs(remain)}天`);
   return reasons;
 }
@@ -1853,8 +1896,8 @@ function followUpCompare(a, b){
   const bucketA = FOLLOWUP_BUCKET_RANK[healthBucket(a)] ?? 9;
   const bucketB = FOLLOWUP_BUCKET_RANK[healthBucket(b)] ?? 9;
   if(bucketA !== bucketB) return bucketA - bucketB;
-  const remainA = daysUntil(a.eta);
-  const remainB = daysUntil(b.eta);
+  const remainA = daysUntil(getEta(a));
+  const remainB = daysUntil(getEta(b));
   if(remainA !== null && remainB !== null) return remainA - remainB;
   if(remainA !== null && remainB === null) return -1;
   if(remainA === null && remainB !== null) return 1;
@@ -1862,7 +1905,7 @@ function followUpCompare(a, b){
 }
 
 function classifyForInsight(site){
-  const remain = daysUntil(site.eta);
+  const remain = daysUntil(getEta(site));
   const pct = getSitePct(site);
   const status = getDisplayStatus(site);
   const stuck = getStuckDays(site);
@@ -1882,10 +1925,10 @@ function classifyForInsight(site){
   }
   if(pct >= 80 && status !== 'done'){
     const stepName = currentSopStep(pct).short;
-    return {priority:2, icon:'trending-up', color:'var(--rp-blue)', text:`目前${stepName}，进度 ${pct}%${site.eta ? `，预计 ${site.eta} 完成` : ''}`};
+    return {priority:2, icon:'trending-up', color:'var(--rp-blue)', text:`目前${stepName}，进度 ${pct}%${getEta(site) ? `，预计 ${getEta(site)} 完成` : ''}`};
   }
   if(status === 'done'){
-    return {priority:3, icon:'circle-check', color:'var(--rp-green)', text:`已完成${site.eta ? `，${site.eta}` : ''}`};
+    return {priority:3, icon:'circle-check', color:'var(--rp-green)', text:`已完成${getEta(site) ? `，${getEta(site)}` : ''}`};
   }
   if(status === 'search'){
     return {priority:4, icon:'pause-circle', color:'var(--rp-gray)', text: getDesc(site) ? (getDesc(site).length>36 ? getDesc(site).slice(0,36)+'…' : getDesc(site)) : '仍在寻找仓源'};
@@ -1894,13 +1937,13 @@ function classifyForInsight(site){
 }
 
 function etaMonthLabel(site){
-  const d = parseUsDate(site.eta);
+  const d = parseUsDate(getEta(site));
   if(!d) return {key:'zz-none', label:'日期未确认'};
   return {key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, label:`${d.getMonth()+1}月完成`};
 }
 
 function etaFlag(site){
-  const remain = daysUntil(site.eta);
+  const remain = daysUntil(getEta(site));
   const status = getDisplayStatus(site);
   if(remain === null) return 'none';
   if(status === 'done') return 'ok';
@@ -1932,7 +1975,7 @@ const KPI_FILTERS = {
   done: s => getDisplayStatus(s) === 'done',
   highProgress: s => getSitePct(s) >= 80 && getDisplayStatus(s) !== 'done',
   block: s => getDisplayStatus(s) === 'block',
-  risk: s => !!s.risk,
+  risk: s => !!getRisk(s),
   updatedWeek: s => { const d = getStuckDays(s); return d !== null && d <= 7; },
 };
 
@@ -2068,9 +2111,9 @@ function renderReportTab(){
       const custom = getField(s, 'customStage');
       const changeText = note || getDesc(s) || '无更新说明';
       return `<div class="rp-progress-card">
-        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}</div>
+        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${getSitePct(s)}%;"></span></span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}</div>
         <div class="rp-progress-row"><b>本周变化：</b>${changeText}</div>
-        ${s.eta ? `<div class="rp-progress-row"><b>下一步：</b>预计 ${s.eta}</div>` : ''}
+        ${getEta(s) ? `<div class="rp-progress-row"><b>下一步：</b>预计 ${getEta(s)}</div>` : ''}
       </div>`;
     }).join('');
   } else {
@@ -2222,7 +2265,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
     const note = getField(s, 'note');
     const changeText = note || getDesc(s) || '无更新说明';
-    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${changeText}${s.eta ? '，预计'+s.eta : ''}`);
+    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${changeText}${getEta(s) ? '，预计'+getEta(s) : ''}`);
   });
   lines.push('');
   lines.push('四、时间计划与延期风险：');
