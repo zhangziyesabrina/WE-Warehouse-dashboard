@@ -320,6 +320,7 @@
   .t-edit-input:focus{outline:none;border-color:var(--parallel);background:#132038;}
   .t-risk-input{color:var(--risk);min-width:180px;}
   .t-owners-input{color:var(--parallel);min-width:180px;}
+  .t-date-input{color-scheme:dark;min-width:130px;}
 
   .tab-count{
     font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
@@ -1465,8 +1466,8 @@ function renderTable(){
       </td>
       <td><input type="text" class="t-blocker-input" data-code="${r.code}" placeholder="—" value="${r.blocker.replace(/"/g,'&quot;')}"></td>
       <td><input type="text" class="t-edit-input t-risk-input" data-code="${r.code}" data-field="riskOverride" placeholder="—" value="${r.risk.replace(/"/g,'&quot;')}"></td>
-      <td><input type="text" class="t-edit-input" data-code="${r.code}" data-field="startOverride" placeholder="—" value="${r.start.replace(/"/g,'&quot;')}"></td>
-      <td><input type="text" class="t-edit-input" data-code="${r.code}" data-field="etaOverride" placeholder="—" value="${r.eta.replace(/"/g,'&quot;')}"></td>
+      <td><input type="date" class="t-edit-input t-date-input" data-code="${r.code}" data-field="startOverride" value="${toIsoDate(r.start)}"></td>
+      <td><input type="date" class="t-edit-input t-date-input" data-code="${r.code}" data-field="etaOverride" value="${toIsoDate(r.eta)}"></td>
       <td class="${remainClass}">${r.remainDisplay}</td>
       <td><input type="text" class="t-edit-input t-owners-input" data-code="${r.code}" data-field="ownersOverride" placeholder="—" value="${r.owners.replace(/"/g,'&quot;')}"></td>
     </tr>`;
@@ -1496,12 +1497,23 @@ function renderTable(){
     });
   });
 
-  table.querySelectorAll('.t-edit-input').forEach(input=>{
+  table.querySelectorAll('.t-edit-input:not(.t-date-input)').forEach(input=>{
     input.addEventListener('click', (e)=> e.stopPropagation());
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       const field = e.target.dataset.field;
       state[code] = {...(state[code]||{}), [field]: e.target.value};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
+  table.querySelectorAll('.t-date-input').forEach(input=>{
+    input.addEventListener('click', (e)=> e.stopPropagation());
+    input.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      const field = e.target.dataset.field;
+      state[code] = {...(state[code]||{}), [field]: fromIsoDate(e.target.value)};
       await saveOverride(code, state[code]);
       render();
     });
@@ -1590,6 +1602,21 @@ function parseUsDate(str){
   const [, m, d, y] = match.map(Number);
   if(!m || !d || !y) return null;
   return new Date(y, m-1, d);
+}
+
+function toIsoDate(mdyStr){
+  const d = parseUsDate(mdyStr);
+  if(!d) return '';
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+function fromIsoDate(isoStr){
+  if(!isoStr) return '';
+  const [y, m, d] = isoStr.split('-').map(Number);
+  if(!y || !m || !d) return '';
+  return `${m}/${d}/${y}`;
 }
 
 function daysSince(dateStr){
