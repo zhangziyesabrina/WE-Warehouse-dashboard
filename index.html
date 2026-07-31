@@ -370,6 +370,18 @@
   .rp-section-title{
     display:flex;align-items:center;font-weight:700;font-size:14.5px;color:var(--rp-text);margin-bottom:12px;
   }
+  .rp-section-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .rp-section-title-row .rp-section-title{margin-bottom:0;}
+  .rp-threshold-control{
+    display:flex;align-items:center;gap:6px;font-size:12px;color:var(--rp-muted);
+  }
+  .rp-threshold-control input{
+    width:44px;text-align:center;border:1px solid var(--rp-border);border-radius:6px;
+    padding:3px 4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--rp-text);
+  }
+  .rp-threshold-control input:focus{outline:none;border-color:var(--rp-blue);}
+  .rp-progress-card.stale{border-left:3px solid var(--rp-red);padding-left:11px;background:var(--rp-red-soft);border-radius:0 8px 8px 0;}
+  .rp-stale-flag{color:var(--rp-red);font-weight:700;font-size:11.5px;margin-left:8px;}
   .rp-insight-list{margin:0;padding-left:4px;list-style:none;font-size:13.5px;line-height:2;color:var(--rp-text);}
   .rp-insight-list li{display:flex;gap:8px;align-items:flex-start;}
 
@@ -781,7 +793,14 @@
       </div>
 
       <div class="rp-section-block">
-        <div class="rp-section-title"><i data-lucide="trending-up"></i>三、本周关键进展</div>
+        <div class="rp-section-title-row">
+          <div class="rp-section-title"><i data-lucide="trending-up"></i>三、本周关键进展</div>
+          <label class="rp-threshold-control">
+            <span>超过</span>
+            <input type="number" id="rpStaleThreshold" min="1" max="60" value="7">
+            <span>天未更新标红</span>
+          </label>
+        </div>
         <div id="rpProgressList"></div>
       </div>
 
@@ -2133,6 +2152,8 @@ function renderReportTab(){
   }
 
   // 二、本周关键进展
+  const thresholdInput = document.getElementById('rpStaleThreshold');
+  const staleThreshold = parseInt(thresholdInput.value, 10) || 7;
   const recentlyUpdated = filtered
     .map(s=>({s, d:getStuckDays(s)}))
     .filter(x=>x.d !== null)
@@ -2144,8 +2165,9 @@ function renderReportTab(){
       const note = getField(s, 'note');
       const custom = getField(s, 'customStage');
       const changeText = note || getDesc(s) || '无更新说明';
-      return `<div class="rp-progress-card">
-        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${getSitePct(s)}%;"></span></span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}</div>
+      const isStale = d >= staleThreshold && getDisplayStatus(s) !== 'done';
+      return `<div class="rp-progress-card ${isStale ? 'stale' : ''}">
+        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${getSitePct(s)}%;"></span></span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}${isStale ? `<span class="rp-stale-flag">⚠️ 已 ${d} 天未更新，需跟进</span>` : ''}</div>
         <div class="rp-progress-row"><b>本周变化：</b>${changeText}</div>
         ${getEta(s) ? `<div class="rp-progress-row"><b>下一步：</b>预计 ${getEta(s)}</div>` : ''}
       </div>`;
@@ -2235,6 +2257,21 @@ document.getElementById('rpOwnerFilter').addEventListener('change', (e)=>{
   }
 });
 
+(function initStaleThreshold(){
+  const input = document.getElementById('rpStaleThreshold');
+  try{
+    const saved = localStorage.getItem('rpStaleThreshold');
+    if(saved) input.value = saved;
+  }catch(e){}
+  input.addEventListener('click', (e)=> e.stopPropagation());
+  input.addEventListener('change', (e)=>{
+    const val = Math.max(1, Math.min(60, parseInt(e.target.value, 10) || 7));
+    e.target.value = val;
+    try{ localStorage.setItem('rpStaleThreshold', val); }catch(err){}
+    renderReportTab();
+  });
+})();
+
 document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   const filtered = getFilteredSitesForReport();
   const now = new Date();
@@ -2296,10 +2333,12 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   }
   lines.push('');
   lines.push('三、本周关键进展：');
-  filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s})=>{
+  const copyStaleThreshold = parseInt(document.getElementById('rpStaleThreshold').value, 10) || 7;
+  filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s, d})=>{
     const note = getField(s, 'note');
     const changeText = note || getDesc(s) || '无更新说明';
-    lines.push(`  ${s.code}（${getSitePct(s)}%）- ${changeText}${getEta(s) ? '，预计'+getEta(s) : ''}`);
+    const staleTag = (d >= copyStaleThreshold && getDisplayStatus(s) !== 'done') ? `【⚠️已${d}天未更新，需跟进】` : '';
+    lines.push(`  ${s.code}（${getSitePct(s)}%）${staleTag}- ${changeText}${getEta(s) ? '，预计'+getEta(s) : ''}`);
   });
   lines.push('');
   lines.push('四、时间计划与延期风险：');
