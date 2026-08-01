@@ -1378,7 +1378,7 @@ function generateInsights(){
     insights.push(`🔴 <b>${overdueEta.length}</b> 个站点已超过预计完成日期：${overdueEta.map(s=>s.code).join('、')}`);
   }
 
-  const withStuck = SITES.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d !== null).sort((a,b)=>b.d-a.d);
+  const withStuck = SITES.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d !== null && getDisplayStatus(x.s) !== 'done').sort((a,b)=>b.d-a.d);
   if(withStuck.length){
     const top = withStuck[0];
     insights.push(`🕐 停留时间最长：<b>${top.s.code}</b>，已 <b>${top.d}</b> 天未更新`);
