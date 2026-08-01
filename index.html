@@ -1690,6 +1690,7 @@ function daysUntil(dateStr){
 function isHub(site){
   if(site.siteType && site.siteType.toLowerCase().includes('hub')) return true;
   if(HUB_CODES.includes(site.code)) return true;
+  if(/\.H$/i.test(site.code || '')) return true;
   return false;
 }
 
