@@ -2142,7 +2142,8 @@ function renderReportTab(){
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
         const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
-        const pillCls = doneNow ? 'done' : (custom && custom.trim() ? 'progress' : 'negotiating');
+        const realBucket = healthBucket(site);
+        const pillCls = doneNow ? 'done' : (realBucket === 'signing' ? 'progress' : realBucket);
         const reasons = reasonsFor(site);
         const pct = getSitePct(site);
         return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
@@ -2222,7 +2223,7 @@ function renderReportTab(){
               const pct = getSitePct(s);
               const custom = getField(s, 'customStage');
               const bucket = healthBucket(s);
-              const pillCls = custom && custom.trim() ? 'progress' : (bucket === 'signing' ? 'progress' : bucket);
+              const pillCls = bucket === 'done' ? 'done' : (bucket === 'signing' ? 'progress' : bucket);
               const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
               const note = getField(s, 'note');
               return `<div class="rp-internal-site-row">
