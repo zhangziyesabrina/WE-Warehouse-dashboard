@@ -193,6 +193,16 @@
   .custom-stage-input:focus{outline:none;border-color:var(--parallel);color:var(--parallel);border-style:solid;}
   .custom-stage-input:not(:placeholder-shown){border-color:var(--parallel);color:var(--parallel);border-style:solid;}
 
+  .priority-select{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
+    padding:3px 8px;border-radius:6px;border:1px dashed var(--border);
+    background:transparent;color:var(--muted-2);width:150px;cursor:pointer;
+  }
+  .priority-select:focus{outline:none;}
+  .priority-select.priority-high{border-color:var(--risk);border-style:solid;color:var(--risk);background:var(--risk-soft);}
+  .priority-select.priority-low{border-color:var(--parallel);border-style:solid;color:var(--muted);}
+  .priority-select.priority-normal{color:var(--muted-2);}
+
   .urgent-toggle{
     font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
     padding:3px 8px;border-radius:6px;border:1px solid var(--border);
@@ -1060,6 +1070,7 @@ function cardTemplate(site){
   const note = getField(site, 'note') || '';
   const internalOwner = getField(site, 'internalOwner') || '';
   const customStage = getField(site, 'customStage') || '';
+  const priority = getField(site, 'priorityLevel') || 'normal';
 
   return `
     <div class="card ${isUrgent ? 'card-urgent' : ''}" data-code="${site.code}" data-status="${displayStatus}" data-blocker="${getBlocker(site)?1:0}" data-risk="${getRisk(site)?1:0}" data-type="${isHub(site) ? 'hub' : 'site'}">
@@ -1072,6 +1083,11 @@ function cardTemplate(site){
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <span class="status-badge ${stageInfo.cls}">${stageInfo.label}</span>
           <input type="text" class="custom-stage-input" data-code="${site.code}" placeholder="自定义阶段（如：付款中）" value="${customStage.replace(/"/g,'&quot;')}">
+          <select class="priority-select priority-${priority}" data-code="${site.code}">
+            <option value="high" ${priority==='high'?'selected':''}>🔴 优先级：高</option>
+            <option value="normal" ${priority==='normal'?'selected':''}>⚪ 优先级：中</option>
+            <option value="low" ${priority==='low'?'selected':''}>🔵 优先级：低</option>
+          </select>
           <button class="urgent-toggle ${isUrgent ? 'active' : ''}" data-code="${site.code}">🚩 ${isUrgent ? '待办中' : '标记待办'}</button>
         </div>
       </div>
@@ -1217,6 +1233,16 @@ function render(){
     });
   });
 
+  grid.querySelectorAll('.priority-select').forEach(select=>{
+    select.addEventListener('click', (e)=> e.stopPropagation());
+    select.addEventListener('change', async (e)=>{
+      const code = e.target.dataset.code;
+      state[code] = {...(state[code]||{}), priorityLevel: e.target.value};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
   grid.querySelectorAll('.desc-input').forEach(input=>{
     input.addEventListener('click', (e)=> e.stopPropagation());
     input.addEventListener('change', async (e)=>{
@@ -1355,6 +1381,9 @@ function staleDaysBadge(site, threshold){
 function attentionScore(site){
   let score = 0;
   if(getUrgent(site)) score += 10;
+  const priority = getField(site, 'priorityLevel');
+  if(priority === 'high') score += 8;
+  if(priority === 'low') score -= 8;
   const customStage = getField(site, 'customStage');
   if(customStage && customStage.trim()) score += 5;
   const stuck = getStuckDays(site);
@@ -1972,7 +2001,12 @@ function healthBucket(site){
 }
 
 const FOLLOWUP_BUCKET_RANK = {paused:0, signing:1, negotiating:2, search:3};
+const PRIORITY_RANK = {high: 0, normal: 1, low: 2};
+
 function followUpCompare(a, b){
+  const prioA = PRIORITY_RANK[getField(a, 'priorityLevel') || 'normal'] ?? 1;
+  const prioB = PRIORITY_RANK[getField(b, 'priorityLevel') || 'normal'] ?? 1;
+  if(prioA !== prioB) return prioA - prioB;
   const bucketA = FOLLOWUP_BUCKET_RANK[healthBucket(a)] ?? 9;
   const bucketB = FOLLOWUP_BUCKET_RANK[healthBucket(b)] ?? 9;
   if(bucketA !== bucketB) return bucketA - bucketB;
