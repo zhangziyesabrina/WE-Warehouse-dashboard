@@ -2193,7 +2193,7 @@ function renderReportTab(){
       const changeText = note || getDesc(s) || '无更新说明';
       const isStale = d >= staleThreshold && getDisplayStatus(s) !== 'done';
       return `<div class="rp-progress-card ${isStale ? 'stale' : ''}">
-        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${getSitePct(s)}%;"></span></span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}${isStale ? `<span class="rp-stale-flag">⚠️ 已 ${d} 天未更新，需跟进</span>` : ''}</div>
+        <div class="rp-progress-top"><span class="rp-progress-code">${s.code}</span><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${getSitePct(s)}%;"></span></span><span class="rp-progress-pct">${getSitePct(s)}%</span>${custom && custom.trim() ? `<span class="rp-pill progress">${custom.trim()}</span>` : ''}${staleDaysBadge(s, staleThreshold)}</div>
         <div class="rp-progress-row"><b>本周变化：</b>${changeText}</div>
         ${getEta(s) ? `<div class="rp-progress-row"><b>下一步：</b>预计 ${getEta(s)}</div>` : ''}
       </div>`;
