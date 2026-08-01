@@ -467,6 +467,12 @@
   .rp-internal-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rp-muted);min-width:32px;}
   .rp-internal-note{color:var(--rp-muted);}
   .rp-internal-empty{color:var(--rp-muted);font-size:12.5px;}
+  .stale-badge{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rp-muted);
+    background:var(--rp-gray-soft);border-radius:6px;padding:2px 8px;white-space:nowrap;
+  }
+  .stale-badge.stale{color:var(--rp-red);background:var(--rp-red-soft);font-weight:700;}
+  .stale-badge.none{color:var(--rp-muted);background:transparent;}
 
   @media (max-width:900px){
     .rp-kpi-row{grid-template-columns:repeat(3,1fr);}
@@ -1326,6 +1332,14 @@ function getStuckDays(site){
   return Math.min(larkDays, localDays);
 }
 
+function staleDaysBadge(site, threshold){
+  const d = getStuckDays(site);
+  if(d === null) return '<span class="stale-badge none">—</span>';
+  const isDone = getDisplayStatus(site) === 'done';
+  const isStale = !isDone && d >= threshold;
+  return `<span class="stale-badge ${isStale ? 'stale' : ''}">${isStale ? '⚠️ ' : ''}${d}天未动</span>`;
+}
+
 function attentionScore(site){
   let score = 0;
   if(getUrgent(site)) score += 10;
@@ -2061,6 +2075,7 @@ function renderReportTab(){
   const healthFiltered = getHealthFilteredSites();
   const filtered = getFilteredSitesForReport();
   const now = new Date();
+  const staleThreshold = parseInt(document.getElementById('rpStaleThreshold').value, 10) || 7;
 
   document.getElementById('rpUpdated').textContent = `最后更新时间：${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
 
@@ -2137,7 +2152,7 @@ function renderReportTab(){
 
   const focusTable = document.getElementById('rpFocusTable');
   if(followUpSites.length){
-    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>核心问题</th></tr></thead><tbody>` +
+    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>核心问题</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
@@ -2146,15 +2161,13 @@ function renderReportTab(){
         const pillCls = doneNow ? 'done' : (realBucket === 'signing' ? 'progress' : realBucket);
         const reasons = reasonsFor(site);
         const pct = getSitePct(site);
-        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${reasons[0] || '需关注'}</td></tr>`;
+        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${reasons[0] || '需关注'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点跟进的站点 👍</td></tr></tbody>';
   }
 
   // 二、本周关键进展
-  const thresholdInput = document.getElementById('rpStaleThreshold');
-  const staleThreshold = parseInt(thresholdInput.value, 10) || 7;
   const recentlyUpdated = filtered
     .map(s=>({s, d:getStuckDays(s)}))
     .filter(x=>x.d !== null)
@@ -2231,6 +2244,7 @@ function renderReportTab(){
                 <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
                 <span class="rp-internal-pct">${pct}%</span>
                 <span class="rp-pill ${pillCls}">${label}</span>
+                ${staleDaysBadge(s, staleThreshold)}
                 ${!sharedNote && note ? `<span class="rp-internal-note">：${note}</span>` : ''}
               </div>`;
             }).join('')}
@@ -2276,6 +2290,7 @@ document.getElementById('rpOwnerFilter').addEventListener('change', (e)=>{
 document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   const filtered = getFilteredSitesForReport();
   const now = new Date();
+  const staleThreshold = parseInt(document.getElementById('rpStaleThreshold').value, 10) || 7;
   const lines = [];
   lines.push(`【GOFO 仓库租赁进度周报】截至 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`);
   lines.push('');
@@ -2305,7 +2320,9 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const doneNow = getDisplayStatus(site) === 'done';
       const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
       const reasons = reasonsFor(site);
-      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）- ${reasons.join('，') || '需关注'}`);
+      const d = getStuckDays(site);
+      const staleText = (d !== null && d >= staleThreshold && !doneNow) ? `【⚠️${d}天未动】` : '';
+      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- ${reasons.join('，') || '需关注'}`);
     });
   } else {
     lines.push('  暂无');
@@ -2325,7 +2342,9 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
     groupEntries.forEach(([owner, sites])=>{
       const siteDescs = sites.map(s=>{
         const note = getField(s, 'note');
-        return note ? `${s.code}(${note})` : s.code;
+        const d = getStuckDays(s);
+        const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未动]` : '';
+        return note ? `${s.code}${staleText}(${note})` : `${s.code}${staleText}`;
       }).join('、');
       lines.push(`  ${owner}：${siteDescs}`);
     });
@@ -2334,11 +2353,10 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   }
   lines.push('');
   lines.push('三、本周关键进展：');
-  const copyStaleThreshold = parseInt(document.getElementById('rpStaleThreshold').value, 10) || 7;
   filtered.map(s=>({s, d:getStuckDays(s)})).filter(x=>x.d!==null).sort((a,b)=>a.d-b.d).slice(0,8).forEach(({s, d})=>{
     const note = getField(s, 'note');
     const changeText = note || getDesc(s) || '无更新说明';
-    const staleTag = (d >= copyStaleThreshold && getDisplayStatus(s) !== 'done') ? `【⚠️已${d}天未更新，需跟进】` : '';
+    const staleTag = (d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `【⚠️已${d}天未更新，需跟进】` : '';
     lines.push(`  ${s.code}（${getSitePct(s)}%）${staleTag}- ${changeText}${getEta(s) ? '，预计'+getEta(s) : ''}`);
   });
   lines.push('');
