@@ -1100,7 +1100,7 @@ function cardTemplate(site){
         <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步说明（比如：代收协议待处理）" value="${note.replace(/"/g,'&quot;')}">
       </div>
       <div class="owners">跟进人：${getOwnersText(site)}</div>
-      <div class="meta-row"><span>更新时间 ${site.updated || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
+      <div class="meta-row"><span>更新时间 ${getDisplayUpdated(site) || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
     </div>
   `;
 }
@@ -1330,6 +1330,18 @@ function getStuckDays(site){
   const localDays = Math.floor((Date.now() - new Date(localTs).getTime()) / 86400000);
   if(larkDays === null) return localDays;
   return Math.min(larkDays, localDays);
+}
+
+function getDisplayUpdated(site){
+  const larkDate = parseUsDate(site.updated);
+  const localTs = state[site.code]?._lastEditedAt;
+  if(!localTs) return site.updated || '';
+  const localDate = new Date(localTs);
+  if(!larkDate || localDate > larkDate){
+    const mm = localDate.getMonth()+1, dd = localDate.getDate(), yy = localDate.getFullYear();
+    return `${mm}/${dd}/${yy}`;
+  }
+  return site.updated || '';
 }
 
 function staleDaysBadge(site, threshold){
@@ -1684,7 +1696,7 @@ function isHub(site){
 function openTrainModal(site){
   const {value: pctValue, estimated} = estimateSopPct(site);
   const step = currentSopStep(pctValue);
-  const stuckDays = daysSince(site.updated);
+  const stuckDays = getStuckDays(site);
 
   const stopsHtml = SOP_MILESTONES.map(m => `
     <div class="train-stop">
