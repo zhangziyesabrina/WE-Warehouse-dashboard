@@ -392,6 +392,13 @@
   .rp-insight-box{
     background:var(--rp-blue-soft);border:1px solid #C9DBFC;border-radius:14px;padding:18px 20px;margin-bottom:18px;
   }
+  .rp-summary-card{
+    background:#172033;border-radius:14px;padding:20px 22px;margin-bottom:14px;color:#fff;
+  }
+  .rp-summary-line{font-size:15px;line-height:1.9;font-weight:600;}
+  .rp-summary-line b{color:#7EB8FF;font-weight:800;}
+  .rp-summary-line.risk b{color:#FF9B9B;}
+  .rp-summary-line.action b{color:#FFD27E;}
   .rp-section-title{
     display:flex;align-items:center;font-weight:700;font-size:14.5px;color:var(--rp-text);margin-bottom:12px;
   }
@@ -440,6 +447,7 @@
   table.rp-table{border-collapse:collapse;width:100%;font-size:12.5px;}
   table.rp-table th{text-align:left;padding:7px 10px;font-size:10.5px;color:var(--rp-muted);border-bottom:1px solid var(--rp-border);white-space:nowrap;}
   table.rp-table td{padding:9px 10px;border-bottom:1px solid var(--rp-border);white-space:nowrap;}
+  table.rp-table td:nth-child(2){white-space:normal;max-width:320px;}
   table.rp-table td:last-child{white-space:normal;max-width:280px;}
   table.rp-table tr:last-child td{border-bottom:none;}
   .rp-pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;}
@@ -460,6 +468,13 @@
   .rp-progress-row b{color:var(--rp-muted);font-weight:600;margin-right:4px;}
   .rp-empty-note{color:var(--rp-muted);font-size:12.5px;padding:6px 0;}
 
+  .rp-risk-cards{display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;margin-bottom:16px;}
+  .rp-risk-card{background:var(--rp-red-soft);border:1px solid #F5B8B8;border-radius:10px;padding:14px 16px;}
+  .rp-risk-card-title{font-weight:700;font-size:13.5px;margin-bottom:8px;}
+  .rp-risk-tag{color:var(--rp-red);font-weight:700;}
+  .rp-risk-card-row{font-size:12px;color:var(--rp-text);line-height:1.7;}
+  .rp-risk-card-row b{color:var(--rp-muted);font-weight:600;}
+
   .rp-timeline-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
   .rp-timeline-col{flex:1;min-width:160px;background:var(--rp-gray-soft);border-radius:10px;padding:12px;}
   .rp-timeline-col-title{font-size:11.5px;font-weight:700;color:var(--rp-muted);margin-bottom:8px;}
@@ -473,11 +488,13 @@
   .rp-flag.ok{background:var(--rp-green);}
   .rp-flag.none{background:var(--rp-gray);}
 
+  .rp-copy-btn-row{display:flex;gap:10px;margin-top:6px;}
   .rp-copy-btn{
-    margin-top:6px;background:var(--rp-blue);color:#fff;border:none;border-radius:8px;
+    background:var(--rp-blue);color:#fff;border:none;border-radius:8px;
     padding:12px 22px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;
   }
   .rp-copy-btn:hover{opacity:0.9;}
+  .rp-copy-btn-secondary{background:#fff;color:var(--rp-blue);border:1px solid var(--rp-blue);}
 
   .rp-footer{margin-top:14px;font-size:11px;color:var(--rp-muted);}
 
@@ -486,6 +503,8 @@
   .rp-internal-owner-name{font-weight:700;font-size:14px;color:var(--rp-blue);}
   .rp-needs-boss-group{background:rgba(179,136,255,0.08);border-radius:10px;padding:14px;}
   .rp-needs-boss-title{color:#8B5CF6;}
+  .rp-tr-needs-boss{background:rgba(139,92,246,0.06);}
+  .rp-needs-boss-tag{background:rgba(139,92,246,0.15);color:#8B5CF6;font-weight:700;font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;}
   .rp-internal-core-issue{font-size:12.5px;color:var(--rp-text);margin-top:4px;background:var(--rp-blue-soft);border-radius:6px;padding:6px 10px;display:inline-block;}
   .rp-internal-site-rows{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
   .rp-internal-site-row{display:flex;align-items:center;gap:10px;font-size:12.5px;}
@@ -809,6 +828,8 @@
         <div class="rp-updated" id="rpUpdated"></div>
       </div>
 
+      <div class="rp-summary-card" id="rpSummaryCard"></div>
+
       <div class="rp-insight-box">
         <div class="rp-section-title"><i data-lucide="sparkles"></i>本周关键洞察</div>
         <ul class="rp-insight-list" id="rpInsightList"></ul>
@@ -832,7 +853,7 @@
 
       <div class="rp-section-block">
         <div class="rp-section-title"><i data-lucide="users"></i>二、当前卡在谁手上</div>
-        <div id="rpInternalGroups"></div>
+        <table class="rp-table" id="rpInternalTable"></table>
       </div>
 
       <div class="rp-section-block">
@@ -852,7 +873,10 @@
         <div id="rpTimeline"></div>
       </div>
 
-      <button id="copyReportBtn" class="rp-copy-btn">复制为文字（发给老板）</button>
+      <div class="rp-copy-btn-row">
+        <button id="copySummaryBtn" class="rp-copy-btn rp-copy-btn-secondary">复制简版汇报</button>
+        <button id="copyReportBtn" class="rp-copy-btn">复制完整周报</button>
+      </div>
       <div class="rp-footer" id="rpFooter"></div>
 
     </div>
@@ -2201,6 +2225,21 @@ function renderReportTab(){
 
   document.getElementById('rpUpdated').textContent = `最后更新时间：${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
 
+  // 一句话总结（放在最上面，最多三行）
+  const doneThisWeek = filtered.filter(s => {
+    const d = getStuckDays(s);
+    return getDisplayStatus(s) === 'done' && d !== null && d <= 7;
+  }).length;
+  const blockedCount = filtered.filter(s => getBlocker(s) && getDisplayStatus(s) !== 'done').length;
+  const priorityCodes = [...new Set(
+    getScoredSites(3).map(x => x.site.code)
+  )];
+  const summaryLines = [];
+  summaryLines.push(`<div class="rp-summary-line">📦 本周完成 <b>${doneThisWeek}</b> 个站点</div>`);
+  if(blockedCount > 0) summaryLines.push(`<div class="rp-summary-line risk">⚠️ <b>${blockedCount}</b> 个站点存在卡点</div>`);
+  if(priorityCodes.length) summaryLines.push(`<div class="rp-summary-line action">🎯 <b>${priorityCodes.join('、')}</b> 需要优先推进</div>`);
+  document.getElementById('rpSummaryCard').innerHTML = summaryLines.join('');
+
   // 本周关键洞察
   const items = filtered.map(s=>({site:s, ...classifyForInsight(s)}))
     .sort((a,b)=>a.priority-b.priority).slice(0,5);
@@ -2312,7 +2351,26 @@ function renderReportTab(){
     progressList.innerHTML = '<div class="rp-empty-note">暂无站点更新记录</div>';
   }
 
-  // 三、时间计划与延期风险
+  // 四、时间计划与延期风险
+  const overdueSites = filtered.filter(s => etaFlag(s) === 'overdue');
+  const riskCardsHtml = overdueSites.length ? `
+    <div class="rp-risk-cards">
+      ${overdueSites.map(s=>{
+        const reasons = reasonsFor(s);
+        const reason = reasons[0] || getDesc(s) || '需关注';
+        const owner = getField(s, 'internalOwner') || s.owners.join('、') || '未指定';
+        const nextStep = getField(s, 'note') || '待确认下一步';
+        return `<div class="rp-risk-card">
+          <div class="rp-risk-card-title">${s.code}${isHub(s) ? ' 🏢' : ''}｜<span class="rp-risk-tag">延期风险</span></div>
+          <div class="rp-risk-card-row"><b>原因：</b>${reason}</div>
+          <div class="rp-risk-card-row"><b>下一步：</b>${nextStep}</div>
+          <div class="rp-risk-card-row"><b>负责人：</b>${owner}</div>
+          <div class="rp-risk-card-row"><b>截止时间：</b>${getEta(s) || '未设定'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  ` : '';
+
   const groups = {};
   filtered.forEach(s=>{
     const {key, label} = etaMonthLabel(s);
@@ -2320,7 +2378,7 @@ function renderReportTab(){
     groups[key].sites.push(s);
   });
   const sortedKeys = Object.keys(groups).sort();
-  document.getElementById('rpTimeline').innerHTML = `<div class="rp-timeline-row">` +
+  document.getElementById('rpTimeline').innerHTML = riskCardsHtml + `<div class="rp-timeline-row">` +
     sortedKeys.map(key=>{
       const g = groups[key];
       return `<div class="rp-timeline-col">
@@ -2336,59 +2394,29 @@ function renderReportTab(){
     </div>`;
 
   // 二、当前卡在谁手上
-  function renderSiteRow(s, sharedNote){
-    const pct = getSitePct(s);
-    const custom = getField(s, 'customStage');
-    const bucket = healthBucket(s);
-    const pillCls = bucket === 'done' ? 'done' : (bucket === 'signing' ? 'progress' : bucket);
-    const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
-    const note = getField(s, 'note');
-    return `<div class="rp-internal-site-row">
-      <span class="rp-internal-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
-      <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
-      <span class="rp-internal-pct">${pct}%</span>
-      <span class="rp-pill ${pillCls}">${label}</span>
-      ${staleDaysBadge(s, staleThreshold)}
-      ${!sharedNote && note ? `<span class="rp-internal-note">：${note}</span>` : ''}
-    </div>`;
-  }
-
-  const needsBossSites = filtered.filter(s => getNeedsBoss(s));
-  const needsBossHtml = needsBossSites.length ? `
-    <div class="rp-internal-group rp-needs-boss-group">
-      <div class="rp-internal-owner-name rp-needs-boss-title">🙋 需要老板帮忙（${needsBossSites.length}）</div>
-      <div class="rp-internal-site-rows">
-        ${needsBossSites.map(s => renderSiteRow(s, null)).join('')}
-      </div>
-    </div>
-  ` : '';
-
-  const internalGroups = {};
-  filtered.forEach(s=>{
-    const owner = getField(s, 'internalOwner');
-    if(owner && owner.trim()){
-      if(!internalGroups[owner]) internalGroups[owner] = [];
-      internalGroups[owner].push(s);
-    }
+  const trackedSites = filtered.filter(s => getNeedsBoss(s) || (getField(s, 'internalOwner') || '').trim());
+  const sortedTracked = trackedSites.sort((a, b) => {
+    const bossA = getNeedsBoss(a) ? 0 : 1;
+    const bossB = getNeedsBoss(b) ? 0 : 1;
+    if(bossA !== bossB) return bossA - bossB;
+    const dA = getStuckDays(a) ?? -1;
+    const dB = getStuckDays(b) ?? -1;
+    return dB - dA;
   });
-  const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
-  const groupsHtml = groupEntries.length
-    ? groupEntries.map(([owner, sites])=>{
-        const notes = [...new Set(sites.map(s => getField(s, 'note')).filter(Boolean))];
-        const sharedNote = notes.length === 1 ? notes[0] : null;
-        return `
-        <div class="rp-internal-group">
-          <div class="rp-internal-owner-name">${owner}</div>
-          ${sharedNote ? `<div class="rp-internal-core-issue">核心问题：${sharedNote}</div>` : ''}
-          <div class="rp-internal-site-rows">
-            ${sites.map(s => renderSiteRow(s, sharedNote)).join('')}
-          </div>
-        </div>
-      `;
-      }).join('')
-    : (needsBossSites.length ? '' : '<div class="rp-internal-empty">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动分组显示在这里</div>');
 
-  document.getElementById('rpInternalGroups').innerHTML = needsBossHtml + groupsHtml;
+  const internalTable = document.getElementById('rpInternalTable');
+  if(sortedTracked.length){
+    internalTable.innerHTML = `<thead><tr><th>站点</th><th>当前卡点</th><th>当前负责人</th><th>卡住天数</th></tr></thead><tbody>` +
+      sortedTracked.map(s=>{
+        const owner = getField(s, 'internalOwner') || '—';
+        const reasons = reasonsFor(s);
+        const issue = reasons[0] || getDesc(s) || '需关注';
+        const needsBossFlag = getNeedsBoss(s) ? '<span class="rp-needs-boss-tag">🙋 需要老板</span> ' : '';
+        return `<tr class="${getNeedsBoss(s) ? 'rp-tr-needs-boss' : ''}"><td><b>${s.code}${isHub(s) ? ' 🏢' : ''}</b></td><td>${needsBossFlag}${issue}</td><td>${owner}</td><td>${staleDaysBadge(s, staleThreshold)}</td></tr>`;
+      }).join('') + '</tbody>';
+  } else {
+    internalTable.innerHTML = '<tbody><tr><td class="rp-empty-note">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动显示在这里</td></tr></tbody>';
+  }
 
   document.getElementById('rpFooter').textContent =
     `数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -2422,6 +2450,42 @@ document.getElementById('rpOwnerFilter').addEventListener('change', (e)=>{
     renderReportTab();
   });
 })();
+
+document.getElementById('copySummaryBtn').addEventListener('click', ()=>{
+  const filtered = getFilteredSitesForReport();
+  const now = new Date();
+  const lines = [];
+  lines.push(`【GOFO 仓库租赁周报 - 简版】${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`);
+  lines.push('');
+  const doneThisWeek = filtered.filter(s => {
+    const d = getStuckDays(s);
+    return getDisplayStatus(s) === 'done' && d !== null && d <= 7;
+  }).length;
+  const blockedCount = filtered.filter(s => getBlocker(s) && getDisplayStatus(s) !== 'done').length;
+  const priorityCodes = [...new Set(getScoredSites(3).map(x => x.site.code))];
+  lines.push(`📦 本周完成 ${doneThisWeek} 个站点`);
+  if(blockedCount > 0) lines.push(`⚠️ ${blockedCount} 个站点存在卡点`);
+  if(priorityCodes.length) lines.push(`🎯 ${priorityCodes.join('、')} 需要优先推进`);
+  lines.push('');
+  const overdueSitesCopy = filtered.filter(s => etaFlag(s) === 'overdue');
+  if(overdueSitesCopy.length){
+    lines.push('延期风险：');
+    overdueSitesCopy.forEach(s=>{
+      const reason = reasonsFor(s)[0] || '需关注';
+      lines.push(`  ${s.code} - ${reason}（截止：${getEta(s) || '未设定'}）`);
+    });
+  }
+
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copySummaryBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ 已复制';
+    setTimeout(()=>{ btn.textContent = orig; }, 2000);
+  }).catch(()=>{
+    alert('复制失败，请手动选择文字复制');
+  });
+});
 
 document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   const filtered = getFilteredSitesForReport();
@@ -2465,32 +2529,19 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   }
   lines.push('');
   lines.push('二、当前卡在谁手上：');
-  const needsBossSitesCopy = filtered.filter(s => getNeedsBoss(s));
-  if(needsBossSitesCopy.length){
-    lines.push('  🙋 需要老板帮忙：');
-    needsBossSitesCopy.forEach(s=>{
-      const note = getField(s, 'note');
-      lines.push(`    ${s.code}${note ? '：'+note : ''}`);
-    });
-  }
-  const internalGroups = {};
-  filtered.forEach(s=>{
-    const owner = getField(s, 'internalOwner');
-    if(owner && owner.trim()){
-      if(!internalGroups[owner]) internalGroups[owner] = [];
-      internalGroups[owner].push(s);
-    }
-  });
-  const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
-  if(groupEntries.length){
-    groupEntries.forEach(([owner, sites])=>{
-      const siteDescs = sites.map(s=>{
-        const note = getField(s, 'note');
-        const d = getStuckDays(s);
-        const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未动]` : '';
-        return note ? `${s.code}${staleText}(${note})` : `${s.code}${staleText}`;
-      }).join('、');
-      lines.push(`  ${owner}：${siteDescs}`);
+  const trackedSitesCopy = filtered.filter(s => getNeedsBoss(s) || (getField(s, 'internalOwner') || '').trim());
+  if(trackedSitesCopy.length){
+    trackedSitesCopy.sort((a, b) => {
+      const bossA = getNeedsBoss(a) ? 0 : 1, bossB = getNeedsBoss(b) ? 0 : 1;
+      if(bossA !== bossB) return bossA - bossB;
+      return (getStuckDays(b) ?? -1) - (getStuckDays(a) ?? -1);
+    }).forEach(s=>{
+      const owner = getField(s, 'internalOwner') || '未指定';
+      const issue = reasonsFor(s)[0] || getDesc(s) || '需关注';
+      const d = getStuckDays(s);
+      const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未动]` : '';
+      const bossTag = getNeedsBoss(s) ? '[🙋需要老板] ' : '';
+      lines.push(`  ${bossTag}${s.code}${staleText} - 负责人：${owner} - ${issue}`);
     });
   } else {
     lines.push('  暂无标记');
