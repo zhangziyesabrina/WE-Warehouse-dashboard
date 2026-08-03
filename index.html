@@ -211,6 +211,14 @@
   .urgent-toggle:hover{border-color:var(--risk);color:var(--risk);}
   .urgent-toggle.active{background:var(--risk-soft);border-color:var(--risk);color:var(--risk);}
 
+  .needs-boss-toggle{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;
+    padding:3px 8px;border-radius:6px;border:1px solid var(--border);
+    background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;
+  }
+  .needs-boss-toggle:hover{border-color:#B388FF;color:#B388FF;}
+  .needs-boss-toggle.active{background:rgba(179,136,255,0.15);border-color:#B388FF;color:#B388FF;}
+
   .owner-banner{
     display:flex;align-items:center;gap:8px;margin:10px 0 2px;
     border-radius:8px;padding:8px 10px;
@@ -469,6 +477,8 @@
   .rp-internal-group{border-bottom:1px solid var(--rp-border);padding:14px 0;}
   .rp-internal-group:last-child{border-bottom:none;}
   .rp-internal-owner-name{font-weight:700;font-size:14px;color:var(--rp-blue);}
+  .rp-needs-boss-group{background:rgba(179,136,255,0.08);border-radius:10px;padding:14px;}
+  .rp-needs-boss-title{color:#8B5CF6;}
   .rp-internal-core-issue{font-size:12.5px;color:var(--rp-text);margin-top:4px;background:var(--rp-blue-soft);border-radius:6px;padding:6px 10px;display:inline-block;}
   .rp-internal-site-rows{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
   .rp-internal-site-row{display:flex;align-items:center;gap:10px;font-size:12.5px;}
@@ -1068,6 +1078,7 @@ function cardTemplate(site){
   }
 
   const isUrgent = getUrgent(site);
+  const needsBoss = getNeedsBoss(site);
   const note = getField(site, 'note') || '';
   const internalOwner = getField(site, 'internalOwner') || '';
   const customStage = getField(site, 'customStage') || '';
@@ -1090,6 +1101,7 @@ function cardTemplate(site){
             <option value="low" ${priority==='low'?'selected':''}>🔵 优先级：低</option>
           </select>
           <button class="urgent-toggle ${isUrgent ? 'active' : ''}" data-code="${site.code}">🚩 ${isUrgent ? '待办中' : '标记待办'}</button>
+          <button class="needs-boss-toggle ${needsBoss ? 'active' : ''}" data-code="${site.code}">🙋 ${needsBoss ? '需要老板帮忙' : '标记需要老板帮忙'}</button>
         </div>
       </div>
 
@@ -1189,6 +1201,18 @@ function render(){
       const site = SITES.find(s=>s.code===code);
       const isNowUrgent = !getUrgent(site);
       state[code] = {...(state[code]||{}), urgent: isNowUrgent};
+      await saveOverride(code, state[code]);
+      render();
+    });
+  });
+
+  grid.querySelectorAll('.needs-boss-toggle').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const code = btn.dataset.code;
+      const site = SITES.find(s=>s.code===code);
+      const isNowNeeds = !getNeedsBoss(site);
+      state[code] = {...(state[code]||{}), needsBoss: isNowNeeds};
       await saveOverride(code, state[code]);
       render();
     });
@@ -1324,6 +1348,10 @@ function getUrgent(site){
   const o = state[site.code];
   if(o && Object.prototype.hasOwnProperty.call(o, 'urgent')) return !!o.urgent;
   return !!site.urgentSynced;
+}
+
+function getNeedsBoss(site){
+  return !!(state[site.code]?.needsBoss);
 }
 
 function getDisplayLabel(site, fallbackLabel){
@@ -2262,6 +2290,33 @@ function renderReportTab(){
     </div>`;
 
   // 二、当前卡在谁手上
+  function renderSiteRow(s, sharedNote){
+    const pct = getSitePct(s);
+    const custom = getField(s, 'customStage');
+    const bucket = healthBucket(s);
+    const pillCls = bucket === 'done' ? 'done' : (bucket === 'signing' ? 'progress' : bucket);
+    const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
+    const note = getField(s, 'note');
+    return `<div class="rp-internal-site-row">
+      <span class="rp-internal-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
+      <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
+      <span class="rp-internal-pct">${pct}%</span>
+      <span class="rp-pill ${pillCls}">${label}</span>
+      ${staleDaysBadge(s, staleThreshold)}
+      ${!sharedNote && note ? `<span class="rp-internal-note">：${note}</span>` : ''}
+    </div>`;
+  }
+
+  const needsBossSites = filtered.filter(s => getNeedsBoss(s));
+  const needsBossHtml = needsBossSites.length ? `
+    <div class="rp-internal-group rp-needs-boss-group">
+      <div class="rp-internal-owner-name rp-needs-boss-title">🙋 需要老板帮忙（${needsBossSites.length}）</div>
+      <div class="rp-internal-site-rows">
+        ${needsBossSites.map(s => renderSiteRow(s, null)).join('')}
+      </div>
+    </div>
+  ` : '';
+
   const internalGroups = {};
   filtered.forEach(s=>{
     const owner = getField(s, 'internalOwner');
@@ -2271,7 +2326,7 @@ function renderReportTab(){
     }
   });
   const groupEntries = Object.entries(internalGroups).sort((a,b)=>b[1].length-a[1].length);
-  document.getElementById('rpInternalGroups').innerHTML = groupEntries.length
+  const groupsHtml = groupEntries.length
     ? groupEntries.map(([owner, sites])=>{
         const notes = [...new Set(sites.map(s => getField(s, 'note')).filter(Boolean))];
         const sharedNote = notes.length === 1 ? notes[0] : null;
@@ -2280,27 +2335,14 @@ function renderReportTab(){
           <div class="rp-internal-owner-name">${owner}</div>
           ${sharedNote ? `<div class="rp-internal-core-issue">核心问题：${sharedNote}</div>` : ''}
           <div class="rp-internal-site-rows">
-            ${sites.map(s=>{
-              const pct = getSitePct(s);
-              const custom = getField(s, 'customStage');
-              const bucket = healthBucket(s);
-              const pillCls = bucket === 'done' ? 'done' : (bucket === 'signing' ? 'progress' : bucket);
-              const label = (custom && custom.trim()) ? custom.trim() : STAGE_LABEL[bucket];
-              const note = getField(s, 'note');
-              return `<div class="rp-internal-site-row">
-                <span class="rp-internal-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
-                <span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span>
-                <span class="rp-internal-pct">${pct}%</span>
-                <span class="rp-pill ${pillCls}">${label}</span>
-                ${staleDaysBadge(s, staleThreshold)}
-                ${!sharedNote && note ? `<span class="rp-internal-note">：${note}</span>` : ''}
-              </div>`;
-            }).join('')}
+            ${sites.map(s => renderSiteRow(s, sharedNote)).join('')}
           </div>
         </div>
       `;
       }).join('')
-    : '<div class="rp-internal-empty">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动分组显示在这里</div>';
+    : (needsBossSites.length ? '' : '<div class="rp-internal-empty">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动分组显示在这里</div>');
+
+  document.getElementById('rpInternalGroups').innerHTML = needsBossHtml + groupsHtml;
 
   document.getElementById('rpFooter').textContent =
     `数据来源：飞书租赁跟进表，经自动同步生成 · 报告生成时间：${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -2377,6 +2419,14 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
   }
   lines.push('');
   lines.push('二、当前卡在谁手上：');
+  const needsBossSitesCopy = filtered.filter(s => getNeedsBoss(s));
+  if(needsBossSitesCopy.length){
+    lines.push('  🙋 需要老板帮忙：');
+    needsBossSitesCopy.forEach(s=>{
+      const note = getField(s, 'note');
+      lines.push(`    ${s.code}${note ? '：'+note : ''}`);
+    });
+  }
   const internalGroups = {};
   filtered.forEach(s=>{
     const owner = getField(s, 'internalOwner');
