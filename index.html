@@ -417,7 +417,7 @@
   .rp-insight-list{margin:0;padding-left:4px;list-style:none;font-size:13.5px;line-height:2;color:var(--rp-text);}
   .rp-insight-list li{display:flex;gap:8px;align-items:flex-start;}
 
-  .rp-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:6px;}
+  .rp-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
   .rp-kpi-footnote{font-size:11.5px;color:var(--rp-muted);margin-bottom:20px;}
   .rp-kpi-footnote b{color:var(--rp-text);}
   .rp-kpi{background:var(--rp-card);border:1px solid var(--rp-border);border-radius:12px;padding:16px 14px;text-align:center;cursor:pointer;transition:border-color .15s ease;}
@@ -843,7 +843,6 @@
       </div>
 
       <div class="rp-kpi-row" id="rpKpiRow"></div>
-      <div class="rp-kpi-footnote" id="rpKpiFootnote"></div>
 
       <div class="rp-section-block">
         <div class="rp-section-title"><i data-lucide="activity"></i>一、整体项目健康度</div>
@@ -851,7 +850,6 @@
           <div class="rp-health-left">
             <div class="rp-stage-bar" id="rpStageBar"></div>
             <div class="rp-stage-legend" id="rpStageLegend"></div>
-            <div class="rp-health-metrics" id="rpHealthMetrics"></div>
           </div>
           <div class="rp-health-right">
             <div class="rp-mini-title">重点跟进站点</div>
@@ -2275,11 +2273,11 @@ function renderReportTab(){
     {key:'highProgress', num:highProgress, lbl:'进度 ≥ 80%', cls:''},
     {key:'block', num:block, lbl:'存在卡点', cls:'block'},
     {key:'risk', num:risk, lbl:'高风险', cls:'risk'},
+    {key:'updatedWeek', num:updatedThisWeek, lbl:'本周有更新', cls:''},
   ];
   document.getElementById('rpKpiRow').innerHTML = kpiDefs.map(k=>
     `<div class="rp-kpi ${k.cls} ${rpKpiFilter===k.key ? 'active' : ''}" data-key="${k.key}"><div class="rp-kpi-num">${k.num}</div><div class="rp-kpi-lbl">${k.lbl}</div></div>`
   ).join('');
-  document.getElementById('rpKpiFootnote').innerHTML = `本周 <b>${updatedThisWeek}</b> 个站点有动态`;
   document.querySelectorAll('.rp-kpi').forEach(el=>{
     el.addEventListener('click', ()=>{
       const key = el.dataset.key;
@@ -2319,17 +2317,6 @@ function renderReportTab(){
     });
   }
 
-  const totalForMetrics = barBase.length || 1;
-  const doneRate = Math.round((counts.done / totalForMetrics) * 100);
-  const blockCountForRate = barBase.filter(s => getBlocker(s) && getDisplayStatus(s) !== 'done').length;
-  const blockRate = Math.round((blockCountForRate / totalForMetrics) * 100);
-  const riskCountForMetric = barBase.filter(s => getRisk(s)).length;
-  document.getElementById('rpHealthMetrics').innerHTML = `
-    <div class="rp-health-metric"><div class="rp-health-metric-num">${doneRate}%</div><div class="rp-health-metric-lbl">完成率</div></div>
-    <div class="rp-health-metric"><div class="rp-health-metric-num">${blockRate}%</div><div class="rp-health-metric-lbl">卡点率</div></div>
-    <div class="rp-health-metric"><div class="rp-health-metric-num">${riskCountForMetric}</div><div class="rp-health-metric-lbl">高风险个数</div></div>
-  `;
-
   const hubSites = filtered.filter(s => isHub(s));
   const datedSites = filtered
     .filter(s => !hubSites.includes(s) && getDisplayStatus(s) !== 'done')
@@ -2338,7 +2325,7 @@ function renderReportTab(){
 
   const focusTable = document.getElementById('rpFocusTable');
   if(followUpSites.length){
-    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>当前节点责任方</th><th>下一步</th></tr></thead><tbody>` +
+    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>当前责任方</th><th>进展</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
@@ -2548,7 +2535,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
       const d = getStuckDays(site);
       const staleText = (d !== null && d >= staleThreshold && !doneNow) ? `【⚠️${d}天未更新】` : '';
-      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 当前节点责任方：${getField(site, 'internalOwner') || '—'}`);
+      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 当前责任方：${getField(site, 'internalOwner') || '—'}`);
     });
   } else {
     lines.push('  暂无');
