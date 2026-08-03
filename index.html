@@ -2317,16 +2317,15 @@ function renderReportTab(){
 
   const focusTable = document.getElementById('rpFocusTable');
   if(followUpSites.length){
-    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>核心问题</th></tr></thead><tbody>` +
+    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>负责人</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
         const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
         const realBucket = healthBucket(site);
         const pillCls = doneNow ? 'done' : (realBucket === 'signing' ? 'progress' : realBucket);
-        const reasons = reasonsFor(site);
         const pct = getSitePct(site);
-        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${reasons[0] || '需关注'}</td></tr>`;
+        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${getOwnersText(site) || '—'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点跟进的站点 👍</td></tr></tbody>';
@@ -2410,13 +2409,13 @@ function renderReportTab(){
 
   const internalTable = document.getElementById('rpInternalTable');
   if(sortedTracked.length){
-    internalTable.innerHTML = `<thead><tr><th>站点</th><th>当前卡点</th><th>当前负责人</th><th>卡住天数</th></tr></thead><tbody>` +
+    internalTable.innerHTML = `<thead><tr><th>站点</th><th>当前卡点</th><th>责任方</th><th>下一步行动</th><th>卡住天数</th></tr></thead><tbody>` +
       sortedTracked.map(s=>{
         const owner = getField(s, 'internalOwner') || '—';
-        const reasons = reasonsFor(s);
-        const issue = reasons[0] || getDesc(s) || '需关注';
+        const issue = getBlocker(s) || getRisk(s) || getDesc(s) || '需关注';
+        const nextStep = getField(s, 'note') || '—';
         const needsBossFlag = getNeedsBoss(s) ? '<span class="rp-needs-boss-tag">🙋 需要老板</span> ' : '';
-        return `<tr class="${getNeedsBoss(s) ? 'rp-tr-needs-boss' : ''}"><td><b>${s.code}${isHub(s) ? ' 🏢' : ''}</b></td><td>${needsBossFlag}${issue}</td><td>${owner}</td><td>${staleDaysBadge(s, staleThreshold)}</td></tr>`;
+        return `<tr class="${getNeedsBoss(s) ? 'rp-tr-needs-boss' : ''}"><td><b>${s.code}${isHub(s) ? ' 🏢' : ''}</b></td><td>${needsBossFlag}${issue}</td><td>${owner}</td><td>${nextStep}</td><td>${staleDaysBadge(s, staleThreshold)}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     internalTable.innerHTML = '<tbody><tr><td class="rp-empty-note">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动显示在这里</td></tr></tbody>';
@@ -2523,10 +2522,9 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const custom = getField(site, 'customStage');
       const doneNow = getDisplayStatus(site) === 'done';
       const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
-      const reasons = reasonsFor(site);
       const d = getStuckDays(site);
       const staleText = (d !== null && d >= staleThreshold && !doneNow) ? `【⚠️${d}天未动】` : '';
-      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- ${reasons.join('，') || '需关注'}`);
+      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 负责人：${getOwnersText(site) || '—'}`);
     });
   } else {
     lines.push('  暂无');
@@ -2541,11 +2539,12 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       return (getStuckDays(b) ?? -1) - (getStuckDays(a) ?? -1);
     }).forEach(s=>{
       const owner = getField(s, 'internalOwner') || '未指定';
-      const issue = reasonsFor(s)[0] || getDesc(s) || '需关注';
+      const issue = getBlocker(s) || getRisk(s) || getDesc(s) || '需关注';
+      const nextStep = getField(s, 'note');
       const d = getStuckDays(s);
       const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未动]` : '';
       const bossTag = getNeedsBoss(s) ? '[🙋需要老板] ' : '';
-      lines.push(`  ${bossTag}${s.code}${staleText} - 负责人：${owner} - ${issue}`);
+      lines.push(`  ${bossTag}${s.code}${staleText} - 责任方：${owner} - 卡点：${issue}${nextStep ? ' - 下一步：'+nextStep : ''}`);
     });
   } else {
     lines.push('  暂无标记');
