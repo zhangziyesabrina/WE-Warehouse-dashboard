@@ -392,31 +392,38 @@
   .rp-insight-box{
     background:var(--rp-blue-soft);border:1px solid #C9DBFC;border-radius:14px;padding:18px 20px;margin-bottom:18px;
   }
-  .rp-summary-card{
-    background:#172033;border-radius:14px;padding:20px 22px;margin-bottom:14px;color:#fff;
+  .rp-summary-line-card{
+    background:#172033;border-radius:12px;padding:14px 20px;margin-bottom:14px;color:#fff;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13.5px;
   }
-  .rp-summary-line{font-size:15px;line-height:1.9;font-weight:600;}
-  .rp-summary-line b{color:#7EB8FF;font-weight:800;}
-  .rp-summary-line.risk b{color:#FF9B9B;}
-  .rp-summary-line.action b{color:#FFD27E;}
+  .rp-summary-line-card b{color:#7EB8FF;font-weight:800;}
+  .rp-summary-line-card .rp-summary-action{color:#FFD27E;font-weight:700;}
 
-  .rp-heatmap-card{
+  .rp-kanban-card{
     background:var(--rp-card);border:1px solid var(--rp-border);border-radius:14px;padding:18px 20px;margin-bottom:14px;
   }
   .rp-heatmap-title{font-weight:700;font-size:14.5px;color:var(--rp-text);margin-bottom:12px;}
-  .rp-heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(68px, 1fr));gap:8px;}
-  .rp-heatmap-tile{
-    border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;
-    border:2px solid transparent;transition:transform .1s ease;
+  .rp-kanban-board{display:grid;grid-template-columns:repeat(5, 1fr);gap:12px;}
+  .rp-kanban-col{background:var(--rp-gray-soft);border-radius:10px;padding:10px;min-height:60px;}
+  .rp-kanban-col-title{font-size:12px;font-weight:700;color:var(--rp-muted);margin-bottom:8px;padding:0 2px;}
+  .rp-kanban-card-item{
+    background:#fff;border-radius:8px;padding:9px 10px;margin-bottom:8px;cursor:pointer;
+    border:1px solid var(--rp-border);transition:transform .1s ease;
   }
-  .rp-heatmap-tile:hover{transform:translateY(-2px);}
-  .rp-heatmap-tile.flagged{border-color:var(--rp-red);}
-  .rp-heatmap-code{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11.5px;color:#fff;}
-  .rp-heatmap-pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.85);margin-top:2px;}
-  .rp-heatmap-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:11.5px;color:var(--rp-muted);}
-  .rp-heatmap-legend span{display:flex;align-items:center;gap:5px;}
-  .rp-heatmap-legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
-  .rp-heatmap-legend-flag i.flag{background:transparent;border:2px solid var(--rp-red);width:8px;height:8px;}
+  .rp-kanban-card-item:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+  .rp-kanban-card-item:last-child{margin-bottom:0;}
+  .rp-kanban-top{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+  .rp-kanban-code{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12.5px;}
+  .rp-kanban-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rp-muted);}
+  .rp-kanban-tag{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:999px;white-space:nowrap;}
+  .rp-kanban-tag.high{background:var(--rp-red-soft);color:var(--rp-red);}
+  .rp-kanban-tag.watch{background:var(--rp-orange-soft);color:var(--rp-orange);}
+  .rp-kanban-tag.ok{background:var(--rp-green-soft);color:var(--rp-green);}
+  .rp-kanban-issue{font-size:11px;color:var(--rp-text);margin-top:5px;line-height:1.4;}
+  .rp-kanban-meta{font-size:10px;color:var(--rp-muted);margin-top:5px;display:flex;justify-content:space-between;gap:4px;}
+  .rp-kanban-done-list{font-size:11.5px;color:var(--rp-muted);line-height:2;}
+  .rp-kanban-done-chip{display:inline-block;background:#fff;border:1px solid var(--rp-border);border-radius:999px;padding:2px 9px;margin:0 4px 4px 0;color:var(--rp-text);cursor:pointer;}
+  @media (max-width:900px){ .rp-kanban-board{grid-template-columns:1fr 1fr;} }
 
   .rp-section-title{
     display:flex;align-items:center;font-weight:700;font-size:14.5px;color:var(--rp-text);margin-bottom:12px;
@@ -848,20 +855,12 @@
         <div class="rp-updated" id="rpUpdated"></div>
       </div>
 
-      <div class="rp-heatmap-card">
-        <div class="rp-heatmap-title">站点全景图</div>
-        <div class="rp-heatmap-grid" id="rpHeatmapGrid"></div>
-        <div class="rp-heatmap-legend">
-          <span><i style="background:#16A34A;"></i>已完成</span>
-          <span><i style="background:#2563EB;"></i>签约/付款中</span>
-          <span><i style="background:#F59E0B;"></i>谈判中</span>
-          <span><i style="background:#98A2B3;"></i>找仓中</span>
-          <span><i style="background:#4B5768;"></i>暂停</span>
-          <span class="rp-heatmap-legend-flag"><i class="flag"></i>红框 = 需要关注</span>
-        </div>
-      </div>
+      <div class="rp-summary-line-card" id="rpSummaryLineCard"></div>
 
-      <div class="rp-summary-card" id="rpSummaryCard"></div>
+      <div class="rp-kanban-card">
+        <div class="rp-heatmap-title">站点全景</div>
+        <div class="rp-kanban-board" id="rpKanbanBoard"></div>
+      </div>
 
       <div class="rp-insight-box">
         <div class="rp-section-title"><i data-lucide="sparkles"></i>本周关键洞察</div>
@@ -2263,40 +2262,89 @@ function renderReportTab(){
 
   document.getElementById('rpUpdated').textContent = `最后更新时间：${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
 
-  // 站点全景图
-  const HEATMAP_COLOR = {done:'#16A34A', signing:'#2563EB', negotiating:'#F59E0B', search:'#98A2B3', paused:'#4B5768'};
-  document.getElementById('rpHeatmapGrid').innerHTML = filtered.map(s=>{
-    const bucket = healthBucket(s);
-    const color = HEATMAP_COLOR[bucket] || '#98A2B3';
-    const pct = getSitePct(s);
+  // 站点全景（看板）
+  const KANBAN_COLUMNS = [
+    {key:'search', label:'找仓中'},
+    {key:'negotiating', label:'谈判中'},
+    {key:'signing', label:'签约/付款中'},
+    {key:'done', label:'已完成'},
+    {key:'paused', label:'暂停'},
+  ];
+
+  function riskTagFor(s){
+    const overdue = etaFlag(s) === 'overdue';
+    if(getRisk(s) || overdue || getNeedsBoss(s)) return {cls:'high', label:'高风险'};
     const d = getStuckDays(s);
-    const isFlagged = getNeedsBoss(s) || getUrgent(s) || etaFlag(s) === 'overdue' || (d !== null && d >= staleThreshold && bucket !== 'done');
-    return `<div class="rp-heatmap-tile ${isFlagged ? 'flagged' : ''}" style="background:${color};" data-code="${s.code}" title="${s.code}：${pct}%">
-      <div class="rp-heatmap-code">${s.code}${isHub(s) ? ' 🏢' : ''}</div>
-      <div class="rp-heatmap-pct">${pct}%</div>
+    if(getUrgent(s) || (d !== null && d >= staleThreshold)) return {cls:'watch', label:'需关注'};
+    return {cls:'ok', label:'正常'};
+  }
+
+  const kanbanBuckets = {};
+  KANBAN_COLUMNS.forEach(c => kanbanBuckets[c.key] = []);
+  filtered.forEach(s => {
+    const bucket = healthBucket(s);
+    if(kanbanBuckets[bucket]) kanbanBuckets[bucket].push(s);
+  });
+
+  document.getElementById('rpKanbanBoard').innerHTML = KANBAN_COLUMNS.map(col=>{
+    const sites = kanbanBuckets[col.key] || [];
+    if(col.key === 'done'){
+      const chips = sites.map(s => `<span class="rp-kanban-done-chip" data-code="${s.code}">${s.code}</span>`).join('');
+      return `<div class="rp-kanban-col">
+        <div class="rp-kanban-col-title">${col.label}（${sites.length}）</div>
+        <div class="rp-kanban-done-list">${chips || '<span style="color:var(--rp-muted-2, #999);">暂无</span>'}</div>
+      </div>`;
+    }
+    const rankOrder = {high:0, watch:1, ok:2};
+    const sorted = sites.slice().sort((a,b)=>{
+      const ra = rankOrder[riskTagFor(a).cls], rb = rankOrder[riskTagFor(b).cls];
+      if(ra !== rb) return ra - rb;
+      return (getStuckDays(b) ?? -1) - (getStuckDays(a) ?? -1);
+    });
+    const cards = sorted.map(s=>{
+      const tag = riskTagFor(s);
+      const issue = getField(s,'note') || getBlocker(s) || getRisk(s) || getDesc(s) || '';
+      const owner = getField(s, 'internalOwner') || '—';
+      const d = getStuckDays(s);
+      const staleLabel = d === null ? '—' : (d === 0 ? '今天更新' : `${d}天未更新`);
+      return `<div class="rp-kanban-card-item" data-code="${s.code}">
+        <div class="rp-kanban-top">
+          <span class="rp-kanban-code">${s.code}${isHub(s) ? ' 🏢' : ''}</span>
+          <span class="rp-kanban-pct">${getSitePct(s)}%</span>
+          <span class="rp-kanban-tag ${tag.cls}">${tag.label}</span>
+        </div>
+        ${issue ? `<div class="rp-kanban-issue">${issue}</div>` : ''}
+        <div class="rp-kanban-meta"><span>${owner}</span><span>${staleLabel}</span></div>
+      </div>`;
+    }).join('');
+    return `<div class="rp-kanban-col">
+      <div class="rp-kanban-col-title">${col.label}（${sites.length}）</div>
+      ${cards || '<span style="color:var(--rp-muted-2, #999);font-size:11.5px;">暂无</span>'}
     </div>`;
   }).join('');
-  document.querySelectorAll('.rp-heatmap-tile').forEach(tile=>{
-    tile.addEventListener('click', ()=>{
-      document.getElementById('rpSiteFilter').value = tile.dataset.code;
+
+  document.querySelectorAll('.rp-kanban-card-item, .rp-kanban-done-chip').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      document.getElementById('rpSiteFilter').value = el.dataset.code;
       renderReportTab();
     });
   });
 
-  // 一句话总结（放在最上面，最多三行）
+  // 一句话总结（紧凑单行）
   const doneThisWeek = filtered.filter(s => {
     const d = getStuckDays(s);
     return getDisplayStatus(s) === 'done' && d !== null && d <= 7;
   }).length;
   const blockedCount = filtered.filter(s => getBlocker(s) && getDisplayStatus(s) !== 'done').length;
-  const priorityCodes = [...new Set(
-    getScoredSites(3).map(x => x.site.code)
-  )];
-  const summaryLines = [];
-  summaryLines.push(`<div class="rp-summary-line">📦 本周完成 <b>${doneThisWeek}</b> 个站点</div>`);
-  if(blockedCount > 0) summaryLines.push(`<div class="rp-summary-line risk">⚠️ <b>${blockedCount}</b> 个站点存在卡点</div>`);
-  if(priorityCodes.length) summaryLines.push(`<div class="rp-summary-line action">🎯 <b>${priorityCodes.join('、')}</b> 需要优先推进</div>`);
-  document.getElementById('rpSummaryCard').innerHTML = summaryLines.join('');
+  const totalDone = filtered.filter(s => getDisplayStatus(s) === 'done').length;
+  const staleTotal = filtered.filter(s => {
+    const d = getStuckDays(s);
+    return d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done';
+  }).length;
+  const priorityCodes = [...new Set(getScoredSites(3).map(x => x.site.code))];
+  document.getElementById('rpSummaryLineCard').innerHTML =
+    `<span><b>${filtered.length}</b>个站点｜<b>${totalDone}</b>个完成｜<b>${blockedCount}</b>个存在卡点｜<b>${staleTotal}</b>个超过${staleThreshold}天未更新｜本周完成<b>${doneThisWeek}</b>个</span>` +
+    (priorityCodes.length ? `<span class="rp-summary-action">🎯 优先推进：${priorityCodes.join('、')}</span>` : '');
 
   // 本周关键洞察
   const items = filtered.map(s=>({site:s, ...classifyForInsight(s)}))
