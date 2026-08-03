@@ -835,8 +835,6 @@
         <div class="rp-updated" id="rpUpdated"></div>
       </div>
 
-      <div class="rp-summary-card" id="rpSummaryCard"></div>
-
       <div class="rp-insight-box">
         <div class="rp-section-title"><i data-lucide="sparkles"></i>本周关键洞察</div>
         <ul class="rp-insight-list" id="rpInsightList"></ul>
@@ -2236,19 +2234,6 @@ function renderReportTab(){
   const staleThreshold = parseInt(document.getElementById('rpStaleThreshold').value, 10) || 7;
 
   document.getElementById('rpUpdated').textContent = `最后更新时间：${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
-
-  // 一句话总结（放在最上面，最多三行）
-  const doneThisWeek = filtered.filter(s => {
-    const d = getStuckDays(s);
-    return getDisplayStatus(s) === 'done' && d !== null && d <= 7;
-  }).length;
-  const blockedCount = filtered.filter(s => getBlocker(s) && getDisplayStatus(s) !== 'done').length;
-  const priorityCodes = [...new Set(
-    getScoredSites(3).map(x => x.site.code)
-  )];
-  const summaryLines = [];
-  summaryLines.push(`<div class="rp-summary-line">📦 本周完成 <b>${doneThisWeek}</b> 个站点</div>`);
-  document.getElementById('rpSummaryCard').innerHTML = summaryLines.join('');
 
   // 本周关键洞察
   const insightItems = filtered.map(s=>({site:s, ...classifyForInsight(s)}))
