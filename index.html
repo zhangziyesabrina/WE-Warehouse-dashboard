@@ -837,6 +837,11 @@
 
       <div class="rp-summary-card" id="rpSummaryCard"></div>
 
+      <div class="rp-insight-box">
+        <div class="rp-section-title"><i data-lucide="sparkles"></i>本周关键洞察</div>
+        <ul class="rp-insight-list" id="rpInsightList"></ul>
+      </div>
+
       <div class="rp-kpi-row" id="rpKpiRow"></div>
       <div class="rp-kpi-footnote" id="rpKpiFootnote"></div>
 
@@ -2248,6 +2253,13 @@ function renderReportTab(){
   if(blockedCount > 0) summaryLines.push(`<div class="rp-summary-line risk">⚠️ <b>${blockedCount}</b> 个站点存在卡点</div>`);
   if(priorityCodes.length) summaryLines.push(`<div class="rp-summary-line action">🎯 <b>${priorityCodes.join('、')}</b> 需要优先推进</div>`);
   document.getElementById('rpSummaryCard').innerHTML = summaryLines.join('');
+
+  // 本周关键洞察
+  const insightItems = filtered.map(s=>({site:s, ...classifyForInsight(s)}))
+    .sort((a,b)=>a.priority-b.priority).slice(0,5);
+  document.getElementById('rpInsightList').innerHTML = insightItems.length
+    ? insightItems.map(it=>`<li><i data-lucide="${it.icon}" style="color:${it.color};"></i><span><b>${it.site.code}</b>：${it.text}</span></li>`).join('')
+    : '<li>暂无跟进站点</li>';
 
   // KPI row（用 healthFiltered 计数，避免点了某个卡片后其他数字跟着消失）
   const total = healthFiltered.length;
