@@ -505,6 +505,7 @@
   .rp-needs-boss-title{color:#8B5CF6;}
   .rp-tr-needs-boss{background:rgba(139,92,246,0.06);}
   .rp-needs-boss-tag{background:rgba(139,92,246,0.15);color:#8B5CF6;font-weight:700;font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;}
+  .rp-next-step-line{color:var(--rp-blue);font-size:11.5px;margin-top:3px;}
   .rp-internal-core-issue{font-size:12.5px;color:var(--rp-text);margin-top:4px;background:var(--rp-blue-soft);border-radius:6px;padding:6px 10px;display:inline-block;}
   .rp-internal-site-rows{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
   .rp-internal-site-row{display:flex;align-items:center;gap:10px;font-size:12.5px;}
@@ -2410,13 +2411,15 @@ function renderReportTab(){
 
   const internalTable = document.getElementById('rpInternalTable');
   if(sortedTracked.length){
-    internalTable.innerHTML = `<thead><tr><th>站点</th><th>当前卡点</th><th>责任方</th><th>下一步行动</th><th>卡住天数</th></tr></thead><tbody>` +
+    internalTable.innerHTML = `<thead><tr><th>站点</th><th>卡点 / 下一步</th><th>责任方</th><th>卡住天数</th></tr></thead><tbody>` +
       sortedTracked.map(s=>{
         const owner = getField(s, 'internalOwner') || '—';
         const issue = getBlocker(s) || getRisk(s) || getDesc(s) || '需关注';
-        const nextStep = getField(s, 'note') || '—';
+        const nextStep = getField(s, 'note');
+        const showNextStep = nextStep && nextStep.trim() && nextStep.trim() !== issue.trim();
         const needsBossFlag = getNeedsBoss(s) ? '<span class="rp-needs-boss-tag">🙋 需要老板</span> ' : '';
-        return `<tr class="${getNeedsBoss(s) ? 'rp-tr-needs-boss' : ''}"><td><b>${s.code}${isHub(s) ? ' 🏢' : ''}</b></td><td>${needsBossFlag}${issue}</td><td>${owner}</td><td>${nextStep}</td><td>${staleDaysBadge(s, staleThreshold)}</td></tr>`;
+        const cellContent = `${needsBossFlag}${issue}${showNextStep ? `<div class="rp-next-step-line">→ ${nextStep}</div>` : ''}`;
+        return `<tr class="${getNeedsBoss(s) ? 'rp-tr-needs-boss' : ''}"><td><b>${s.code}${isHub(s) ? ' 🏢' : ''}</b></td><td>${cellContent}</td><td>${owner}</td><td>${staleDaysBadge(s, staleThreshold)}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     internalTable.innerHTML = '<tbody><tr><td class="rp-empty-note">还没有站点填写"现在在谁手上"——在站点卡片上填了之后会自动显示在这里</td></tr></tbody>';
@@ -2542,10 +2545,11 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const owner = getField(s, 'internalOwner') || '未指定';
       const issue = getBlocker(s) || getRisk(s) || getDesc(s) || '需关注';
       const nextStep = getField(s, 'note');
+      const showNextStep = nextStep && nextStep.trim() && nextStep.trim() !== issue.trim();
       const d = getStuckDays(s);
       const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未更新]` : '';
       const bossTag = getNeedsBoss(s) ? '[🙋需要老板] ' : '';
-      lines.push(`  ${bossTag}${s.code}${staleText} - 责任方：${owner} - 卡点：${issue}${nextStep ? ' - 下一步：'+nextStep : ''}`);
+      lines.push(`  ${bossTag}${s.code}${staleText} - 责任方：${owner} - 卡点：${issue}${showNextStep ? ' - 下一步：'+nextStep : ''}`);
     });
   } else {
     lines.push('  暂无标记');
