@@ -956,8 +956,12 @@ async function loadOverride(code){
   return null;
 }
 
-async function saveOverride(code, data){
-  data._lastEditedAt = new Date().toISOString();
+const PROGRESS_FIELDS = new Set(['descOverride', 'blockerOverride', 'customStage', 'note', 'pct', 'startOverride', 'etaOverride']);
+
+async function saveOverride(code, data, changedField){
+  if(!changedField || PROGRESS_FIELDS.has(changedField)){
+    data._lastEditedAt = new Date().toISOString();
+  }
 
   try{
     localStorage.setItem('site:'+code, JSON.stringify(data));
@@ -1256,7 +1260,7 @@ function render(){
       card.querySelector('.progress-fill').style.width = val + '%';
       card.querySelector('.progress-pct').textContent = val + '%';
       renderStats();
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'pct');
     });
     input.addEventListener('change', ()=>{
       render();
@@ -1271,7 +1275,7 @@ function render(){
       const site = SITES.find(s=>s.code===code);
       const isNowUrgent = !getUrgent(site);
       state[code] = {...(state[code]||{}), urgent: isNowUrgent};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'urgent');
       render();
     });
   });
@@ -1283,7 +1287,7 @@ function render(){
       const site = SITES.find(s=>s.code===code);
       const isNowNeeds = !getNeedsBoss(site);
       state[code] = {...(state[code]||{}), needsBoss: isNowNeeds};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'needsBoss');
       render();
     });
   });
@@ -1293,7 +1297,7 @@ function render(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), note: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'note');
       render();
     });
   });
@@ -1303,7 +1307,7 @@ function render(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), internalOwner: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'internalOwner');
       render();
     });
   });
@@ -1313,7 +1317,7 @@ function render(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), blockerOverride: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'blockerOverride');
       render();
     });
   });
@@ -1323,7 +1327,7 @@ function render(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), customStage: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'customStage');
       render();
     });
   });
@@ -1333,7 +1337,7 @@ function render(){
     select.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), priorityLevel: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'priorityLevel');
       render();
     });
   });
@@ -1343,7 +1347,7 @@ function render(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), descOverride: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'descOverride');
       render();
     });
   });
@@ -1354,7 +1358,7 @@ function render(){
       const code = e.target.dataset.code;
       const field = e.target.dataset.field;
       state[code] = {...(state[code]||{}), [field]: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], field);
       render();
     });
   });
@@ -1672,7 +1676,7 @@ function renderTable(){
     input.addEventListener('change', async (e)=>{
       const code = e.target.dataset.code;
       state[code] = {...(state[code]||{}), blockerOverride: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'blockerOverride');
       render();
     });
   });
@@ -1683,7 +1687,7 @@ function renderTable(){
       const code = e.target.dataset.code;
       const field = e.target.dataset.field;
       state[code] = {...(state[code]||{}), [field]: e.target.value};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], field);
       render();
     });
   });
@@ -1694,7 +1698,7 @@ function renderTable(){
       const code = e.target.dataset.code;
       const field = e.target.dataset.field;
       state[code] = {...(state[code]||{}), [field]: fromIsoDate(e.target.value)};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], field);
       render();
     });
   });
@@ -2042,7 +2046,7 @@ function renderTodoTab(){
       e.stopPropagation();
       const code = btn.dataset.code;
       state[code] = {...(state[code]||{}), urgent: false};
-      await saveOverride(code, state[code]);
+      await saveOverride(code, state[code], 'urgent');
       renderTodoTab();
       render();
     });
