@@ -399,6 +399,12 @@
   .rp-summary-line-card b{color:#7EB8FF;font-weight:800;}
   .rp-summary-line-card .rp-summary-action{color:#FFD27E;font-weight:700;}
 
+  .rp-toggle-kanban-btn{
+    width:100%;background:#fff;border:1px dashed var(--rp-border);border-radius:10px;
+    padding:11px;font-size:12.5px;font-weight:600;color:var(--rp-blue);cursor:pointer;margin-bottom:14px;
+  }
+  .rp-toggle-kanban-btn:hover{background:var(--rp-blue-soft);}
+
   .rp-kanban-card{
     background:var(--rp-card);border:1px solid var(--rp-border);border-radius:14px;padding:18px 20px;margin-bottom:14px;
   }
@@ -443,11 +449,12 @@
   .rp-insight-list{margin:0;padding-left:4px;list-style:none;font-size:13.5px;line-height:2;color:var(--rp-text);}
   .rp-insight-list li{display:flex;gap:8px;align-items:flex-start;}
 
-  .rp-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
+  .rp-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
   .rp-kpi{background:var(--rp-card);border:1px solid var(--rp-border);border-radius:12px;padding:16px 14px;text-align:center;cursor:pointer;transition:border-color .15s ease;}
   .rp-kpi:hover{border-color:var(--rp-blue);}
   .rp-kpi.active{border-color:var(--rp-blue);border-width:2px;background:var(--rp-blue-soft);}
   .rp-kpi-num{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--rp-text);}
+  .rp-kpi-sub{font-size:15px;font-weight:600;color:var(--rp-muted);}
   .rp-kpi-lbl{font-size:11px;color:var(--rp-muted);margin-top:4px;}
   .rp-kpi.done .rp-kpi-num{color:var(--rp-green);}
   .rp-kpi.block .rp-kpi-num{color:var(--rp-orange);}
@@ -456,18 +463,24 @@
   .rp-section-block{background:var(--rp-card);border:1px solid var(--rp-border);border-radius:14px;padding:20px 22px;margin-bottom:16px;}
 
   .rp-health-row{display:grid;grid-template-columns:1fr 1.3fr;gap:24px;}
-  .rp-stage-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;}
-  .rp-stage-seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:opacity .15s ease;}
-  .rp-stage-seg:hover{opacity:0.85;}
-  .rp-stage-seg.active{box-shadow:inset 0 0 0 2px #172033;}
-  .rp-stage-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;}
+  .rp-stage-bar{display:flex;align-items:center;flex-wrap:wrap;gap:2px;}
+  .rp-funnel-step{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:1;min-width:80px;padding:10px 8px;border-radius:10px;border:2px solid transparent;
+    background:var(--rp-gray-soft);cursor:pointer;transition:transform .12s ease, background .12s ease;
+  }
+  .rp-funnel-step:hover{transform:translateY(-1px);}
+  .rp-funnel-step.active{background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.05);}
+  .rp-funnel-step.rp-funnel-paused{opacity:0.85;}
+  .rp-funnel-dot{width:9px;height:9px;border-radius:3px;margin-bottom:5px;}
+  .rp-funnel-label{font-size:11px;color:var(--rp-muted);font-weight:600;}
+  .rp-funnel-num{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--rp-text);margin-top:2px;}
+  .rp-funnel-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rp-muted);}
+  .rp-funnel-arrow{font-size:16px;color:var(--rp-muted);padding:0 2px;flex-shrink:0;}
+  .rp-stage-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;}
   .rp-stage-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--rp-muted);}
-  .rp-legend-clickable{cursor:pointer;padding:3px 8px;border-radius:6px;}
-  .rp-legend-clickable:hover{background:var(--rp-gray-soft);}
-  .rp-legend-clickable.active{background:#172033;color:#fff;font-weight:700;}
   .rp-clear-filter{cursor:pointer;color:var(--rp-red);font-weight:600;padding:3px 8px;}
   .rp-clear-filter:hover{text-decoration:underline;}
-  .rp-stage-dot{width:10px;height:10px;border-radius:3px;}
 
   .rp-mini-title{font-size:12.5px;font-weight:700;color:var(--rp-muted);margin-bottom:10px;}
   table.rp-table{border-collapse:collapse;width:100%;font-size:12.5px;}
@@ -857,7 +870,8 @@
 
       <div class="rp-summary-line-card" id="rpSummaryLineCard"></div>
 
-      <div class="rp-kanban-card">
+      <button id="rpToggleKanban" class="rp-toggle-kanban-btn">📋 查看全部站点（看板视图）</button>
+      <div class="rp-kanban-card" id="rpKanbanCard" style="display:none;">
         <div class="rp-heatmap-title">站点全景</div>
         <div class="rp-kanban-board" id="rpKanbanBoard"></div>
       </div>
@@ -877,7 +891,7 @@
             <div class="rp-stage-legend" id="rpStageLegend"></div>
           </div>
           <div class="rp-health-right">
-            <div class="rp-mini-title">重点跟进站点</div>
+            <div class="rp-mini-title">优先推进站点</div>
             <table class="rp-table" id="rpFocusTable"></table>
           </div>
         </div>
@@ -2227,6 +2241,15 @@ const KPI_FILTERS = {
   block: s => getDisplayStatus(s) === 'block',
   risk: s => !!getRisk(s),
   updatedWeek: s => { const d = getStuckDays(s); return d !== null && d <= 7; },
+  doneThisWeek: s => {
+    const d = getStuckDays(s);
+    return getDisplayStatus(s) === 'done' && d !== null && d <= 7;
+  },
+  stale: s => {
+    const threshold = parseInt(document.getElementById('rpStaleThreshold')?.value, 10) || 7;
+    const d = getStuckDays(s);
+    return d !== null && d >= threshold && getDisplayStatus(s) !== 'done';
+  },
 };
 
 function getBaseFilteredSites(){
@@ -2360,17 +2383,26 @@ function renderReportTab(){
   const block = healthFiltered.filter(KPI_FILTERS.block).length;
   const risk = healthFiltered.filter(KPI_FILTERS.risk).length;
   const updatedThisWeek = healthFiltered.filter(KPI_FILTERS.updatedWeek).length;
+  const doneThisWeekKpi = healthFiltered.filter(s => {
+    const d = getStuckDays(s);
+    return getDisplayStatus(s) === 'done' && d !== null && d <= 7;
+  }).length;
+  const staleCountKpi = healthFiltered.filter(s => {
+    const d = getStuckDays(s);
+    return d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done';
+  }).length;
+  const donePct = total ? Math.round((done/total)*100) : 0;
+  const blockPct = total ? Math.round((block/total)*100) : 0;
 
   const kpiDefs = [
-    {key:'all', num:total, lbl:'跟进站点', cls:''},
-    {key:'done', num:done, lbl:'已完成', cls:'done'},
-    {key:'highProgress', num:highProgress, lbl:'进度 ≥ 80%', cls:''},
-    {key:'block', num:block, lbl:'存在卡点', cls:'block'},
-    {key:'risk', num:risk, lbl:'高风险', cls:'risk'},
-    {key:'updatedWeek', num:updatedThisWeek, lbl:'本周有更新', cls:''},
+    {key:'all', num:total, lbl:'总站点', sub:'', cls:''},
+    {key:'done', num:done, lbl:'已完成', sub:`${donePct}%`, cls:'done'},
+    {key:'doneThisWeek', num:doneThisWeekKpi, lbl:'本周完成', sub:'', cls:''},
+    {key:'block', num:block, lbl:'存在卡点', sub:`${blockPct}%`, cls:'block'},
+    {key:'stale', num:staleCountKpi, lbl:`超过${staleThreshold}天未更新`, sub:'', cls:'risk'},
   ];
   document.getElementById('rpKpiRow').innerHTML = kpiDefs.map(k=>
-    `<div class="rp-kpi ${k.cls} ${rpKpiFilter===k.key ? 'active' : ''}" data-key="${k.key}"><div class="rp-kpi-num">${k.num}</div><div class="rp-kpi-lbl">${k.lbl}</div></div>`
+    `<div class="rp-kpi ${k.cls} ${rpKpiFilter===k.key ? 'active' : ''}" data-key="${k.key}"><div class="rp-kpi-num">${k.num}${k.sub ? ` <span class="rp-kpi-sub">/ ${k.sub}</span>` : ''}</div><div class="rp-kpi-lbl">${k.lbl}</div></div>`
   ).join('');
   document.querySelectorAll('.rp-kpi').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -2384,19 +2416,35 @@ function renderReportTab(){
   const barBase = getBaseFilteredSites();
   const counts = {}; HEALTH_BUCKETS.forEach(b=>counts[b.key]=0);
   barBase.forEach(s => counts[healthBucket(s)]++);
-  document.getElementById('rpStageBar').innerHTML = HEALTH_BUCKETS.map(b=>{
-    const n = counts[b.key];
-    if(n===0) return '';
-    const active = rpHealthFilter === b.key;
-    return `<div class="rp-stage-seg ${active ? 'active' : ''}" data-key="${b.key}" style="flex-grow:${n};background:${b.color};" title="点击查看${b.label}的站点">${n}</div>`;
-  }).join('');
-  document.getElementById('rpStageLegend').innerHTML =
-    (rpHealthFilter !== 'all' ? `<div class="rp-stage-legend-item rp-clear-filter" id="rpClearHealthFilter">✕ 清除筛选（${HEALTH_BUCKETS.find(b=>b.key===rpHealthFilter)?.label}）</div>` : '') +
-    HEALTH_BUCKETS.map(b=>
-      `<div class="rp-stage-legend-item rp-legend-clickable ${rpHealthFilter===b.key ? 'active' : ''}" data-key="${b.key}"><span class="rp-stage-dot" style="background:${b.color};"></span>${b.label}（${counts[b.key]}）</div>`
-    ).join('');
+  const funnelTotal = barBase.length || 1;
+  const FUNNEL_ORDER = ['search', 'negotiating', 'signing', 'done'];
+  const bucketByKey = {}; HEALTH_BUCKETS.forEach(b => bucketByKey[b.key] = b);
 
-  document.querySelectorAll('.rp-stage-seg, .rp-legend-clickable').forEach(el=>{
+  document.getElementById('rpStageBar').innerHTML =
+    FUNNEL_ORDER.map((key, i) => {
+      const b = bucketByKey[key];
+      const n = counts[key];
+      const pct = Math.round((n / funnelTotal) * 100);
+      const active = rpHealthFilter === key;
+      const arrow = i < FUNNEL_ORDER.length - 1 ? '<span class="rp-funnel-arrow">→</span>' : '';
+      return `<div class="rp-funnel-step ${active ? 'active' : ''}" data-key="${key}" style="border-color:${b.color};">
+        <div class="rp-funnel-dot" style="background:${b.color};"></div>
+        <div class="rp-funnel-label">${b.label}</div>
+        <div class="rp-funnel-num">${n}</div>
+        <div class="rp-funnel-pct">${pct}%</div>
+      </div>${arrow}`;
+    }).join('') +
+    (counts.paused > 0 ? `<div class="rp-funnel-step rp-funnel-paused ${rpHealthFilter === 'paused' ? 'active' : ''}" data-key="paused" style="border-color:${bucketByKey.paused.color};">
+      <div class="rp-funnel-dot" style="background:${bucketByKey.paused.color};"></div>
+      <div class="rp-funnel-label">暂停</div>
+      <div class="rp-funnel-num">${counts.paused}</div>
+      <div class="rp-funnel-pct">${Math.round((counts.paused/funnelTotal)*100)}%</div>
+    </div>` : '');
+
+  document.getElementById('rpStageLegend').innerHTML =
+    (rpHealthFilter !== 'all' ? `<div class="rp-stage-legend-item rp-clear-filter" id="rpClearHealthFilter">✕ 清除筛选（${HEALTH_BUCKETS.find(b=>b.key===rpHealthFilter)?.label}）</div>` : '');
+
+  document.querySelectorAll('.rp-funnel-step').forEach(el=>{
     el.addEventListener('click', ()=>{
       const key = el.dataset.key;
       rpHealthFilter = (rpHealthFilter === key) ? 'all' : key;
@@ -2415,11 +2463,11 @@ function renderReportTab(){
   const datedSites = filtered
     .filter(s => !hubSites.includes(s) && getDisplayStatus(s) !== 'done')
     .sort(followUpCompare);
-  const followUpSites = [...hubSites, ...datedSites].slice(0, 10);
+  const followUpSites = [...hubSites, ...datedSites].slice(0, 5);
 
   const focusTable = document.getElementById('rpFocusTable');
   if(followUpSites.length){
-    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>当前责任方</th></tr></thead><tbody>` +
+    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>当前节点</th><th>距上次动态</th><th>当前责任方</th><th>下一步</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
@@ -2427,7 +2475,8 @@ function renderReportTab(){
         const realBucket = healthBucket(site);
         const pillCls = doneNow ? 'done' : (realBucket === 'signing' ? 'progress' : realBucket);
         const pct = getSitePct(site);
-        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${getField(site, 'internalOwner') || '—'}</td></tr>`;
+        const nextStep = getField(site, 'note') || '—';
+        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${getField(site, 'internalOwner') || '—'}</td><td>${nextStep}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点跟进的站点 👍</td></tr></tbody>';
@@ -2558,6 +2607,14 @@ document.getElementById('rpOwnerFilter').addEventListener('change', (e)=>{
   });
 })();
 
+document.getElementById('rpToggleKanban').addEventListener('click', ()=>{
+  const card = document.getElementById('rpKanbanCard');
+  const btn = document.getElementById('rpToggleKanban');
+  const isHidden = card.style.display === 'none';
+  card.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '📋 收起看板视图' : '📋 查看全部站点（看板视图）';
+});
+
 document.getElementById('copySummaryBtn').addEventListener('click', ()=>{
   const filtered = getFilteredSitesForReport();
   const now = new Date();
@@ -2615,7 +2672,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
     if(n>0) lines.push(`  ${b.label}：${n}个`);
   });
   lines.push('');
-  lines.push('重点跟进站点：');
+  lines.push('优先推进站点：');
   const hubSitesCopy = filtered.filter(s => isHub(s));
   const datedSitesCopy = filtered
     .filter(s => !hubSitesCopy.includes(s) && getDisplayStatus(s) !== 'done')
