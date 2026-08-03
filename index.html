@@ -2317,7 +2317,7 @@ function renderReportTab(){
 
   const focusTable = document.getElementById('rpFocusTable');
   if(followUpSites.length){
-    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>负责人</th></tr></thead><tbody>` +
+    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>当前负责人</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
@@ -2325,7 +2325,7 @@ function renderReportTab(){
         const realBucket = healthBucket(site);
         const pillCls = doneNow ? 'done' : (realBucket === 'signing' ? 'progress' : realBucket);
         const pct = getSitePct(site);
-        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${getOwnersText(site) || '—'}</td></tr>`;
+        return `<tr><td><b>${site.code}${isHub(site) ? ' 🏢' : ''}</b></td><td><span class="rp-internal-bar-wrap"><span class="rp-internal-bar-fill" style="width:${pct}%;"></span></span><span class="rp-internal-pct">${pct}%</span></td><td><span class="rp-pill ${pillCls}">${label}</span></td><td>${staleDaysBadge(site, staleThreshold)}</td><td>${getField(site, 'internalOwner') || '—'}</td></tr>`;
       }).join('') + '</tbody>';
   } else {
     focusTable.innerHTML = '<tbody><tr><td class="rp-empty-note">暂无需要重点跟进的站点 👍</td></tr></tbody>';
@@ -2524,7 +2524,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
       const d = getStuckDays(site);
       const staleText = (d !== null && d >= staleThreshold && !doneNow) ? `【⚠️${d}天未动】` : '';
-      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 负责人：${getOwnersText(site) || '—'}`);
+      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 当前负责人：${getField(site, 'internalOwner') || '—'}`);
     });
   } else {
     lines.push('  暂无');
