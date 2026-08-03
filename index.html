@@ -2248,8 +2248,6 @@ function renderReportTab(){
   )];
   const summaryLines = [];
   summaryLines.push(`<div class="rp-summary-line">📦 本周完成 <b>${doneThisWeek}</b> 个站点</div>`);
-  if(blockedCount > 0) summaryLines.push(`<div class="rp-summary-line risk">⚠️ <b>${blockedCount}</b> 个站点存在卡点</div>`);
-  if(priorityCodes.length) summaryLines.push(`<div class="rp-summary-line action">🎯 <b>${priorityCodes.join('、')}</b> 需要优先推进</div>`);
   document.getElementById('rpSummaryCard').innerHTML = summaryLines.join('');
 
   // 本周关键洞察
