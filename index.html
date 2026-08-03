@@ -852,7 +852,7 @@
       </div>
 
       <div class="rp-section-block">
-        <div class="rp-section-title"><i data-lucide="users"></i>二、当前卡在谁手上</div>
+        <div class="rp-section-title"><i data-lucide="users"></i>二、当前卡点与下一步</div>
         <table class="rp-table" id="rpInternalTable"></table>
       </div>
 
@@ -1199,7 +1199,7 @@ function cardTemplate(site){
       ${progressHtml}
       ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
       <div class="next-action-row">
-        <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步说明（比如：代收协议待处理）" value="${note.replace(/"/g,'&quot;')}">
+        <input type="text" class="note-input" data-code="${site.code}" placeholder="下一步行动（写具体要做什么，比如：本周催房东出合同）" value="${note.replace(/"/g,'&quot;')}">
       </div>
       <div class="owners">跟进人：${getOwnersText(site)}</div>
       <div class="meta-row"><span>更新时间 ${getDisplayUpdated(site) || '—'}</span><span class="save-hint">点击查看 SOP 进度 🚂</span></div>
@@ -1478,7 +1478,8 @@ function staleDaysBadge(site, threshold){
   if(d === null) return '<span class="stale-badge none">—</span>';
   const isDone = getDisplayStatus(site) === 'done';
   const isStale = !isDone && d >= threshold;
-  return `<span class="stale-badge ${isStale ? 'stale' : ''}">${isStale ? '⚠️ ' : ''}${d}天未动</span>`;
+  const label = d === 0 ? '今天更新' : `${d}天未更新`;
+  return `<span class="stale-badge ${isStale ? 'stale' : ''}">${isStale ? '⚠️ ' : ''}${label}</span>`;
 }
 
 function attentionScore(site){
@@ -2317,7 +2318,7 @@ function renderReportTab(){
 
   const focusTable = document.getElementById('rpFocusTable');
   if(followUpSites.length){
-    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>当前负责人</th></tr></thead><tbody>` +
+    focusTable.innerHTML = `<thead><tr><th>站点</th><th>进度</th><th>状态</th><th>距上次动态</th><th>当前责任方</th></tr></thead><tbody>` +
       followUpSites.map(site=>{
         const custom = getField(site, 'customStage');
         const doneNow = getDisplayStatus(site) === 'done';
@@ -2396,7 +2397,7 @@ function renderReportTab(){
       <div class="rp-stage-legend-item"><span class="rp-flag none"></span>未设日期</div>
     </div>`;
 
-  // 二、当前卡在谁手上
+  // 二、当前卡点与下一步
   const trackedSites = filtered.filter(s => getNeedsBoss(s) || (getField(s, 'internalOwner') || '').trim());
   const sortedTracked = trackedSites.sort((a, b) => {
     const bossA = getNeedsBoss(a) ? 0 : 1;
@@ -2523,14 +2524,14 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const doneNow = getDisplayStatus(site) === 'done';
       const label = (custom && custom.trim()) ? custom.trim() : (doneNow ? '已完成' : currentSopStep(getSitePct(site)).short);
       const d = getStuckDays(site);
-      const staleText = (d !== null && d >= staleThreshold && !doneNow) ? `【⚠️${d}天未动】` : '';
-      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 当前负责人：${getField(site, 'internalOwner') || '—'}`);
+      const staleText = (d !== null && d >= staleThreshold && !doneNow) ? `【⚠️${d}天未更新】` : '';
+      lines.push(`  ${site.code}（${getSitePct(site)}%，${label}）${staleText}- 当前责任方：${getField(site, 'internalOwner') || '—'}`);
     });
   } else {
     lines.push('  暂无');
   }
   lines.push('');
-  lines.push('二、当前卡在谁手上：');
+  lines.push('二、当前卡点与下一步：');
   const trackedSitesCopy = filtered.filter(s => getNeedsBoss(s) || (getField(s, 'internalOwner') || '').trim());
   if(trackedSitesCopy.length){
     trackedSitesCopy.sort((a, b) => {
@@ -2542,7 +2543,7 @@ document.getElementById('copyReportBtn').addEventListener('click', ()=>{
       const issue = getBlocker(s) || getRisk(s) || getDesc(s) || '需关注';
       const nextStep = getField(s, 'note');
       const d = getStuckDays(s);
-      const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未动]` : '';
+      const staleText = (d !== null && d >= staleThreshold && getDisplayStatus(s) !== 'done') ? `[⚠️${d}天未更新]` : '';
       const bossTag = getNeedsBoss(s) ? '[🙋需要老板] ' : '';
       lines.push(`  ${bossTag}${s.code}${staleText} - 责任方：${owner} - 卡点：${issue}${nextStep ? ' - 下一步：'+nextStep : ''}`);
     });
