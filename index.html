@@ -56,6 +56,7 @@
   .stat{
     background:var(--card);
     border:1px solid var(--border);
+    border-left:3px solid transparent;
     border-radius:12px;
     padding:14px 16px;
     cursor:pointer;
@@ -64,10 +65,14 @@
   .stat:hover{border-color:var(--muted-2);transform:translateY(-1px);}
   .stat-label{font-size:11.5px;color:var(--muted);margin-bottom:6px;}
   .stat-value{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
+  .stat.done{border-left-color:var(--done);}
   .stat.done .stat-value{color:var(--done);}
-  .stat.block .stat-value{color:var(--block);}
+  .stat.block{border-left-color:var(--main);}
+  .stat.block .stat-value{color:var(--main);}
+  .stat.risk{border-left-color:var(--risk);}
   .stat.risk .stat-value{color:var(--risk);}
-  .stat.avg .stat-value{color:var(--main);}
+  .stat.avg{border-left-color:var(--parallel);}
+  .stat.avg .stat-value{color:var(--parallel);}
 
   .cal-card{
     background:var(--card);border:1px solid var(--border);border-radius:12px;
@@ -276,7 +281,9 @@
   .insight-list .ok-note{color:var(--muted);}
 
   /* mini viz row */
-  .viz-mini-row{display:grid;grid-template-columns:1fr 200px 1.4fr;gap:12px;margin-top:16px;}
+  .viz-mini-row{display:grid;grid-template-columns:1.3fr 1.4fr;gap:12px;margin-top:16px;}
+  .combined-status-body{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .mini-donut-label{font-size:10.5px;color:var(--muted);margin-top:2px;text-align:center;}
   .viz-mini-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
   .viz-mini-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:10px;}
   .mini-bars{display:flex;align-items:flex-end;gap:10px;height:70px;}
@@ -557,6 +564,13 @@
 
   /* ===== SOP reference tab ===== */
   .tabbar{display:flex;gap:8px;margin-top:22px;border-bottom:1px solid var(--border);}
+  .action-banner{
+    margin-top:20px;background:rgba(242,92,110,0.1);border:1px solid rgba(242,92,110,0.35);
+    border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--risk);
+    cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s ease;
+  }
+  .action-banner:hover{background:rgba(242,92,110,0.16);}
+  .action-banner .ab-arrow{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400;}
   .tabbtn{
     font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;
     padding:10px 16px;color:var(--muted);cursor:pointer;
@@ -671,6 +685,8 @@
   <h1>新仓落地进度 Dashboard</h1>
   <p class="subtitle">来自租赁跟进表数据。网页上的修改会保存到共享数据库，并实时同步给所有已打开此页面的用户。</p>
 
+  <div class="action-banner" id="actionBanner" style="display:none;"></div>
+
   <div class="tabbar">
     <div class="tabbtn active" data-tab="live">🏭 仓库实时进度</div>
     <div class="tabbtn" data-tab="todo">✅ 待办 <span id="todoCount" class="tab-count"></span></div>
@@ -706,9 +722,9 @@
     <div class="stats">
       <div class="stat" data-goto="all"><div class="stat-label">跟进站点总数</div><div class="stat-value" id="statTotal">0</div></div>
       <div class="stat done" data-goto="done"><div class="stat-label">已完成</div><div class="stat-value" id="statDone">0</div></div>
-      <div class="stat block" data-goto="block"><div class="stat-label">含卡点信息</div><div class="stat-value" id="statBlock">0</div></div>
-      <div class="stat risk" data-goto="risk"><div class="stat-label">有风险点</div><div class="stat-value" id="statRisk">0</div></div>
-      <div class="stat avg" data-goto="all"><div class="stat-label">平均进度（有数值站点）</div><div class="stat-value" id="statAvg">0%</div></div>
+      <div class="stat block" data-goto="block"><div class="stat-label">存在卡点</div><div class="stat-value" id="statBlock">0</div></div>
+      <div class="stat risk" data-goto="risk"><div class="stat-label">延期风险</div><div class="stat-value" id="statRisk">0</div></div>
+      <div class="stat avg" data-goto="all"><div class="stat-label">平均落地进度</div><div class="stat-value" id="statAvg">0%</div></div>
     </div>
     <div class="cal-card">
       <div class="cal-title" id="calTitle">2026年7月</div>
@@ -717,18 +733,18 @@
   </div>
 
   <div class="viz-mini-row">
-    <div class="viz-mini-card">
-      <div class="viz-mini-title">状态分布</div>
-      <div class="mini-bars" id="miniBars"></div>
-    </div>
-    <div class="viz-mini-card">
-      <div class="viz-mini-title">完成率</div>
-      <div class="mini-donut-wrap">
-        <svg width="72" height="72" viewBox="0 0 90 90">
-          <circle cx="45" cy="45" r="36" fill="none" stroke="var(--border)" stroke-width="9"/>
-          <circle id="miniDonutArc" cx="45" cy="45" r="36" fill="none" stroke="var(--done)" stroke-width="9" stroke-linecap="round" transform="rotate(-90 45 45)"/>
-        </svg>
-        <div class="mini-donut-num" id="miniDonutNum">0%</div>
+    <div class="viz-mini-card combined-status-card">
+      <div class="viz-mini-title">整体状态</div>
+      <div class="combined-status-body">
+        <div class="mini-bars" id="miniBars"></div>
+        <div class="mini-donut-wrap">
+          <svg width="72" height="72" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="36" fill="none" stroke="var(--border)" stroke-width="9"/>
+            <circle id="miniDonutArc" cx="45" cy="45" r="36" fill="none" stroke="var(--done)" stroke-width="9" stroke-linecap="round" transform="rotate(-90 45 45)"/>
+          </svg>
+          <div class="mini-donut-num" id="miniDonutNum">0%</div>
+          <div class="mini-donut-label">完成率</div>
+        </div>
       </div>
     </div>
     <div class="viz-mini-card attention-card">
@@ -741,9 +757,9 @@
     <div class="chip active" data-f="all">全部</div>
     <div class="chip" data-f="done">已完成</div>
     <div class="chip" data-f="progress">进行中</div>
-    <div class="chip" data-f="block">含卡点信息</div>
+    <div class="chip" data-f="block">存在卡点</div>
     <div class="chip" data-f="search">找仓中</div>
-    <div class="chip" data-f="risk">有风险点</div>
+    <div class="chip" data-f="risk">延期风险</div>
   </div>
 
   <div class="view-toggle">
@@ -786,7 +802,7 @@
             <option value="all">全部状态</option>
             <option value="done">已完成</option>
             <option value="progress">进行中</option>
-            <option value="block">含卡点信息</option>
+            <option value="block">存在卡点</option>
             <option value="search">找仓中</option>
           </select>
         </label>
@@ -1029,6 +1045,35 @@ function getDisplayStatus(site){
   return site.status;
 }
 
+function renderActionBanner(){
+  const banner = document.getElementById('actionBanner');
+  const riskSites = SITES.filter(s => getRisk(s));
+  let staleThresh = 7;
+  try{ const saved = localStorage.getItem('rpStaleThreshold'); if(saved) staleThresh = parseInt(saved,10)||7; }catch(e){}
+  const staleSites = SITES.filter(s => {
+    const d = getStuckDays(s);
+    return d !== null && d >= staleThresh && getDisplayStatus(s) !== 'done';
+  });
+
+  if(riskSites.length === 0 && staleSites.length === 0){
+    banner.style.display = 'none';
+    return;
+  }
+
+  const parts = [];
+  if(riskSites.length) parts.push(`<b>${riskSites.length}</b> 个站点存在延期风险`);
+  if(staleSites.length) parts.push(`<b>${staleSites.length}</b> 个事项超过 ${staleThresh} 天未更新`);
+
+  banner.style.display = 'flex';
+  banner.innerHTML = `⚠️ ${parts.join('，')}<span class="ab-arrow">点击查看 →</span>`;
+  banner.onclick = () => {
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    document.querySelector('.chip[data-f="risk"]').classList.add('active');
+    applyFilters();
+    try{ document.getElementById('grid').scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
+  };
+}
+
 function renderStats(){
   const total = SITES.length;
   const done = SITES.filter(s=>getDisplayStatus(s)==='done').length;
@@ -1169,6 +1214,7 @@ function render(){
   const grid = document.getElementById('grid');
   grid.innerHTML = SITES.map(cardTemplate).join('');
   renderStats();
+  renderActionBanner();
   populateSiteSelect();
   renderInsights();
   renderMiniViz();
