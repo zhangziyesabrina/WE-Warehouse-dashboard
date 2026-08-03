@@ -399,6 +399,25 @@
   .rp-summary-line b{color:#7EB8FF;font-weight:800;}
   .rp-summary-line.risk b{color:#FF9B9B;}
   .rp-summary-line.action b{color:#FFD27E;}
+
+  .rp-heatmap-card{
+    background:var(--rp-card);border:1px solid var(--rp-border);border-radius:14px;padding:18px 20px;margin-bottom:14px;
+  }
+  .rp-heatmap-title{font-weight:700;font-size:14.5px;color:var(--rp-text);margin-bottom:12px;}
+  .rp-heatmap-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(68px, 1fr));gap:8px;}
+  .rp-heatmap-tile{
+    border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;
+    border:2px solid transparent;transition:transform .1s ease;
+  }
+  .rp-heatmap-tile:hover{transform:translateY(-2px);}
+  .rp-heatmap-tile.flagged{border-color:var(--rp-red);}
+  .rp-heatmap-code{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11.5px;color:#fff;}
+  .rp-heatmap-pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.85);margin-top:2px;}
+  .rp-heatmap-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:11.5px;color:var(--rp-muted);}
+  .rp-heatmap-legend span{display:flex;align-items:center;gap:5px;}
+  .rp-heatmap-legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .rp-heatmap-legend-flag i.flag{background:transparent;border:2px solid var(--rp-red);width:8px;height:8px;}
+
   .rp-section-title{
     display:flex;align-items:center;font-weight:700;font-size:14.5px;color:var(--rp-text);margin-bottom:12px;
   }
@@ -827,6 +846,19 @@
           </select>
         </label>
         <div class="rp-updated" id="rpUpdated"></div>
+      </div>
+
+      <div class="rp-heatmap-card">
+        <div class="rp-heatmap-title">站点全景图</div>
+        <div class="rp-heatmap-grid" id="rpHeatmapGrid"></div>
+        <div class="rp-heatmap-legend">
+          <span><i style="background:#16A34A;"></i>已完成</span>
+          <span><i style="background:#2563EB;"></i>签约/付款中</span>
+          <span><i style="background:#F59E0B;"></i>谈判中</span>
+          <span><i style="background:#98A2B3;"></i>找仓中</span>
+          <span><i style="background:#4B5768;"></i>暂停</span>
+          <span class="rp-heatmap-legend-flag"><i class="flag"></i>红框 = 需要关注</span>
+        </div>
       </div>
 
       <div class="rp-summary-card" id="rpSummaryCard"></div>
@@ -2230,6 +2262,26 @@ function renderReportTab(){
   const staleThreshold = parseInt(document.getElementById('rpStaleThreshold').value, 10) || 7;
 
   document.getElementById('rpUpdated').textContent = `最后更新时间：${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+
+  // 站点全景图
+  const HEATMAP_COLOR = {done:'#16A34A', signing:'#2563EB', negotiating:'#F59E0B', search:'#98A2B3', paused:'#4B5768'};
+  document.getElementById('rpHeatmapGrid').innerHTML = filtered.map(s=>{
+    const bucket = healthBucket(s);
+    const color = HEATMAP_COLOR[bucket] || '#98A2B3';
+    const pct = getSitePct(s);
+    const d = getStuckDays(s);
+    const isFlagged = getNeedsBoss(s) || getUrgent(s) || etaFlag(s) === 'overdue' || (d !== null && d >= staleThreshold && bucket !== 'done');
+    return `<div class="rp-heatmap-tile ${isFlagged ? 'flagged' : ''}" style="background:${color};" data-code="${s.code}" title="${s.code}：${pct}%">
+      <div class="rp-heatmap-code">${s.code}${isHub(s) ? ' 🏢' : ''}</div>
+      <div class="rp-heatmap-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.rp-heatmap-tile').forEach(tile=>{
+    tile.addEventListener('click', ()=>{
+      document.getElementById('rpSiteFilter').value = tile.dataset.code;
+      renderReportTab();
+    });
+  });
 
   // 一句话总结（放在最上面，最多三行）
   const doneThisWeek = filtered.filter(s => {
